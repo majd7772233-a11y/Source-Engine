@@ -97,7 +97,7 @@ Use this section for new observations that do not yet fit another heading. Date 
 
 
 ### 2026-10-16 — Stage 0 implementation update
-- **Latest curated integration commit:** `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`; subsequent roadmap log commit: `c9608269403a39146654fe59ed64f159df9cedd1`.
+- **Curated integration commit:** `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`. Follow-up verification/documentation commits include package-import fix `1d150505fbf6c21f5004449e8cc61add7842c4ac`, roadmap update `bd311344a0b7232ac66c0d19761a679a9dd642dd`, and GPT notes update `bcb5c5af40b7d97e9845f7b86b3ab7fb31b26a76`.
 - Integrated branch ancestry for `con-wrappers` and `test` while preserving the canonical `android-fixes` tree and applying a selective, code-aware merge. Do not describe this as a blind full merge: incompatible alternate launcher/package code and unrelated Python/Discord automation were excluded deliberately.
 - Set `AndroidManifest.xml` package to `com.magd.source.engine`; changed the generated resource import to `com.magd.source.engine.R` in `LauncherActivity.java`, `DirchActivity.java`, `UpdateService.java`, `UpdateSystem.java`, and `SDLActivity.java`. Preserve the Java implementation namespaces.
 - Integrated the NDK tierhook subtree from `test`, kept the ARMv7 shared library set, and carried forward the useful localized community contact text from `con-wrappers`.
