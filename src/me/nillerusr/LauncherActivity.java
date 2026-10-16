@@ -65,10 +65,12 @@ public class LauncherActivity extends Activity {
 		}
 	}
 
-	public void onRequestPermissionsResult( int requestCode,  String[] permissions,  int[] grantResults ) {
+	@Override
+	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults ) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if( requestCode == REQUEST_PERMISSIONS ) {
-			if( grantResults[0] == PackageManager.PERMISSION_DENIED ) {
-				Toast.makeText( this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG ).show();
+			if( grantResults == null || grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED ) {
+				Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show();
 				finish();
 			}
 		}
