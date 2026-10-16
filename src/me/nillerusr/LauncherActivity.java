@@ -52,6 +52,7 @@ public class LauncherActivity extends Activity {
 	private boolean launchInProgress = false;
 	private LinearLayout libraryItems;
 	private TextView librarySummary;
+	private boolean scanInProgress = false;
 	public SharedPreferences mPref;
 	public static final int sdk = Integer.valueOf(Build.VERSION.SDK).intValue();
 	static CheckBox useVolumeButtons, check_updates;
@@ -200,46 +201,56 @@ public class LauncherActivity extends Activity {
 	}
 
 	private void scanLibrary(boolean includeCurrentRoot, boolean unhideCurrentRoot) {
-		String currentRoot = GamePath == null ? "" : GamePath.getText().toString().trim();
-		if (includeCurrentRoot && (currentRoot.length() == 0
-				|| !new File(currentRoot).isDirectory() || !new File(currentRoot).canRead())) {
+		final String selectedPath = GamePath == null ? "" : GamePath.getText().toString().trim();
+		if (includeCurrentRoot && (selectedPath.length() == 0
+				|| !new File(selectedPath).isDirectory() || !new File(selectedPath).canRead())) {
 			new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error)
 					.setMessage(R.string.srceng_library_scan_invalid)
 					.setPositiveButton(R.string.srceng_launcher_ok, null).show();
 			return;
 		}
-		Set<String> roots = preferenceSet(LIBRARY_ROOTS);
-		Set<String> hidden = preferenceSet(LIBRARY_HIDDEN);
+		if (scanInProgress) return;
+		scanInProgress = true;
+		librarySummary.setText(R.string.srceng_library_scanning);
+		final Set<String> roots = preferenceSet(LIBRARY_ROOTS);
+		final Set<String> hidden = preferenceSet(LIBRARY_HIDDEN);
 		if (includeCurrentRoot) {
-			currentRoot = canonicalPath(currentRoot);
+			final String currentRoot = canonicalPath(selectedPath);
 			roots.add(currentRoot);
 			if (unhideCurrentRoot) {
-				final String selectedRoot = currentRoot;
 				java.util.Iterator<String> iterator = hidden.iterator();
 				while (iterator.hasNext()) {
 					String hiddenPath = iterator.next();
-					if (hiddenPath.equals(selectedRoot) || hiddenPath.startsWith(selectedRoot + File.separator)) iterator.remove();
+					if (hiddenPath.equals(currentRoot) || hiddenPath.startsWith(currentRoot + File.separator)) iterator.remove();
 				}
 			}
 		}
-		Set<String> discovered = new HashSet<String>();
-		for (String root : new HashSet<String>(roots)) {
-			File directory = new File(root);
-			if (!directory.isDirectory() || !directory.canRead()) {
-				roots.remove(root);
-				continue;
+		new Thread(new Runnable() {
+			@Override public void run() {
+				final Set<String> discovered = new HashSet<String>();
+				final Set<String> validRoots = new HashSet<String>();
+				for (String root : roots) {
+					File directory = new File(root);
+					if (!directory.isDirectory() || !directory.canRead()) continue;
+					validRoots.add(root);
+					List<GameDiscovery.GameEntry> entries = GameDiscovery.scan(LauncherActivity.this, root);
+					for (GameDiscovery.GameEntry entry : entries) {
+						if (entry != null && !hidden.contains(entry.path) && new File(entry.path).isDirectory()) discovered.add(entry.path);
+					}
+				}
+				runOnUiThread(new Runnable() {
+					@Override public void run() {
+						scanInProgress = false;
+						mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(validRoots))
+								.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
+						GameDiscovery.savePaths(LauncherActivity.this, discovered);
+						renderGameLibrary();
+						if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);
+						else librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
+					}
+				});
 			}
-			List<GameDiscovery.GameEntry> entries = GameDiscovery.scan(this, root);
-			for (GameDiscovery.GameEntry entry : entries) {
-				if (entry != null && !hidden.contains(entry.path) && new File(entry.path).isDirectory()) discovered.add(entry.path);
-			}
-		}
-		mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(roots))
-				.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
-		GameDiscovery.savePaths(this, discovered);
-		renderGameLibrary();
-		if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);
-		else librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
+		}, "SourceGameScan").start();
 	}
 
 	private void renderGameLibrary() {
