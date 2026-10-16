@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
-if [[ -z "\${ANDROID_HOME:-}" ]]; then
-  if [[ -n "\${ANDROID_SDK_ROOT:-}" ]]; then export ANDROID_HOME="$ANDROID_SDK_ROOT"
+if [[ -z "${ANDROID_HOME:-}" ]]; then
+  if [[ -n "${ANDROID_SDK_ROOT:-}" ]]; then export ANDROID_HOME="$ANDROID_SDK_ROOT"
   elif [[ -d "$ROOT_DIR/android-sdk" ]]; then export ANDROID_HOME="$ROOT_DIR/android-sdk"
   else echo "ERROR: Set ANDROID_HOME or ANDROID_SDK_ROOT to a compatible legacy SDK." >&2; exit 2; fi
 fi
@@ -11,8 +11,8 @@ for tool in java ant python3 unzip sha256sum readelf; do command -v "$tool" >/de
 [[ -f "$ANDROID_HOME/tools/ant/build.xml" ]] || { echo "ERROR: $ANDROID_HOME lacks tools/ant/build.xml." >&2; exit 2; }
 AAPT="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name aapt -print 2>/dev/null | sort -V | tail -n 1)"
 [[ -n "$AAPT" && -x "$AAPT" ]] || { echo "ERROR: No executable aapt under $ANDROID_HOME/build-tools." >&2; exit 2; }
-export COMMIT="\${COMMIT:-$(git rev-parse HEAD)}"
-export BUILD_BRANCH="\${BUILD_BRANCH:-$(git branch --show-current 2>/dev/null || printf local)}"
+export COMMIT="${COMMIT:-$(git rev-parse HEAD)}"
+export BUILD_BRANCH="${BUILD_BRANCH:-$(git branch --show-current 2>/dev/null || printf local)}"
 mkdir -p "$ROOT_DIR/res/values" "$ROOT_DIR/bin"
 python3 - "$ROOT_DIR/res/values/build_info.xml" "$COMMIT" "$BUILD_BRANCH" <<'PY'
 import sys
