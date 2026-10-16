@@ -523,6 +523,8 @@ public class LauncherActivity extends Activity {
 			}
 		}
 		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
+		gamepath = canonicalPath(gamepath);
+		if (GamePath != null) GamePath.setText(gamepath);
 		File root = new File(gamepath);
 		if (!root.isDirectory() || !root.canRead()) { showStartupError(getString(R.string.srceng_launcher_error_invalid_path, gamepath)); return; }
 		String selectedDirectory = mPref.getString("gamedir", "hl2");
