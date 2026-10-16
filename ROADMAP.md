@@ -158,7 +158,7 @@ These are confirmed code/design risks or missing capabilities observed during th
 
 Update this ledger at the end of every stage with commit SHA, files changed, checks actually run, failures still open, and the next stage. Never mark a stage complete from code inspection alone when its acceptance criteria require a build or runtime test.
 
-- **Stage 0:** In progress — curated integration/package/build-script/workflow changes committed. A clean CI/build result has not been observed; line-by-line audit and build validation remain open. Latest integration commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
+- **Stage 0:** In progress — curated integration/package/build-script/workflow changes committed and all branch refs synchronized to `5daf4cb07129bbbf40119169097ca148d4bdd813`. A clean CI/build result has not been observed; line-by-line audit and build validation remain open. Integration commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
 - **Stage 1–12:** Not started / pending re-audit after Stage 0.
 
 
@@ -170,4 +170,5 @@ Update this ledger at the end of every stage with commit SHA, files changed, che
 - Removed the committed debug keystore and its copy step, added local/build artifact ignores, hardened permission callback handling against empty results, removed a developer-specific SDK path from `build.sh`, and made the native workflow path/environment driven.
 - Updated CI to build on `android-fixes` and upload `bin/srceng-debug.apk` as an artifact. The repository currently reports zero Actions runs for this branch; no successful build has been verified yet.
 - A post-change scan of the 10 Java files listed under the three app/SDL source namespaces found zero remaining `com.valvesoftware.source.R` imports and five imports of `com.magd.source.engine.R`.
+- All four branch refs (`android-fixes`, `con-wrappers`, `test`, and the temporary validation branch) were synchronized to the same integrated commit `5daf4cb07129bbbf40119169097ca148d4bdd813`; no branch now points to a divergent code snapshot.
 - **Still open:** validate every relevant file/call-site on the integrated tree; check script executable modes and dependency/toolchain compatibility; run CI or a clean build; fix any actual failures; only then close Stage 0.
