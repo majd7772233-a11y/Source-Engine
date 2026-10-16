@@ -35,6 +35,7 @@ checks = {
     "last launch recorded": "GameDiscovery.recordLaunch(this, selectedEntry.path)" in launcher,
     "optional content distinction": "hasOptionalContent(children)" in discovery and "optionalContentAvailable" in discovery and "srceng_library_optional_found" in launcher,
     "accurate readiness summary": "srceng_library_count" in launcher,
+    "resource import uses canonical application ID": "import com.magd.source.engine.R;" in discovery,
     "CI invokes Stage 3 checks": "bash scripts/verify-stage3.sh" in workflow,
 }
 missing = [name for name, ok in checks.items() if not ok]
