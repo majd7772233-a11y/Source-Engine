@@ -148,7 +148,8 @@ public final class GameDiscovery {
             displayName = gameDir.getName();
         }
         boolean abiSupported = supportsPackagedAbi();
-        boolean launchable = hasInfo && validInfo && hasContent && abiSupported;
+        boolean nativeRuntimeAvailable = hasNativeRuntime(context);
+        boolean launchable = hasInfo && validInfo && hasContent && abiSupported && nativeRuntimeAvailable;
         String status;
         String detail;
         if (!hasInfo) {
@@ -163,6 +164,9 @@ public final class GameDiscovery {
         } else if (!abiSupported) {
             status = context.getString(R.string.srceng_library_status_unsupported_abi);
             detail = context.getString(R.string.srceng_library_detail_unsupported_abi);
+        } else if (!nativeRuntimeAvailable) {
+            status = context.getString(R.string.srceng_library_status_native_missing);
+            detail = context.getString(R.string.srceng_library_detail_native_missing);
         } else {
             status = context.getString(R.string.srceng_library_status_ready);
             detail = context.getString(R.string.srceng_library_detail_ready);
@@ -241,6 +245,21 @@ public final class GameDiscovery {
             if (child != null && child.getName().equalsIgnoreCase(name)) return child;
         }
         return null;
+    }
+
+    private static boolean hasNativeRuntime(Context context) {
+        if (context == null || context.getApplicationInfo() == null) return false;
+        String directory = context.getApplicationInfo().nativeLibraryDir;
+        if (directory == null) return false;
+        String[] required = new String[] {
+                "libtierhook.so", "libmain.so", "libRegal.so", "libclient.so", "libserver.so"
+        };
+        File nativeDirectory = new File(directory);
+        for (String library : required) {
+            File file = new File(nativeDirectory, library);
+            if (!file.isFile() || !file.canRead() || file.length() <= 0) return false;
+        }
+        return true;
     }
 
     private static boolean supportsPackagedAbi() {
