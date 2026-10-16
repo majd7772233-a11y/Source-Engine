@@ -76,12 +76,12 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 
 ## 6. Current phase hand-off
 
-- Active task: finish Stage 0 in `ROADMAP.md`. The canonical branch is `android-fixes`; all maintained branches (`android-fixes`, `con-wrappers`, `test`, and `stage0-build-validation`) are synchronized to the same tree.
-- The native build and Ant APK packaging succeeded in GitHub Actions run [38937163563](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38937163563) on implementation commit `5116d037a074e3c15652e465a3224576767e3b41`; the `source-engine-android-debug` artifact was uploaded. This verifies a clean CI APK build, not installation or launch on a physical device.
+- **Stage 0 is complete.** Canonical branch: `android-fixes`. Final verification candidate: `bf7f506f741cac82c8f1419b4170e4ede3883cbe`; the completion-record commit records the verified result and is synchronized across the maintained branches.
+- Final verification passed in GitHub Actions run [38938001867](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38938001867) on candidate commit `bf7f506f741cac82c8f1419b4170e4ede3883cbe`: source/manifest/package checks, shell syntax checks, all native builds, Ant APK packaging, APK application-ID inspection, required ARMv7 native-library presence checks, and artifact upload all succeeded.
+- Artifact: `source-engine-android-debug`, 54,488,439 bytes, SHA-256 `0ed0e8919ef6209114eecd35dd15b3abbcca47588570d7dcb11a782a3f557e6b`.
 - Fixed the SDK path mismatch by explicitly selecting the cloned legacy Android SDK, installed the 32-bit runtime libraries needed by its old `aapt`, and made both build entry points generate `res/values/build_info.xml`.
-- The next candidate commit adds repeatable Stage 0 source/manifest/shell validation and APK package/native-library inspection, plus a top-level README. Keep Stage 0 open until those checks pass on the final candidate commit and update the roadmap with observed results only.
-- Required outcome before Stage 1: one documented canonical branch containing the curated code from the three source branches, consistent application identity, validated build scripts and workflow, successful CI APK and artifact checks, and an explicit list of remaining cross-stage defects.
-- Do not claim device runtime validation: no physical-device installation/launch smoke test was run during Stage 0.
+- Before beginning Stage 1, re-read its acceptance criteria. External dependency revisions remain unpinned; device installation/game launch, game discovery/storage UX, compatibility, and runtime stability are not claimed as verified by Stage 0.
+- No physical-device installation/launch smoke test was run during Stage 0.
 
 ## 7. Dated engineering log
 

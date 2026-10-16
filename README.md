@@ -8,8 +8,8 @@ An Android launcher and native-runtime integration for compatible Source-engine 
 - Android application ID: `com.magd.source.engine`.
 - Build system: legacy Android Ant/ADT project targeting Android API 29; minimum declared API 17.
 - Current native build output is for **ARMv7 / `armeabi-v7a`**. Do not assume 64-bit ABI support.
-- A clean GitHub Actions build produced `bin/srceng-debug.apk` and uploaded the `source-engine-android-debug` artifact in [run 38937163563](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38937163563).
-- This CI result verifies compilation and packaging only. It does **not** establish that every game works or that the APK has been installed/launched on a physical device.
+- A clean GitHub Actions build produced `bin/srceng-debug.apk` and uploaded the `source-engine-android-debug` artifact in [run 38938001867](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38938001867). The artifact is 54,488,439 bytes (SHA-256 `0ed0e8919ef6209114eecd35dd15b3abbcca47588570d7dcb11a782a3f557e6b`).
+- Final CI verification also checked the APK's application ID and the five required ARMv7 native libraries. It does **not** establish that every game works or that the APK has been installed/launched on a physical device.
 
 ## Build
 

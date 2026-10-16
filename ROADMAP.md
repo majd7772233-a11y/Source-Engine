@@ -36,7 +36,7 @@ This repository is **not itself the complete Source SDK/game-content distributio
 
 ## 4. Stages
 
-### Stage 0 — Audit, branch integration, project normalization, and hand-off (current)
+### Stage 0 — Audit, branch integration, project normalization, and hand-off (completed)
 - [x] Inventory the three branch heads, compare branch-level diffs, inspect manifests, root build files, workflows, Java entry points, JNI build files, native libraries, and localized resources. The final candidate adds repeatable source/manifest/shell checks; runtime behavior remains explicitly outside the claims made by this stage.
 - [x] Select `android-fixes` as the canonical integration branch and create a curated multi-parent integration commit whose tree preserves the canonical launcher while incorporating the NDK `jni/` subtree from `test`, the shared ARMv7 native-library tree, and useful localized community-contact updates from `con-wrappers`. Incompatible alternate launcher/package code and unrelated/broken Discord automation were intentionally excluded rather than blindly overlaid. Commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
 - [x] Set the manifest application package to `com.magd.source.engine`, update all five identified generated-`R` imports in `LauncherActivity`, `DirchActivity`, `UpdateService`, `UpdateSystem`, and `SDLActivity`, and preserve implementation namespaces (`me.nillerusr`, `com.valvesoftware`, `org.libsdl`). A clean APK build has now passed; the final candidate also checks the packaged APK identity.
@@ -44,8 +44,8 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] Removed the tracked `debug.keystore` after removing the workflow's copy step; the build now lets Android tooling create/use a local debug key. Added ignore rules for local properties, generated resources/output, SDK/NDK checkouts, and Python cache files. No release key is configured or committed.
 - [x] Establish documented build entry points and expected output (`bin/srceng-debug.apk`): `bash build.sh` generates required build metadata and packages existing native libraries; `bash scripts/workflow.sh` rebuilds native libraries from the external Source SDK and packages the APK. The CI native build and Ant packaging passed in run `38937163563`; root `build.sh` is syntax-checked by the final candidate.
 - [x] Align `.github/workflows/build.yml` with `android-fixes`, add manual dispatch, check required tools/directories, and upload the APK as an artifact instead of relying on old Discord/deploy credentials. Explicitly select the cloned SDK and install the 32-bit runtime required by legacy `aapt`. External dependencies are still floating and must be pinned/reviewed in Stage 1.
-- [ ] Run the final candidate's repeatable source/manifest/shell checks and inspect the built APK's package ID and required ARMv7 native libraries in CI.
-- [ ] Acceptance: one documented canonical branch contains the curated required code from all three branches; application identity is consistent; the repository structure and build commands are documented; CI builds the APK and verifies its package/native payload; unresolved device/runtime and future-stage defects are accurately documented.
+- [x] Run repeatable source/manifest/shell checks and inspect the built APK's package ID and required ARMv7 native libraries in CI. All passed in run `38938001867` on candidate commit `bf7f506f741cac82c8f1419b4170e4ede3883cbe`.
+- [x] Acceptance: one documented canonical branch contains the curated required code from all three branches; application identity is consistent; repository structure/build commands are documented in `README.md`; CI builds the APK and verifies its package/native payload; unresolved device/runtime and future-stage defects are accurately documented.
 
 ### Stage 1 — Reproducible build and native runtime integrity
 - [ ] Trace `scripts/workflow.sh`, `scripts/upload-to-github.sh`, `scripts/send-to-discord.py`, `build.sh`, `build.xml`, `project.properties`, JNI makefiles, and all external clone/submodule steps end to end.
@@ -158,7 +158,7 @@ These are confirmed code/design risks or missing capabilities observed during th
 
 Update this ledger at the end of every stage with commit SHA, files changed, checks actually run, failures still open, and the next stage. Never mark a stage complete from code inspection alone when its acceptance criteria require a build or runtime test.
 
-- **Stage 0:** Final verification in progress — curated integration is in place and all maintained branch refs are synchronized. Clean CI build and artifact upload passed in run `38937163563` on commit `5116d037a074e3c15652e465a3224576767e3b41`; the final candidate must also pass static source checks and packaged-APK identity/native-library checks before this ledger is closed. Integration commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
+- **Stage 0:** **Complete** — final verification candidate `bf7f506f741cac82c8f1419b4170e4ede3883cbe` passed run `38938001867`: source/manifest/shell checks, all five native builds, Ant APK packaging, application-ID inspection, required ARMv7 native-library checks, and artifact upload. The completion-record commit is synchronized across maintained branch refs. No device installation/launch is claimed. Integration commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
 - **Stage 1–12:** Not started / pending re-audit after Stage 0.
 
 
@@ -180,4 +180,5 @@ Update this ledger at the end of every stage with commit SHA, files changed, che
 - Root `build.sh` now generates `res/values/build_info.xml` (`last_commit`, `deploy_branch`) before invoking Ant, matching the native workflow and avoiding missing generated resource IDs.
 - Successful clean CI run: [38937163563](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38937163563), commit `5116d037a074e3c15652e465a3224576767e3b41`. All five native library build commands, Ant APK packaging, and artifact upload completed successfully. Artifact: `source-engine-android-debug`, approximately 54.5 MB.
 - No physical-device installation, game-content launch, or runtime smoke test was performed. These remain explicitly unverified and belong in the appropriate later-stage acceptance checks.
-- The final candidate adds `scripts/verify-stage0.sh` and APK manifest/native-payload inspection to CI; keep Stage 0 open until that run is green.
+- Added `scripts/verify-stage0.sh` and APK manifest/native-payload inspection to CI. Final run [38938001867](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38938001867) passed all checks and uploaded artifact `source-engine-android-debug` (54,488,439 bytes; SHA-256 `0ed0e8919ef6209114eecd35dd15b3abbcca47588570d7dcb11a782a3f557e6b`). All four maintained branch refs were synchronized for the completion-record commit.
+- Stage 0 is complete. Device installation, game-content launch, and physical-device runtime smoke tests were not performed; they must not be inferred from CI packaging success.
