@@ -125,7 +125,7 @@ public final class StorageAccess {
             if ("primary".equalsIgnoreCase(volume)) {
                 base = Environment.getExternalStorageDirectory();
             } else {
-                if (volume.contains("/") || volume.contains("\\\\")
+                if (volume.contains("/") || volume.contains("\\")
                         || ".".equals(volume) || "..".equals(volume)) return null;
                 base = new File("/storage", volume);
                 String state;
