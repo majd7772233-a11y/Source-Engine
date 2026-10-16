@@ -46,43 +46,17 @@ public class ExtractAssets
 		return ret;
 	}
 
-	public static void extractVPK(Context context, Boolean force) 
-	{
-		ApplicationInfo appinf = context.getApplicationInfo();
-
-		FileOutputStream os = null;
-		try {
-			if( mPref == null )
-				mPref = context.getSharedPreferences("mod", 0);
-
-			File file = new File( context.getFilesDir().getPath() +"/"+ VPK_NAME );
-			if( !file.exists() )
-				force = true;
-
-			if( mPref.getInt( "pakversion", 0 ) == PAK_VERSION && !force )
-				return;
-
-			InputStream is = context.getAssets().open(VPK_NAME);
-			os = new FileOutputStream( context.getFilesDir().getPath() +"/"+ VPK_NAME);
-			byte[] buffer = new byte[8192];
-			while (true) {
-				int length = is.read(buffer);
-				if (length <= 0)
-					break;
-
-				os.write(buffer, 0, length);
-			}
-
-			SharedPreferences.Editor editor = mPref.edit();
-			editor.putInt( "pakversion", PAK_VERSION );
-			editor.commit();
-
-			chmod(appinf.dataDir, 0777);
-			chmod(context.getFilesDir().getPath(), 0777);
-			chmod(context.getFilesDir().getPath() +"/"+ VPK_NAME, 0777);
-		}
-		catch (Exception e) {
-			Log.e("SRCAPK", "Failed to extract vpk:" + e.toString());
-		}
-	}
+	public static boolean extractVPK(Context context, boolean force) {
+  FileOutputStream os=null;InputStream is=null;
+  try {
+   if(mPref==null)mPref=context.getSharedPreferences("mod",0);File file=new File(context.getFilesDir(),VPK_NAME);
+   if(file.isFile()&&file.length()>0&&mPref.getInt("pakversion",0)==PAK_VERSION&&!force)return true;
+   is=context.getAssets().open(VPK_NAME);os=new FileOutputStream(file,false);byte[] buffer=new byte[8192];int n;
+   while((n=is.read(buffer))!=-1)if(n>0)os.write(buffer,0,n);os.flush();os.getFD().sync();
+   if(!file.isFile()||file.length()<=0)throw new java.io.IOException("Extracted VPK is empty");
+   SharedPreferences.Editor e=mPref.edit();e.putInt("pakversion",PAK_VERSION);if(!e.commit())Log.w(TAG,"Could not persist VPK version; will recheck next launch.");
+   chmod(context.getApplicationInfo().dataDir,0777);chmod(context.getFilesDir().getPath(),0777);chmod(file.getAbsolutePath(),0777);return true;
+  }catch(Exception e){Log.e(TAG,"Failed to extract VPK asset "+VPK_NAME,e);return false;}
+  finally{if(is!=null)try{is.close();}catch(Exception e){Log.w(TAG,"Unable to close VPK input",e);}if(os!=null)try{os.close();}catch(Exception e){Log.w(TAG,"Unable to close VPK output",e);}}
+ }
 }
