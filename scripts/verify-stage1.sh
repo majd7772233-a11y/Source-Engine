@@ -27,7 +27,7 @@ for key in ("NDK_BINARIES_COMMIT", "ANDROID_SDK_COMMIT", "SOURCE_SDK_COMMIT"):
     import re
     match = re.search(r"^" + key + r"=([0-9a-f]{40})$", lock, re.M)
     if not match: raise SystemExit(f"Missing immutable SHA for {key}.")
-if "git fetch --depth 1 origin \"$sha\"" not in fetch or "submodule update --init --recursive" not in fetch:
+if "fetch --depth 1 origin \"$sha\"" not in fetch or "submodule update --init --recursive" not in fetch:
     raise SystemExit("Dependency fetcher must check out exact commits and pinned submodules.")
 if "readelf -d" not in verify: raise SystemExit("APK verifier must inspect native shared-library dependencies.")
 ET.fromstring('<?xml version="1.0"?><resources><string name="x">%s</string></resources>' % escape('a&b<c'))
