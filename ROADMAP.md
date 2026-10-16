@@ -37,13 +37,13 @@ This repository is **not itself the complete Source SDK/game-content distributio
 ## 4. Stages
 
 ### Stage 0 — Audit, branch integration, project normalization, and hand-off (current)
-- [ ] Re-inventory every branch and compare its root files, Java sources, resources, workflows, scripts, JNI/native sources, shared libraries, ABI coverage, and generated artifacts.
-- [ ] Select and document the canonical integration baseline. Integrate unique working changes from `android-fixes`, `con-wrappers`, and `test` into **one** branch; resolve conflicts intentionally and retain an audit trail. Do not merely rename a branch or merge incompatible trees without verification.
-- [ ] Make the canonical Android application ID `com.magd.source.engine`; update the manifest, generated-`R` imports/references, build metadata, launcher scripts, and any package-dependent paths consistently. Keep Java namespaces such as `me.nillerusr`, `com.valvesoftware`, and `org.libsdl` unchanged unless a code-level migration is required and verified.
-- [ ] Organize the repository without breaking Ant/NDK relative paths: distinguish Android app source/resources, native wrapper source, prebuilt ABI libraries, build scripts, CI, documentation, and generated output. Do not relocate files until all path consumers are updated.
-- [ ] Remove accidentally committed credentials/debug signing material only after checking its use; never publish release signing keys. Add safe ignore rules for local SDK paths, local properties, generated output, and temporary artifacts.
-- [ ] Establish a reproducible build entry point and document the exact required Java, Ant, Android SDK/build tools, NDK/toolchain, native source checkout, and expected output. Do not modernize to Gradle in this stage unless it is necessary to produce a coherent buildable baseline; any migration must be planned and verified.
-- [ ] Align workflow triggers with the canonical branch, pin or validate external dependencies where practical, fail fast on missing tools/files, and upload artifacts only after successful build.
+- [x] Inventory the three branch heads, compare branch-level diffs, inspect the manifests, root build files, workflows, key Java entry points, JNI build files, native library inventory, and localized resources. The first pass is documented; remaining line-by-line call-site/runtime verification is still required before Stage 0 acceptance.
+- [x] Select `android-fixes` as the canonical integration branch and create a curated multi-parent integration commit whose tree preserves the canonical launcher while incorporating the NDK `jni/` subtree from `test`, the shared ARMv7 native-library tree, and useful localized community-contact updates from `con-wrappers`. Incompatible alternate launcher/package code and unrelated/broken Discord automation were intentionally excluded rather than blindly overlaid. Commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
+- [x] Set the manifest application package to `com.magd.source.engine`, update all identified generated-`R` imports in `LauncherActivity`, `DirchActivity`, `UpdateService`, and `UpdateSystem`, and preserve implementation namespaces (`me.nillerusr`, `com.valvesoftware`, `org.libsdl`). Runtime/package consistency still needs a clean APK build.
+- [x] Normalize local build entry points and ignore rules without relocating source/native files: `build.sh` no longer points at a developer-specific SDK path; `scripts/build-java.sh` delegates to it; `scripts/workflow.sh` uses environment-driven paths and corrected `srcsdk` paths; `.gitignore` now excludes local SDK/NDK/source checkouts and generated output.
+- [x] Removed the tracked `debug.keystore` after removing the workflow's copy step; the build now lets Android tooling create/use a local debug key. Added ignore rules for local properties, generated resources/output, SDK/NDK checkouts, and Python cache files. No release key is configured or committed.
+- [x] Establish checked, documented build entry points and expected output (`bin/srceng-debug.apk`), including explicit SDK/Java/Ant checks and separate Java-only versus native+APK scripts. The build has not yet been executed successfully, so reproducibility remains unverified.
+- [x] Align `.github/workflows/build.yml` with `android-fixes`, add manual dispatch, fail if required directories/tools/APK output are missing, and upload the APK as a workflow artifact instead of relying on old Discord/deploy credentials. External dependencies are still floating and must be pinned/reviewed later.
 - [ ] Confirm manifest/activity/resource/package consistency and inventory all known defects without claiming runtime fixes that have not been tested.
 - [ ] Acceptance: one documented canonical branch contains the unique required code from all three branches; package ID is consistent; the repository structure and build commands are documented; a clean CI build is either green or blocked by a clearly reproduced, actionable dependency/toolchain issue.
 
@@ -158,5 +158,15 @@ These are confirmed code/design risks or missing capabilities observed during th
 
 Update this ledger at the end of every stage with commit SHA, files changed, checks actually run, failures still open, and the next stage. Never mark a stage complete from code inspection alone when its acceptance criteria require a build or runtime test.
 
-- **Stage 0:** In progress — branch integration, package normalization, and build baseline.
+- **Stage 0:** In progress — curated integration/package/build-script/workflow changes committed. A clean CI/build result has not been observed; line-by-line audit and build validation remain open. Latest integration commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
 - **Stage 1–12:** Not started / pending re-audit after Stage 0.
+
+
+### Stage 0 execution log — 2026-10-16
+- Canonical branch retained as `android-fixes`; a curated multi-parent integration commit records `con-wrappers` and `test` ancestry without blindly taking their conflicting trees.
+- Preserved the current `me.nillerusr` launcher and SDL activity namespace; set application package to `com.magd.source.engine` and updated the four identified `R` imports.
+- Integrated the `test` branch NDK tierhook subtree and retained the shared `armeabi-v7a` native libraries (35 libraries were enumerated, including `libfirst.so` and `libtier0.so`). The `test` branch's alternate `in.celest` launcher and its unrelated Python/Discord bot/cache artifacts were not copied.
+- Preserved the three upstream localized About-text community contact updates from `con-wrappers`.
+- Removed the committed debug keystore and its copy step, added local/build artifact ignores, hardened permission callback handling against empty results, removed a developer-specific SDK path from `build.sh`, and made the native workflow path/environment driven.
+- Updated CI to build on `android-fixes` and upload `bin/srceng-debug.apk` as an artifact. The repository currently reports zero Actions runs for this branch; no successful build has been verified yet.
+- **Still open:** validate every relevant file/call-site on the integrated tree; check script executable modes and dependency/toolchain compatibility; run CI or a clean build; fix any actual failures; only then close Stage 0.
