@@ -63,7 +63,9 @@ public final class StorageAccess {
                     && !canonicalCandidate.startsWith(canonicalBase + File.separator)) return null;
             if (!candidate.isDirectory() || !candidate.canRead() || !candidate.canWrite()) return null;
             return canonicalCandidate;
-        } catch (IOException | SecurityException e) {
+        } catch (IOException e) {
+            return null;
+        } catch (SecurityException e) {
             return null;
         }
     }
