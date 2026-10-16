@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status:** Stages 0–3 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Stage 4 storage implementation is in review. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
+> **Roadmap status:** Stages 0–3 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Stage 4 storage implementation is merged; physical-device acceptance remains pending. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
 
 ## 1. Product goal
 
@@ -76,6 +76,7 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] Support primary shared storage and local removable SD/USB volumes only when the Android external-storage document provider maps the tree to a canonical, readable and writable filesystem path. Android 17–20 retain a constrained primary-storage browser because SAF tree selection is unavailable there.
 - [x] Bridge SAF to the engine's real-path requirement conservatively: only accept `com.android.externalstorage.documents` tree URIs with validated volume/document IDs and canonical-path containment. Generic cloud/document providers are rejected; the engine is never given a `content://` URI as if it were a filesystem path.
 - [x] Normalize selected paths and trailing separators; handle spaces/non-ASCII as ordinary Java path strings; recheck directory readability/writability, persisted grants, mounted removable volume state, and clear revoked/disconnected/read-only selections with actionable messages.
+- [x] **CI acceptance:** PR [#7](https://github.com/majd7772233-a11y/Source-Engine/pull/7) merged as `de4de87043539facd5ed25c88ab4398e3e9142c8`. Run [38982919788](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38982919788) passed Stage 0–4 checks, native compilation, Ant Java compilation/packaging, APK identity/ABI/dependency verification, and artifact upload. APK: 56,539,061 bytes; SHA-256 `71403db3618200d55e3996da601b936466961eefccdb9ea388f993b11eab3f92`; artifact [12081817272](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38982919788/artifacts/12081817272), expires 2026-10-30.
 - [ ] **Device acceptance pending:** install the APK on Android 5+ and Android 4.2–4.4 where available; verify internal-storage selection, SD/USB selection on a device that exposes it, app process restart and persisted grant, permission revocation, read-only media, and volume removal/reconnect. CI cannot simulate the platform document provider or real removable media.
 
 ### Stage 5 — Launcher information architecture and core UX
