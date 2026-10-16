@@ -45,10 +45,11 @@ public final class GameDiscovery {
         public final String status;
         public final String detail;
         public final boolean launchable;
+        public final boolean optionalContentAvailable;
         public final long lastLaunched;
 
         GameEntry(String path, String launchRoot, String directoryName, String displayName,
-                  String status, String detail, boolean launchable, long lastLaunched) {
+                  String status, String detail, boolean launchable, boolean optionalContentAvailable, long lastLaunched) {
             this.path = path;
             this.launchRoot = launchRoot;
             this.directoryName = directoryName;
@@ -56,6 +57,7 @@ public final class GameDiscovery {
             this.status = status;
             this.detail = detail;
             this.launchable = launchable;
+            this.optionalContentAvailable = optionalContentAvailable;
             this.lastLaunched = lastLaunched;
         }
     }
@@ -147,6 +149,7 @@ public final class GameDiscovery {
         if (displayName == null || displayName.trim().length() == 0) {
             displayName = gameDir.getName();
         }
+        boolean optionalContent = hasOptionalContent(children);
         boolean abiSupported = supportsPackagedAbi();
         boolean nativeRuntimeAvailable = hasNativeRuntime(context);
         boolean launchable = hasInfo && validInfo && hasContent && abiSupported && nativeRuntimeAvailable;
@@ -175,7 +178,7 @@ public final class GameDiscovery {
         SharedPreferences preferences = context.getSharedPreferences(PREFS, 0);
         long last = preferences.getLong(LAST_LAUNCHED_PREFIX + path, 0L);
         return new GameEntry(path, launchRoot, gameDir.getName(), displayName,
-                status, detail, launchable, last);
+                status, detail, launchable, optionalContent, last);
     }
 
     private static boolean validateGameInfo(File file) {
@@ -195,8 +198,54 @@ public final class GameDiscovery {
         } finally {
             if (reader != null) try { reader.close(); } catch (IOException ignored) { }
         }
-        String text = content.toString();
-        return text.indexOf('{') >= 0 && text.lastIndexOf('}') > text.indexOf('{');
+        return hasBalancedKeyValues(content.toString());
+    }
+
+    private static boolean hasBalancedKeyValues(String text) {
+        int depth = 0;
+        boolean quoted = false;
+        boolean escaped = false;
+        boolean comment = false;
+        boolean sawBrace = false;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (comment) {
+                if (c == '\n' || c == '\r') comment = false;
+                continue;
+            }
+            if (quoted) {
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == '"') quoted = false;
+                continue;
+            }
+            if (c == '/' && i + 1 < text.length() && text.charAt(i + 1) == '/') {
+                comment = true;
+                i++;
+            } else if (c == '"') {
+                quoted = true;
+            } else if (c == '{') {
+                depth++;
+                sawBrace = true;
+            } else if (c == '}') {
+                depth--;
+                if (depth < 0) return false;
+                sawBrace = true;
+            }
+        }
+        return sawBrace && !quoted && depth == 0;
+    }
+
+    private static boolean hasOptionalContent(File[] children) {
+        String[] optionalDirectories = new String[] { "custom", "addons", "workshop" };
+        for (String name : optionalDirectories) {
+            File candidate = findChildIgnoreCase(children, name);
+            if (candidate != null && candidate.isDirectory() && candidate.canRead()) {
+                File[] contents = candidate.listFiles();
+                if (contents != null && contents.length > 0) return true;
+            }
+        }
+        return false;
     }
 
     private static String readTitle(File file) {
