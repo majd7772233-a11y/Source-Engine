@@ -36,9 +36,11 @@ jobs:
           set -euo pipefail
           git clone --depth 1 https://gitlab.com/LostGamer/ndk-binaries.git ndk-binaries
           git clone --depth 1 https://gitlab.com/LostGamer/android-sdk.git android-sdk
-          git clone https://github.com/nillerusr/srcsdk.git srcsdk
-          git -C srcsdk checkout --detach "$SOURCE_SDK_COMMIT"
-          git -C srcsdk submodule update --init --recursive
+          git init srcsdk
+          git -C srcsdk remote add origin https://github.com/nillerusr/srcsdk.git
+          git -C srcsdk fetch --depth 1 origin "$SOURCE_SDK_COMMIT"
+          git -C srcsdk checkout --detach FETCH_HEAD
+          git -C srcsdk submodule update --init --recursive --depth 1
           {
             echo "NDK_BINARIES_COMMIT=$(git -C ndk-binaries rev-parse HEAD)"
             echo "ANDROID_SDK_COMMIT=$(git -C android-sdk rev-parse HEAD)"
