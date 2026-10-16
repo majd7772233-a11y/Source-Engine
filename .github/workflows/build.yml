@@ -40,6 +40,8 @@ jobs:
 
       - name: Build native libraries and Android APK
         env:
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
           COMMIT: ${{ github.sha }}
           DEPLOY_BRANCH: ${{ github.ref_name }}
         run: |

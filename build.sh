@@ -22,7 +22,7 @@ command -v ant >/dev/null 2>&1 || { echo "ERROR: Apache Ant is not installed or 
   exit 2
 }
 
-ant clean debug
+ant -Dsdk.dir="$ANDROID_HOME" clean debug
 [[ -s "$ROOT_DIR/bin/srceng-debug.apk" ]] || {
   echo "ERROR: Ant finished without producing bin/srceng-debug.apk." >&2
   exit 1

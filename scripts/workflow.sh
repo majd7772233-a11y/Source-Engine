@@ -17,6 +17,10 @@ done
 command -v make >/dev/null 2>&1 || { echo "ERROR: make is required." >&2; exit 2; }
 command -v ant >/dev/null 2>&1 || { echo "ERROR: Apache Ant is required." >&2; exit 2; }
 command -v java >/dev/null 2>&1 || { echo "ERROR: Java is required." >&2; exit 2; }
+[[ -f "$ANDROID_HOME/tools/ant/build.xml" ]] || {
+  echo "ERROR: ANDROID_HOME='$ANDROID_HOME' does not contain tools/ant/build.xml required by this legacy Ant project." >&2
+  exit 2
+}
 
 build() {
   local dir="$1" library="$2"
@@ -50,7 +54,7 @@ build "srcsdk/vinterface_wrapper/server" "libserver.so"
 generate_resources
 mkdir -p "$HOME/.android"
 # Let the Android tools create/use the local debug key; never copy a repository key into the user's signing directory.
-ant debug
+ant -Dsdk.dir="$ANDROID_HOME" debug
 [[ -s "$ROOT_DIR/bin/srceng-debug.apk" ]] || { echo "ERROR: Expected APK was not produced." >&2; exit 1; }
 printf '%s' "$COMMIT" > "$ROOT_DIR/version"
 echo "Build succeeded: $ROOT_DIR/bin/srceng-debug.apk"
