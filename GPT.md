@@ -41,7 +41,7 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 ## 4. Required working rules
 
 1. **Execute directly.** The user strongly dislikes unnecessary discussion, repeated confirmations, and delaying execution. When asked to implement a stage, inspect the current repository and carry out the entire stage before reporting back.
-2. **A stage means all of it.** Complete every bullet and acceptance criterion in `ROADMAP.md`; do not return halfway through a stage or silently defer subparts.
+2. **A stage means all of it — no partial hand-off.** Complete every bullet and acceptance criterion in `ROADMAP.md` before reporting completion. If an audit reveals a missing item, fix or finish it immediately as part of the same stage; never merely list it as remaining work, never call a partial implementation complete, and never substitute explanations for repository changes.
 3. **Always re-read this file and ROADMAP.md first**, then inspect the current branch/latest commit and compare with previous work. Do not redo finished work or assume previous notes are still accurate without checking.
 4. **Code is the source of truth.** Inspect actual files, references, call chains, resource IDs, native interfaces, scripts, workflow behavior, and branch differences. Keep the roadmap synchronized with the implementation.
 5. **Branch consolidation must preserve working code.** Compare `android-fixes`, `con-wrappers`, and `test` file by file. Preserve unique native code, shared libraries, SDL files, resources, and scripts when they are needed. Resolve conflicts semantically; do not blindly copy one branch over another or discard large directories.
@@ -76,9 +76,12 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 
 ## 6. Current phase hand-off
 
-- Active task: finish Stage 0 in `ROADMAP.md`. A curated integration commit has been created on `android-fixes` with `con-wrappers` and `test` as additional parents. Canonical application ID is now `com.magd.source.engine`; build scripts, workflow, ignore rules, and debug-keystore handling have been normalized. Do not call Stage 0 complete until a clean build/CI result and the remaining file-level checks are verified.
-- Required outcome before Stage 1: one canonical integrated tree with its branch provenance understood, package references consistent, build instructions and workflow aligned, and every unresolved build blocker documented.
-- Do not mark Stage 0 complete until its full acceptance criteria are checked. The initial inspection and curated merge are not a substitute for verifying every relevant call site and running the build. At the last check, GitHub Actions had zero runs for `android-fixes`.
+- Active task: finish Stage 0 in `ROADMAP.md`. The canonical branch is `android-fixes`; all maintained branches (`android-fixes`, `con-wrappers`, `test`, and `stage0-build-validation`) are synchronized to the same tree.
+- The native build and Ant APK packaging succeeded in GitHub Actions run [38937163563](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38937163563) on implementation commit `5116d037a074e3c15652e465a3224576767e3b41`; the `source-engine-android-debug` artifact was uploaded. This verifies a clean CI APK build, not installation or launch on a physical device.
+- Fixed the SDK path mismatch by explicitly selecting the cloned legacy Android SDK, installed the 32-bit runtime libraries needed by its old `aapt`, and made both build entry points generate `res/values/build_info.xml`.
+- The next candidate commit adds repeatable Stage 0 source/manifest/shell validation and APK package/native-library inspection, plus a top-level README. Keep Stage 0 open until those checks pass on the final candidate commit and update the roadmap with observed results only.
+- Required outcome before Stage 1: one documented canonical branch containing the curated code from the three source branches, consistent application identity, validated build scripts and workflow, successful CI APK and artifact checks, and an explicit list of remaining cross-stage defects.
+- Do not claim device runtime validation: no physical-device installation/launch smoke test was run during Stage 0.
 
 ## 7. Dated engineering log
 
@@ -114,3 +117,10 @@ Use this section for new observations that do not yet fit another heading. Date 
 - The canonical tree was committed as a curated multi-parent integration commit, then all branch refs were fast-forwarded (or lease-updated for the temporary validation ref) to the same final commit: `5daf4cb07129bbbf40119169097ca148d4bdd813`.
 - Current refs checked: `android-fixes`, `con-wrappers`, `test`, and `stage0-build-validation` all resolve to that same SHA. The temporary validation PR was closed because GitHub Actions returned zero runs; its roadmap clarification was applied directly to the canonical branch.
 - This synchronization does not mean CI or runtime behavior has passed. Stage 0 remains open until a real build/CI result and remaining file-level checks are available.
+
+
+### 2026-10-16 — Stage 0 CI build fixed and verified
+- Initial live CI attempts exposed two real build failures: Ant imported the runner's unrelated `/usr/local/lib/android/sdk` instead of the cloned legacy SDK, then legacy `aapt` failed to load `libz.so.1` on Ubuntu 24.04.
+- Fixed the selected SDK path in the workflow and Ant invocations, added a fail-fast SDK Ant-build-file check, installed required 32-bit runtime packages, and made root `build.sh` generate the build metadata resources it needs.
+- GitHub Actions run `38937163563` completed successfully on `5116d037a074e3c15652e465a3224576767e3b41`; native library compilation, APK packaging, and artifact upload all passed. The uploaded artifact is named `source-engine-android-debug`.
+- A final verification candidate adds source/package/shell checks and validates the APK's manifest package and required ARMv7 native libraries. Its CI result must be inspected before Stage 0 is marked complete.

@@ -20,6 +20,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Verify Stage 0 source, manifest, and shell consistency
+        run: bash scripts/verify-stage0.sh
+
       - name: Set up Java 8 for the legacy Ant/NDK build
         uses: actions/setup-java@v4
         with:
@@ -47,6 +50,16 @@ jobs:
         run: |
           bash scripts/workflow.sh
           test -s bin/srceng-debug.apk
+          AAPT="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name aapt | sort -V | tail -n 1)"
+          test -n "$AAPT"
+          "$AAPT" dump badging bin/srceng-debug.apk | grep -F "package: name='com.magd.source.engine'"
+          APK_FILES="$(unzip -Z1 bin/srceng-debug.apk)"
+          for library in libtierhook.so libmain.so libRegal.so libclient.so libserver.so; do
+            printf '%s\n' "$APK_FILES" | grep -Fx "lib/armeabi-v7a/$library" >/dev/null || {
+              echo "Missing expected native library in APK: $library" >&2
+              exit 1
+            }
+          done
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

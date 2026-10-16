@@ -1,0 +1,60 @@
+# Source Engine for Android
+
+An Android launcher and native-runtime integration for compatible Source-engine games. This repository is **not** a complete game-content distribution: users must supply game files they are legally entitled to use. Installing the APK does not install Half-Life 2, Portal, VPK files, or other proprietary game assets.
+
+## Project status
+
+- Canonical branch: `android-fixes`.
+- Android application ID: `com.magd.source.engine`.
+- Build system: legacy Android Ant/ADT project targeting Android API 29; minimum declared API 17.
+- Current native build output is for **ARMv7 / `armeabi-v7a`**. Do not assume 64-bit ABI support.
+- A clean GitHub Actions build produced `bin/srceng-debug.apk` and uploaded the `source-engine-android-debug` artifact in [run 38937163563](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38937163563).
+- This CI result verifies compilation and packaging only. It does **not** establish that every game works or that the APK has been installed/launched on a physical device.
+
+## Build
+
+### Option A — Package the checked-in native libraries
+
+Requirements:
+- Java 8
+- Apache Ant
+- An Android SDK compatible with this legacy Ant project, including `tools/ant/build.xml` and the API/build tools required by `project.properties`
+
+Set `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) to that SDK, then run:
+
+```bash
+bash build.sh
+```
+
+The script generates `res/values/build_info.xml`, runs `ant clean debug`, and verifies that `bin/srceng-debug.apk` exists and is non-empty. `bash scripts/build-java.sh` is a compatibility entry point for the same build.
+
+### Option B — Rebuild native libraries and package the APK
+
+The full native workflow also requires the legacy NDK toolchain in `ndk-binaries/`, the compatible Android SDK in `android-sdk/`, and the Source SDK checkout/submodules in `srcsdk/`. With these checkouts prepared, run:
+
+```bash
+bash scripts/workflow.sh
+```
+
+This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrapper libraries before invoking Ant. GitHub Actions prepares these external checkouts automatically. External dependency revisions are currently not pinned; deterministic dependency pinning is tracked for Stage 1.
+
+## Repository map
+
+- `src/` — Java launcher, directory picker, update classes, Valve startup glue, and SDL Android integration.
+- `res/` — Android resources.
+- `libs/armeabi-v7a/` — native libraries packaged for ARMv7.
+- `jni/src/tierhook/` — tierhook native build.
+- `build.xml`, `project.properties`, `build.sh` — legacy Ant build configuration and local entry point.
+- `scripts/workflow.sh` — full native-library and APK build.
+- `scripts/verify-stage0.sh` — source/manifest/package/shell preflight checks.
+- `.github/workflows/build.yml` — CI build and debug APK artifact upload.
+- `ROADMAP.md` — staged implementation plan and acceptance criteria.
+- `GPT.md` — persistent engineering notes and execution rules.
+
+## Known limitations and next work
+
+- The project still uses the legacy Ant/Android SDK build system and an old NDK toolchain.
+- CI dependencies are cloned from external repositories; pinning and auditing exact revisions is planned for Stage 1.
+- A successful APK build is not proof of game compatibility, storage behavior, performance, or runtime stability.
+- The launcher currently retains legacy game discovery and storage-picker behavior; these are tracked in the roadmap.
+- Use the roadmap's acceptance criteria before advertising support for a game, ABI, input mode, or online feature.
