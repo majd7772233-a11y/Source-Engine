@@ -54,7 +54,7 @@
     <string name="srceng_library_removed">Game removed from the library. Scan the folder again to rediscover it.</string>
     <string name="srceng_library_no_candidates">No candidate game folders found. A candidate needs gameinfo.txt or recognizable Source game assets.</string>
     <string name="srceng_library_compatibility">Ready to try does not guarantee game/mod compatibility.</string>
-    <string name="srceng_library_use_help">Selects this game's folder and launch path.</string>
+    <string name="srceng_library_use_help">Selects this game\\'s folder and launch path.</string>
     <string name="srceng_library_status_missing_info">Missing gameinfo.txt</string>
     <string name="srceng_library_detail_missing_info">This folder has game-like assets but no readable gameinfo.txt.</string>
     <string name="srceng_library_status_invalid_info">Invalid game metadata</string>
