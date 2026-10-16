@@ -69,4 +69,7 @@
     <string name="srceng_library_status_native_missing">Native runtime unavailable</string>
     <string name="srceng_library_detail_native_missing">Required native engine libraries were not found in the installed app. Reinstall a valid build.</string>
     <string name="srceng_library_scanning">Scanning game folders…</string>
+    <string name="srceng_library_optional_found">Optional content: detected</string>
+    <string name="srceng_library_optional_none">Optional content: none detected</string>
+    <string name="srceng_library_count">Ready to try: %1$d of %2$d candidates</string>
 </resources>
