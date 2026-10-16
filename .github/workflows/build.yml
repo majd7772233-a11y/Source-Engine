@@ -21,6 +21,7 @@ jobs:
           bash scripts/verify-stage0.sh
           bash scripts/verify-stage1.sh
           bash scripts/verify-stage2.sh
+          bash scripts/verify-stage3.sh
       - name: Set up Java 8 for the legacy Ant/NDK build
         uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
         with:
