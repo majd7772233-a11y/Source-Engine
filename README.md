@@ -40,7 +40,7 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 
 ## Repository map
 
-- `src/` — Java launcher, directory picker, update classes, Valve startup glue, and SDL Android integration.
+- `src/` — Java launcher, bounded game discovery/library, directory picker, update classes, Valve startup glue, and SDL Android integration.
 - `res/` — Android resources.
 - `libs/armeabi-v7a/` — native libraries packaged for ARMv7.
 - `jni/src/tierhook/` — tierhook native build.
@@ -61,5 +61,6 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 - The project still uses the legacy Ant/Android SDK build system and an old NDK toolchain.
 - The project still depends on legacy external SDK/NDK repositories. Their exact source revisions are pinned, but the legacy toolchain remains old and no physical-device/game-runtime validation has been performed.
 - A successful APK build is not proof of game compatibility, storage behavior, performance, or runtime stability.
-- Startup now validates the configured game folder and `gameinfo.txt`, forwards current launch arguments/environment explicitly, and reports missing runtime data with actionable errors. Game discovery, SAF/removable-media handling, and device-level game-session verification remain future work.
+- The launcher now scans registered folders for game/mod candidates, shows metadata/assets/ABI/native-runtime readiness, persists the library and last-launch times, and allows selecting, launching, removing, and rescanning entries. Discovery uses filesystem heuristics and does not prove game/mod compatibility.
+- Startup validates the selected game folder and `gameinfo.txt`, forwards current launch arguments/environment explicitly, and reports missing runtime data with actionable errors. SAF/removable-media handling and device-level game-session verification remain unverified.
 - Use the roadmap's acceptance criteria before advertising support for a game, ABI, input mode, or online feature.

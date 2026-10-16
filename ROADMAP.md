@@ -64,12 +64,13 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] **Runtime acceptance still unverified:** a lawful, complete compatible game installation and physical Android device are not available to CI. CI can verify Java compilation, APK packaging, static lifecycle guards, and artifact integrity, but cannot honestly prove in-game launch, background/resume behavior, or repeated launch behavior on a device. Do not mark runtime behavior as device-tested until the checklist in Stage 11 is run.
 
 ### Stage 3 — Game discovery and content validation
-- [ ] Replace assumptions that only `hl2` exists with a data-driven scanner for candidate game directories and their `gameinfo.txt` files.
-- [ ] Make scanning bounded, null-safe, permission-aware, case-tolerant, and resistant to unreadable directories and malformed content.
-- [ ] Distinguish a game root, a game/mod directory, engine support, required assets, and optional content. Do not show a game as launchable until required files and native support are validated.
-- [ ] Add a library view with game name, detected status, path, icon/art where available, last launch, and useful empty/error states. No hard-coded list of four games as a substitute for detection.
-- [ ] Acceptance: valid supported games/mods are discovered; unsupported or incomplete folders are explained; rescans and removal/update of paths work without stale entries.
-
+- [x] Replace assumptions that only `hl2` exists with a data-driven scanner for candidate game directories and their `gameinfo.txt` files.
+- [x] Make scanning bounded, null-safe, permission-aware, case-tolerant, and resistant to unreadable directories and malformed content.
+- [x] Distinguish a game root, a game/mod directory, engine support, required assets, and optional content. Do not show a game as launchable until required files and native support are validated.
+- [x] Add a library view with game name, detected status, path, icon/art where available, last launch, and useful empty/error states. No hard-coded list of four games as a substitute for detection.
+- [x] Acceptance implementation: discovered entries are data-driven; incomplete/unsupported candidates explain why they cannot launch; required VPK/BSP markers and optional content folders are distinguished; rescans rebuild the library from registered roots, removed entries remain hidden until the user explicitly scans their root again, and missing/stale paths are discarded.
+- **Runtime acceptance note:** physical-device validation with multiple real game/mod folder layouts remains necessary before claiming every valid game is discovered or that engine compatibility is proven. The UI labels readiness as “Ready to try” and explicitly does not guarantee compatibility.
+ 
 ### Stage 4 — Storage permissions, removable media, and path reliability
 - [ ] Replace unreliable `/storage/` guessing and broad `java.io.File` browsing with Android Storage Access Framework where appropriate; persist URI grants and revalidate them.
 - [ ] Support internal shared storage, user-selected folders, and removable SD/USB storage only where Android/device permissions actually allow it. Never imply the app can bypass scoped storage.
@@ -164,6 +165,7 @@ Update this ledger at the end of every stage with commit SHA, files changed, che
 - **Stage 1:** **Complete** — canonical Stage 1 commit `96092dbfc7f030d643125505dbd51c36e2cb3145`; CI run [38973176340](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38973176340) passed on the canonical branch. Immutable dependency locks, hardened build scripts, APK verification, and success-gated artifact upload are in place.
 - **Stage 2 implementation:** merged by PR [#5](https://github.com/majd7772233-a11y/Source-Engine/pull/5), merge commit `98dfe6f894bc17a685d766379ab9e6158e788d7a`. CI run [38976380349](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38976380349) passed source/shell checks, all Stage 2 static assertions, native compilation, APK packaging, APK validation, and artifact upload. Files changed: `LauncherActivity.java`, `ValveActivity2.java`, `ExtractAssets.java`, `SDLActivity.java`, `res/values/strings.xml`, `scripts/verify-stage2.sh`, `.github/workflows/build.yml`, `README.md`, `ROADMAP.md`, and `GPT.md`.
 - **Stage 2 runtime acceptance:** **Pending device verification**, not falsely marked complete. No physical Android device or complete lawful game installation was available to this CI run; actual gameplay launch, pause/resume, and repeated-session behavior must still be exercised on-device. The code and build pipeline are merged; keep this explicit runtime limitation visible.
+- **Stage 3 implementation:** implemented on branch `stage3-game-discovery`; CI verification and merge are pending. New bounded scanner/library UI, readiness validation, last-launch persistence, path removal/hiding, stale-path cleanup, and Stage 3 static verifier are recorded in the working log. Physical-device folder-layout acceptance remains unverified.
 
 
 ### Stage 0 execution log — 2026-10-16
