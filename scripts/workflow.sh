@@ -42,12 +42,10 @@ generate_resources() {
 
 build "jni/src/tierhook" "libtierhook.so"
 
-cd "$ROOT_DIR/srcsdk"
-build "main" "libmain.so"
-build "gl4es" "libRegal.so"
-build "vinterface_wrapper/client" "libclient.so"
-build "vinterface_wrapper/server" "libserver.so"
-cd "$ROOT_DIR"
+build "srcsdk/main" "libmain.so"
+build "srcsdk/gl4es" "libRegal.so"
+build "srcsdk/vinterface_wrapper/client" "libclient.so"
+build "srcsdk/vinterface_wrapper/server" "libserver.so"
 
 generate_resources
 mkdir -p "$HOME/.android"
