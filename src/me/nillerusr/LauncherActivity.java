@@ -481,7 +481,7 @@ public class LauncherActivity extends Activity {
 		GameDiscovery.GameEntry selectedEntry = GameDiscovery.inspectPath(this, new File(root, selectedDirectory).getPath());
 		if (selectedEntry == null || !selectedEntry.launchable) {
 			String reason = selectedEntry == null
-					? "The selected folder was not recognized as a Source game with readable metadata and required assets."
+					? getString(R.string.srceng_library_unrecognized)
 					: selectedEntry.detail;
 			showStartupError(reason + "\n\n" + getString(R.string.srceng_library_compatibility));
 			return;
