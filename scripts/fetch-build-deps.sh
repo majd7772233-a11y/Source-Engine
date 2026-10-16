@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOCK_FILE="$ROOT_DIR/scripts/dependencies.lock"
 [[ -f "$LOCK_FILE" ]] || { echo "ERROR: Missing dependency lock: $LOCK_FILE" >&2; exit 2; }
 # The lock file is simple KEY=VALUE data maintained with the repository, not user input.
@@ -12,10 +12,8 @@ while IFS='=' read -r key value; do
   esac
   printf -v "$key" '%s' "$value"
 done < "$LOCK_FILE"
-for key in NDK_BINARIES_COMMIT ANDROID_SDK_COMMIT SOURCE_SDK_COMMIT; do
-  value="$(printenv "$key" 2>/dev/null || true)"
-  [[ -n "$value" ]] || eval "value=\${$key}"
-  [[ "$value" =~ ^[0-9a-f]{40}$ ]] || { echo "ERROR: $key must be a full 40-character commit SHA." >&2; exit 2; }
+for value in "$NDK_BINARIES_COMMIT" "$ANDROID_SDK_COMMIT" "$SOURCE_SDK_COMMIT"; do
+  [[ "$value" =~ ^[0-9a-f]{40}$ ]] || { echo "ERROR: Every dependency commit must be a full 40-character SHA." >&2; exit 2; }
 done
 fetch_one() {
   local name="$1" url="$2" sha="$3"
@@ -36,7 +34,7 @@ fetch_one srcsdk "$SOURCE_SDK_URL" "$SOURCE_SDK_COMMIT"
 git -C "$ROOT_DIR/srcsdk" submodule update --init --recursive --depth 1
 echo "Pinned Source SDK submodules:"
 git -C "$ROOT_DIR/srcsdk" submodule status --recursive
-if [[ -n "\${GITHUB_ENV:-}" ]]; then
+if [[ -n "${GITHUB_ENV:-}" ]]; then
   {
     printf 'NDK_BINARIES_COMMIT=%s\n' "$NDK_BINARIES_COMMIT"
     printf 'ANDROID_SDK_COMMIT=%s\n' "$ANDROID_SDK_COMMIT"
