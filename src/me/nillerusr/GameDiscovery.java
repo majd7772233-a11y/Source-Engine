@@ -152,20 +152,20 @@ public final class GameDiscovery {
         String status;
         String detail;
         if (!hasInfo) {
-            status = "Missing gameinfo.txt";
-            detail = "This folder has game-like assets but no readable gameinfo.txt.";
+            status = context.getString(R.string.srceng_library_status_missing_info);
+            detail = context.getString(R.string.srceng_library_detail_missing_info);
         } else if (!validInfo) {
-            status = "Invalid game metadata";
-            detail = "gameinfo.txt is empty, malformed, too large, or unreadable.";
+            status = context.getString(R.string.srceng_library_status_invalid_info);
+            detail = context.getString(R.string.srceng_library_detail_invalid_info);
         } else if (!hasContent) {
-            status = "Missing game assets";
-            detail = "Metadata exists, but no VPK archive or BSP map was found.";
+            status = context.getString(R.string.srceng_library_status_missing_assets);
+            detail = context.getString(R.string.srceng_library_detail_missing_assets);
         } else if (!abiSupported) {
-            status = "Unsupported device ABI";
-            detail = "This build contains ARMv7 native libraries; this device ABI is not supported.";
+            status = context.getString(R.string.srceng_library_status_unsupported_abi);
+            detail = context.getString(R.string.srceng_library_detail_unsupported_abi);
         } else {
-            status = "Ready to try";
-            detail = "Required metadata and asset markers found. Game compatibility is not guaranteed.";
+            status = context.getString(R.string.srceng_library_status_ready);
+            detail = context.getString(R.string.srceng_library_detail_ready);
         }
 
         SharedPreferences preferences = context.getSharedPreferences(PREFS, 0);
