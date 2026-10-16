@@ -23,6 +23,8 @@ checks = {
     "empty permission callback guarded": "grantResults==null||grantResults.length==0" in sdl,
     "specific gameinfo validation": 'new File(selected,"gameinfo.txt")' in valve,
     "null-safe directory listing": "File[] fs=d.listFiles();if(fs==null)return false;" in valve,
+    "native activity-result bridge preserved": "nativeOnActivityResult(Activity activity, int requestCode, int resultCode, Intent data)" in valve,
+    "legacy discovery helpers preserved": "public static boolean findGameinfo(String path)" in valve and "public static boolean isModGameinfoExists(String path)" in valve,
     "game directory traversal rejected": 'n.equals("..")||n.contains("/")||n.contains("\\\\")' in valve,
     "native init errors stop startup": "nativeInitError=ValveActivity2.initNatives(this,intent)" in sdl and "if(nativeInitError!=null)" in sdl,
     "VPK extraction returns success": "public static boolean extractVPK(Context context, boolean force)" in assets,
