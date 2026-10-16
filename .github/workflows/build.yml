@@ -1,36 +1,55 @@
-name: Build android package
+name: Android build
 
 on:
   push:
-    branches: [ con-wrappers ]
+    branches: [ android-fixes ]
   pull_request:
-    branches: [ con-wrappers ]
+    branches: [ android-fixes ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 90
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: |
-        sudo apt-get update
-        sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib python3-requests python3-pip
-        sudo pip3 install websocket-client
-        git clone --depth 1 https://gitlab.com/LostGamer/ndk-binaries
-        git clone --depth 1 https://gitlab.com/LostGamer/android-sdk
-        git clone --depth 1 https://github.com/nillerusr/srcsdk
-        cd srcsdk
-        git submodule init && git submodule update
-        cd ../
-        DEPLOY_BRANCH=srceng-old-port COMMIT=$(git rev-parse HEAD) scripts/workflow.sh
+      - name: Checkout canonical branch
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Upload files
-      shell: bash
-      env:
-        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-        GH_TOKEN: ${{ secrets.API_GITHUB_TOKEN }}
-      run: |
-        DEPLOY_BRANCH=srceng-old-port scripts/upload-to-github.sh bin/srceng-debug.apk version
-        CHANNEL_ID=801092155090927626 python3 scripts/send-to-discord.py "Commits history: https://github.com/nillerusr/srceng-android/commits/con-wrappers\nBuild: https://github.com/nillerusr/srceng-deploy/\nBuild finished at: $(date +%Y-%m-%d-%H:%M)"
+      - name: Set up Java 8 for the legacy Ant/NDK build
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
 
+      - name: Install build utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make ant ant-contrib python3 python3-pip
+
+      - name: Fetch required SDK, NDK toolchain, and Source SDK
+        run: |
+          git clone --depth 1 https://gitlab.com/LostGamer/ndk-binaries
+          git clone --depth 1 https://gitlab.com/LostGamer/android-sdk
+          git clone --depth 1 https://github.com/nillerusr/srcsdk
+          git -C srcsdk submodule update --init --recursive
+
+      - name: Build native libraries and Android APK
+        env:
+          COMMIT: ${{ github.sha }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+        run: |
+          bash scripts/workflow.sh
+          test -s bin/srceng-debug.apk
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-engine-android-debug
+          path: bin/srceng-debug.apk
+          if-no-files-found: error
+          retention-days: 14
