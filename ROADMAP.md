@@ -55,11 +55,13 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] Acceptance: clean checkout builds and verifies the APK in CI; APK contains the expected Java resources and all 35 packaged ARMv7 ELF libraries passed architecture/dependency checks; artifact upload occurs only after success. Passed in run `38972677450` on commit `ba054a72c3e74bc3b41fce6579f1f13f4611ed49`. Physical-device/game-runtime testing remains outside this acceptance gate.
 
 ### Stage 2 — Startup, lifecycle, and crash-free launch
-- [ ] Trace launcher button → intent extras/preferences → SDL activity → `ValveActivity2` native initialization → engine entry point.
-- [ ] Fix lost or stale intent values, null/empty values, activity recreation, background/resume, orientation changes, repeated taps, and returning from a game.
-- [ ] Replace silent exceptions and unhelpful native-start failures with actionable diagnostics and safe recovery.
-- [ ] Validate initialization order for environment variables, VPK extraction, app/native library paths, and game path.
-- [ ] Acceptance: valid content launches; invalid/missing content returns to a usable launcher with a clear explanation; repeated launch/resume does not duplicate or corrupt sessions.
+- [x] Trace launcher button → intent extras/preferences → SDL activity → `ValveActivity2` native initialization → SDL native thread. Launcher now forwards the current game path, arguments, and environment values explicitly instead of relying only on saved preferences.
+- [x] Fix empty/unreadable game-root handling, game-directory traversal values, null directory listings, stale launch values, duplicate launch taps, and failure to re-enable Launch after returning to the launcher.
+- [x] Fix Android API compatibility for runtime permission checks before API 23; reject empty permission results safely. Failed startup dialogs now explain the missing path/game metadata or native-data failure.
+- [x] Make VPK extraction report success/failure, close streams, flush and sync output, verify a non-empty file, and persist the extraction version only after the write succeeds.
+- [x] Apply validated user environment overrides before required runtime variables; protect reserved engine paths, check native `setenv` results, validate optional VPK paths, and report native initialization failures rather than continuing with incomplete configuration.
+- [x] Ensure SDL static lifecycle state is reset after both successful shutdown and failed startup; handle repeated `singleTask` intents without silently changing an already-running native session. Existing pause/resume and configuration-change hooks were traced; manifest already declares SDL-handled orientation/configuration changes.
+- [ ] **Runtime acceptance still unverified:** a lawful, complete compatible game installation and physical Android device are not available to CI. CI can verify Java compilation, APK packaging, static lifecycle guards, and artifact integrity, but cannot honestly prove in-game launch, background/resume behavior, or repeated launch behavior on a device. Do not mark runtime behavior as device-tested until the checklist in Stage 11 is run.
 
 ### Stage 3 — Game discovery and content validation
 - [ ] Replace assumptions that only `hl2` exists with a data-driven scanner for candidate game directories and their `gameinfo.txt` files.

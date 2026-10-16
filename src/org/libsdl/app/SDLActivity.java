@@ -531,6 +531,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "onDestroy()");
 
         if (SDLActivity.mBrokenLibraries) {
+           // Failed startup must not poison the next launch through static SDL state.
+           mSDLThread = null;
+           mSurface = null;
+           mLayout = null;
+           mClipboardHandler = null;
+           mSingleton = null;
+           mIsInitCalled = false;
+           mIsResumedCalled = false;
+           mHasFocus = false;
            super.onDestroy();
            return;
         }
