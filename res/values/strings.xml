@@ -38,4 +38,21 @@
     <string name="srceng_launcher_error_invalid_path">The selected game folder does not exist or cannot be read:\n%1$s\nSelect the folder containing your game files.</string>
     <string name="srceng_launcher_error_start_failed">The game activity could not be started:\n%1$s\nCheck Android logs if the problem persists.</string>
     <string name="srceng_launcher_error_permission_result">Android returned no permission result. Reopen the app and grant the requested permissions before launching.</string>
+    <string name="srceng_library_title">Game library</string>
+    <string name="srceng_library_scan_current">Scan current folder</string>
+    <string name="srceng_library_rescan">Rescan library</string>
+    <string name="srceng_library_empty">No game folders found yet. Choose a folder containing your Source game files, then scan it.</string>
+    <string name="srceng_library_scan_invalid">The selected scan folder does not exist or cannot be read.</string>
+    <string name="srceng_library_scan_done">Scan complete. Found %1$d candidate folders.</string>
+    <string name="srceng_library_use">Use</string>
+    <string name="srceng_library_play">Launch</string>
+    <string name="srceng_library_remove">Remove</string>
+    <string name="srceng_library_path">Path: %1$s</string>
+    <string name="srceng_library_last_never">Last launched: Never</string>
+    <string name="srceng_library_last">Last launched: %1$s</string>
+    <string name="srceng_library_selected">Selected game: %1$s</string>
+    <string name="srceng_library_removed">Game removed from the library. Scan the folder again to rediscover it.</string>
+    <string name="srceng_library_no_candidates">No candidate game folders found. A candidate needs gameinfo.txt or recognizable Source game assets.</string>
+    <string name="srceng_library_compatibility">Ready to try does not guarantee game/mod compatibility.</string>
+    <string name="srceng_library_use_help">Selects this game's folder and launch path.</string>
 </resources>
