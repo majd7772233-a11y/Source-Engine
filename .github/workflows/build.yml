@@ -29,7 +29,7 @@ jobs:
       - name: Install build utilities
         run: |
           sudo apt-get update
-          sudo apt-get install -y make ant ant-contrib python3 python3-pip
+          sudo apt-get install -y make ant ant-contrib python3 python3-pip lib32z1 lib32stdc++6 lib32ncurses6
 
       - name: Fetch required SDK, NDK toolchain, and Source SDK
         run: |
