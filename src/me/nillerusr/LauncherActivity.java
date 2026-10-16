@@ -514,16 +514,18 @@ public class LauncherActivity extends Activity {
 	{
 		if (launchInProgress) return;
 		String gamepath = GamePath == null ? "" : GamePath.getText().toString().trim();
+		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
+		gamepath = canonicalPath(gamepath);
 		if (Build.VERSION.SDK_INT >= 21) {
-			String savedTree = StorageAccess.getValidatedSelectedPath(this);
 			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
-			if (expectedTree != null && savedTree == null) {
+			boolean relatedToSavedTree = expectedTree != null && (gamepath.equals(expectedTree)
+					|| gamepath.startsWith(expectedTree + File.separator)
+					|| expectedTree.startsWith(gamepath + File.separator));
+			if (relatedToSavedTree && StorageAccess.getValidatedSelectedPath(this) == null) {
 				showStartupError(getString(R.string.srceng_storage_revoked));
 				return;
 			}
 		}
-		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
-		gamepath = canonicalPath(gamepath);
 		if (GamePath != null) GamePath.setText(gamepath);
 		File root = new File(gamepath);
 		if (!root.isDirectory() || !root.canRead()) { showStartupError(getString(R.string.srceng_launcher_error_invalid_path, gamepath)); return; }
