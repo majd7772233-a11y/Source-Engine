@@ -40,7 +40,7 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 
 ## Repository map
 
-- `src/` — Java launcher, bounded game discovery/library, directory picker, update classes, Valve startup glue, and SDL Android integration.
+- `src/` — Java launcher, bounded game discovery/library, SAF-aware storage picker/path bridge, update classes, Valve startup glue, and SDL Android integration.
 - `res/` — Android resources.
 - `libs/armeabi-v7a/` — native libraries packaged for ARMv7.
 - `jni/src/tierhook/` — tierhook native build.
@@ -48,6 +48,7 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 - `scripts/workflow.sh` — full native-library and APK build.
 - `scripts/verify-stage0.sh` — source/manifest/package/shell preflight checks.
 - `scripts/verify-stage1.sh` — build-pipeline static integrity checks.
+- `scripts/verify-stage4.sh` — SAF grant, removable-media, path-normalization, and launcher hand-off checks.
 - `scripts/verify-apk.sh` — APK package, native ABI/ELF/dependency, archive, and checksum verification.
 - `scripts/dependencies.lock` — immutable full commit SHAs for the legacy NDK, Android SDK, and Source SDK repositories.
 - `scripts/fetch-build-deps.sh` — fetches only the locked commits and checks out pinned Source SDK submodules.
@@ -62,5 +63,5 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 - The project still depends on legacy external SDK/NDK repositories. Their exact source revisions are pinned, but the legacy toolchain remains old and no physical-device/game-runtime validation has been performed.
 - A successful APK build is not proof of game compatibility, storage behavior, performance, or runtime stability.
 - The launcher now scans registered folders for game/mod candidates, shows metadata/assets/ABI/native-runtime readiness, persists the library and last-launch times, and allows selecting, launching, removing, and rescanning entries. Discovery uses filesystem heuristics and does not prove game/mod compatibility.
-- Startup validates the selected game folder and `gameinfo.txt`, forwards current launch arguments/environment explicitly, and reports missing runtime data with actionable errors. SAF/removable-media handling and device-level game-session verification remain unverified.
+- Startup validates the selected game folder and `gameinfo.txt`, forwards current launch arguments/environment explicitly, and reports missing runtime data with actionable errors. Stage 4 adds SAF tree selection and persisted-grant checks; the native engine still requires a real filesystem path, so only readable/writable local external-storage-provider paths are accepted. Generic cloud/document providers and inaccessible/read-only/disconnected volumes are rejected. This code still needs physical-device validation.
 - Use the roadmap's acceptance criteria before advertising support for a game, ABI, input mode, or online feature.
