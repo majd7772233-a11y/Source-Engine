@@ -33,6 +33,8 @@ checks = {
     "non-ready launch disabled": "play.setEnabled(entry.launchable)" in launcher,
     "launch readiness enforced": "selectedEntry == null || !selectedEntry.launchable" in launcher,
     "last launch recorded": "GameDiscovery.recordLaunch(this, selectedEntry.path)" in launcher,
+    "optional content distinction": "hasOptionalContent(children)" in discovery and "optionalContentAvailable" in discovery and "srceng_library_optional_found" in launcher,
+    "accurate readiness summary": "srceng_library_count" in launcher,
     "CI invokes Stage 3 checks": "bash scripts/verify-stage3.sh" in workflow,
 }
 missing = [name for name, ok in checks.items() if not ok]
