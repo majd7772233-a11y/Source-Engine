@@ -19,7 +19,7 @@ checks = {
     "permission-aware scan": "!directory.canRead()" in discovery,
     "case-tolerant gameinfo": 'equalsIgnoreCase(name)' in discovery and '"gameinfo.txt"' in discovery,
     "bounded metadata read": "MAX_GAMEINFO_BYTES" in discovery and "validateGameInfo(info)" in discovery,
-    "data-driven title detection": "TITLE_PATTERN" in discovery and "readTitle(info)" in discovery,
+    "data-driven title detection": "readTitle(info)" in discovery and '"game"' in discovery and '"title"' in discovery,
     "asset validation": "hasContentMarkers" in discovery and 'endsWith(".vpk")' in discovery and 'endsWith(".bsp")' in discovery,
     "device ABI validation": "supportsPackagedAbi()" in discovery and '"armeabi-v7a".equals(abi)' in discovery,
     "native payload validation": "hasNativeRuntime(context)" in discovery and "libtierhook.so" in discovery and "libclient.so" in discovery,
