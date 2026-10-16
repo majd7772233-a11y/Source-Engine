@@ -51,10 +51,10 @@ jobs:
           git -C srcsdk submodule status --recursive
       - name: Build, verify APK, and record checksums
         env:
-          ANDROID_HOME: \${{ github.workspace }}/android-sdk
-          ANDROID_SDK_ROOT: \${{ github.workspace }}/android-sdk
-          COMMIT: \${{ github.sha }}
-          BUILD_BRANCH: \${{ github.head_ref || github.ref_name }}
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+          COMMIT: ${{ github.sha }}
+          BUILD_BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           set -euo pipefail
           bash scripts/workflow.sh
