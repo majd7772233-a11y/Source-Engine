@@ -22,6 +22,14 @@ while IFS= read -r entry; do
   [[ -s "$tmp/$name" ]] || { echo "ERROR: Empty library: $entry" >&2; exit 1; }
   header="$(readelf -h "$tmp/$name" 2>&1)" || { echo "ERROR: Invalid ELF library: $entry" >&2; exit 1; }
   printf '%s\n' "$header" | grep -Eq 'Machine:[[:space:]]+ARM' || { echo "ERROR: Library is not ARM ELF: $entry" >&2; exit 1; }
+  needed="$(readelf -d "$tmp/$name" 2>/dev/null | sed -n 's/.*Shared library: \[\([^]]*\)\].*/\1/p')"
+  while IFS= read -r dep; do
+    [[ -n "$dep" ]] || continue
+    case "$dep" in
+      libc.so|libm.so|libdl.so|liblog.so|libandroid.so|libEGL.so|libGLESv1_CM.so|libGLESv2.so|libOpenSLES.so|libz.so|libjnigraphics.so|libmediandk.so|libatomic.so|libgcc.so|libstdc++.so|libnativewindow.so|libvulkan.so|libsync.so|libcamera2ndk.so|libaaudio.so|libbinder_ndk.so) ;;
+      *) printf '%s\n' "$FILES" | grep -Fxq "lib/armeabi-v7a/$dep" || { echo "ERROR: $entry requires $dep, not packaged or allowlisted as an Android system library." >&2; exit 1; } ;;
+    esac
+  done <<< "$needed"
   count=$((count + 1))
 done <<< "$FILES"
 (( count >= 5 )) || { echo "ERROR: Expected at least five ARMv7 libraries; found $count." >&2; exit 1; }
