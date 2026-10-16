@@ -1,0 +1,7 @@
+# Immutable source revisions for the legacy native build. Update deliberately and rerun CI.
+NDK_BINARIES_URL=https://gitlab.com/LostGamer/ndk-binaries.git
+NDK_BINARIES_COMMIT=2768c10e6ec0c462ba1401f436891e2245d43cf7
+ANDROID_SDK_URL=https://gitlab.com/LostGamer/android-sdk.git
+ANDROID_SDK_COMMIT=45053e0056ebe4a79c04bab1d9b92bcd1488cba6
+SOURCE_SDK_URL=https://github.com/nillerusr/srcsdk.git
+SOURCE_SDK_COMMIT=413f5848d9a4534cdf8a4d10f5c1e7b1eaf3835d

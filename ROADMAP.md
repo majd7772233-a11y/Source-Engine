@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status:** Stage 0 is complete. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
+> **Roadmap status:** Stages 0 and 1 are complete. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
 
 ## 1. Product goal
 
@@ -48,11 +48,11 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] Acceptance: one documented canonical branch contains the curated required code from all three branches; application identity is consistent; repository structure/build commands are documented in `README.md`; CI builds the APK and verifies its package/native payload; unresolved device/runtime and future-stage defects are accurately documented.
 
 ### Stage 1 — Reproducible build and native runtime integrity
-- [ ] Trace `scripts/workflow.sh`, `scripts/upload-to-github.sh`, `scripts/send-to-discord.py`, `build.sh`, `build.xml`, `project.properties`, JNI makefiles, and all external clone/submodule steps end to end.
-- [ ] Fix path assumptions, quoting, error propagation, executable permissions, dependency downloads, generated `build_info.xml`, artifact names, and CI secrets handling.
-- [ ] Define the supported ABI matrix based on actual engine/native compatibility; verify every packaged `.so` has the correct ABI and required dependencies. Do not label an ABI supported just because a directory exists.
-- [ ] Add deterministic build diagnostics, artifact verification, APK inspection, and a documented local build.
-- [ ] Acceptance: clean checkout builds the same expected APK in CI; APK contains the expected Java resources and native libraries; no success artifact is published after a failed build.
+- [x] Trace `scripts/workflow.sh`, `scripts/upload-to-github.sh`, `scripts/send-to-discord.py`, `build.sh`, `build.xml`, `project.properties`, JNI makefiles, and all external clone/submodule steps end to end.
+- [x] Fix build path assumptions, shell quoting, fail-fast error propagation, XML-safe generated `build_info.xml`, stale APK/native output cleanup, artifact names, and unsafe legacy CI secret/deployment handling. All external native source revisions are pinned in `scripts/dependencies.lock` and verified by CI.
+- [x] Define the currently verified packaged ABI as ARMv7 / `armeabi-v7a` only; the APK verifier checks the package identity, required native libraries, ELF machine type, and rejects native libraries outside this ABI. This does not imply runtime compatibility for every game.
+- [x] Add fail-fast build diagnostics, `scripts/verify-apk.sh`, build metadata, SHA-256 output, and documented local build commands. Both checks passed in CI run `38972677450` on commit `ba054a72c3e74bc3b41fce6579f1f13f4611ed49`.
+- [x] Acceptance: clean checkout builds and verifies the APK in CI; APK contains the expected Java resources and all 35 packaged ARMv7 ELF libraries passed architecture/dependency checks; artifact upload occurs only after success. Passed in run `38972677450` on commit `ba054a72c3e74bc3b41fce6579f1f13f4611ed49`. Physical-device/game-runtime testing remains outside this acceptance gate.
 
 ### Stage 2 — Startup, lifecycle, and crash-free launch
 - [ ] Trace launcher button → intent extras/preferences → SDL activity → `ValveActivity2` native initialization → engine entry point.

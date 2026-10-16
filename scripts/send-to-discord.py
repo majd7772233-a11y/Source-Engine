@@ -1,7 +1,5 @@
-import disc
-import sys,os
-
-text = ' '.join(sys.argv[1::]).replace('\\n', '\n')
-chanid=os.getenv('CHANNEL_ID')
-bot = disc.disc(os.getenv('DISCORD_TOKEN'))
-bot.send(chanid, text)
+#!/usr/bin/env python3
+"""Retired notifier: the build no longer requires Discord credentials or dependencies."""
+import sys
+print("ERROR: Discord notifications are retired; use the GitHub Actions run and artifact.", file=sys.stderr)
+raise SystemExit(2)

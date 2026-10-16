@@ -124,3 +124,24 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Fixed the selected SDK path in the workflow and Ant invocations, added a fail-fast SDK Ant-build-file check, installed required 32-bit runtime packages, and made root `build.sh` generate the build metadata resources it needs.
 - GitHub Actions run `38937163563` completed successfully on `5116d037a074e3c15652e465a3224576767e3b41`; native library compilation, APK packaging, and artifact upload all passed. The uploaded artifact is named `source-engine-android-debug`.
 - A final verification candidate adds source/package/shell checks and validates the APK's manifest package and required ARMv7 native libraries. Its CI result must be inspected before Stage 0 is marked complete.
+
+
+### 2026-10-17 — Stage 1 build integrity work in progress
+- Working branch: `stage1-build-integrity`; pull request: https://github.com/majd7772233-a11y/Source-Engine/pull/4. Do not merge or mark Stage 1 complete until the actual CI build is green and the remaining external GitLab dependency revisions are pinned.
+- Re-read `ROADMAP.md` and this notebook before work. Stage 0's actual passing run is recorded above; physical-device/runtime behavior remains untested.
+- Reworked `build.sh` and `scripts/workflow.sh` to use explicit SDK checks, XML-escape generated metadata, remove stale APK outputs before packaging, remove each native output before rebuilding it, and call the shared APK verifier after Ant succeeds.
+- Added `scripts/verify-apk.sh`: validates ZIP integrity, application ID `com.magd.source.engine`, required dex/resources, the five required native libraries, ARM ELF headers for packaged native libraries, ABI directory consistency, APK byte size, SHA-256, and a generated metadata/checksum report.
+- Added `scripts/verify-stage1.sh` to statically check shell syntax, stale-output guards, verification integration, artifact upload gating, XML escaping, and retired deployment scripts.
+- CI now uses a fixed Ubuntu 24.04 runner label and pinned action commit SHAs observed in the previous successful run. It checks out `nillerusr/srcsdk` at commit `413f5848d9a4534cdf8a4d10f5c1e7b1eaf3835d`, logs exact external dependency revisions and recursive submodule SHAs, verifies the APK, then uploads APK + metadata + SHA-256 report only on success.
+- Retired `scripts/upload-to-github.sh`, which embedded a token in a remote URL and force-pushed to an unrelated repository, and the unused Discord notifier. Neither is invoked by the current workflow; both now fail closed without reading credentials.
+- **Pending at the time of this note:** CI execution and exact GitLab dependency pins. These were subsequently resolved in the follow-up entry below. Local build on a separate machine and actual installation/game launch remain untested.
+
+
+### 2026-10-17 — Stage 1 native build verified
+- Locked all external source revisions in `scripts/dependencies.lock`: `ndk-binaries` = `2768c10e6ec0c462ba1401f436891e2245d43cf7`; `android-sdk` = `45053e0056ebe4a79c04bab1d9b92bcd1488cba6`; `srcsdk` = `413f5848d9a4534cdf8a4d10f5c1e7b1eaf3835d`. The pinned `srcsdk` commit fixes `gl4es/gl4es-git` at `6996a61a9efed4192ac76dedf96acf9110bb75d7`.
+- Added `scripts/fetch-build-deps.sh` to fetch and verify each full SHA, initialize the Source SDK recursively at its recorded gitlink revisions, and expose dependency SHAs to build metadata.
+- Fixed the CI-discovered strict-shell error in the native `build()` function by separating local declarations, and corrected the static test assertion so it checks the actual `git -C ... submodule update` command.
+- **Verified CI run:** https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38972677450 — success. The workflow passed static source/shell checks, fetched all locked dependencies, compiled tierhook/engine/GL4ES/client/server native libraries, packaged the APK with Ant, verified the APK's application ID and 35 ARMv7 ELF libraries plus their declared dependencies, calculated SHA-256, and uploaded the artifact.
+- **Intermediate verified APK** (this commit predates final documentation/trigger cleanup): 56,516,557 bytes; SHA-256 `e5e4c64baf0e660997d20a2bfc0ea2ab0dcea6ade371a45e183f0750edcdb177`. Artifact `source-engine-android-debug` ID `12077976000`, ZIP size 54,489,118 bytes, artifact ZIP digest `sha256:b97434f6553dc80c25ce4673bd88225a4e89b60a22277b6a037415184a4fd27c`.
+- No GitHub deployment token or Discord token is used by the build workflow. The legacy push script and Discord notifier remain disabled and fail closed.
+- **Not tested:** installation/launch on a physical device, real game-content compatibility, controls, rendering, or runtime stability. Do not claim those as passed.
