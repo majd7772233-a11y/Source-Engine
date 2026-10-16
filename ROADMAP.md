@@ -68,7 +68,7 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] Make scanning bounded, null-safe, permission-aware, case-tolerant, and resistant to unreadable directories and malformed content.
 - [x] Distinguish a game root, a game/mod directory, engine support, required assets, and optional content. Do not show a game as launchable until required files and native support are validated.
 - [x] Add a library view with game name, detected status, path, icon/art where available, last launch, and useful empty/error states. No hard-coded list of four games as a substitute for detection.
-- [x] Acceptance implementation: discovered entries are data-driven; incomplete/unsupported candidates explain why they cannot launch; rescans rebuild the library from registered roots, removed entries remain hidden until the user explicitly scans their root again, and missing/stale paths are discarded.
+- [x] Acceptance implementation: discovered entries are data-driven; incomplete/unsupported candidates explain why they cannot launch; required VPK/BSP markers and optional content folders are distinguished; rescans rebuild the library from registered roots, removed entries remain hidden until the user explicitly scans their root again, and missing/stale paths are discarded.
 - **Runtime acceptance note:** physical-device validation with multiple real game/mod folder layouts remains necessary before claiming every valid game is discovered or that engine compatibility is proven. The UI labels readiness as “Ready to try” and explicitly does not guarantee compatibility.
  
 ### Stage 4 — Storage permissions, removable media, and path reliability
