@@ -1,7 +1,7 @@
 name: Android build
 on:
   push:
-    branches: [ android-fixes, stage1-build-integrity ]
+    branches: [ android-fixes ]
   pull_request:
     branches: [ android-fixes ]
   workflow_dispatch:
