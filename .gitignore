@@ -1,3 +1,25 @@
-gen/
+# Android / Ant build output
 bin/
+gen/
+obj/
 *.o
+*.class
+*.apk
+*.ap_
+local.properties
+ant.properties
+res/values/build_info.xml
+version
+
+# Local SDK / NDK / native source checkouts
+android-sdk/
+ndk-binaries/
+srcsdk/
+
+# Local IDE / temporary files
+.idea/
+.gradle/
+*.iml
+__pycache__/
+*.py[cod]
+.DS_Store
