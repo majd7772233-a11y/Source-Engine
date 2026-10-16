@@ -76,7 +76,7 @@ public final class GameDiscovery {
 
         Collections.sort(results, new Comparator<GameEntry>() {
             @Override public int compare(GameEntry left, GameEntry right) {
-                int state = Boolean.compare(right.launchable, left.launchable);
+                int state = right.launchable == left.launchable ? 0 : (right.launchable ? 1 : -1);
                 if (state != 0) return state;
                 return left.displayName.compareToIgnoreCase(right.displayName);
             }
@@ -252,6 +252,18 @@ public final class GameDiscovery {
         }
         String abi = Build.CPU_ABI;
         return "armeabi-v7a".equals(abi) || "armeabi".equals(abi);
+    }
+
+    public static GameEntry inspectPath(Context context, String path) {
+        if (context == null || path == null || path.trim().length() == 0) return null;
+        File directory = new File(path.trim());
+        if (!directory.isDirectory() || !directory.canRead()) return null;
+        File[] children = directory.listFiles();
+        if (children == null) return null;
+        boolean hasInfo = findChildIgnoreCase(children, "gameinfo.txt") != null;
+        boolean hasContent = hasContentMarkers(directory, children);
+        if (!hasInfo && !hasContent) return null;
+        return inspect(context, directory, children, hasInfo, hasContent);
     }
 
     public static Set<String> getSavedPaths(Context context) {
