@@ -20,7 +20,7 @@ checks = {
     "provider allowlist avoids fake URI paths": '"com.android.externalstorage.documents".equals(uri.getAuthority())' in storage,
     "safe document ID parsing": "indexOf(':')" in storage and 'volume.contains("/")' in storage,
     "canonical path containment": "getCanonicalPath()" in storage and 'canonicalCandidate.startsWith(canonicalBase + File.separator)' in storage,
-    "mounted removable media check": "getExternalStorageState(base)" in storage and "MEDIA_MOUNTED_READ_ONLY" in storage,
+    "mounted/removable and read-only media check": "getExternalStorageState(base)" in storage and "!Environment.MEDIA_MOUNTED.equals(state)" in storage and "candidate.canWrite()" in storage,
     "disconnected/revoked storage is revalidated": "resolveFilesystemPath(context, uri)" in storage and "clearSelection(context)" in storage,
     "persist selected URI and real path": "TREE_URI_KEY" in storage and "TREE_PATH_KEY" in storage and "putString(TREE_URI_KEY" in storage,
     "no broad /storage volume guessing": 'new File("/storage/").listFiles()' not in picker and 'new File("/storage/")' not in picker,
