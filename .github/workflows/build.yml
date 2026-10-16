@@ -29,28 +29,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y make ant ant-contrib python3 unzip binutils coreutils lib32z1 lib32stdc++6 lib32ncurses6
-      - name: Fetch native build dependencies
-        env:
-          SOURCE_SDK_COMMIT: 413f5848d9a4534cdf8a4d10f5c1e7b1eaf3835d
-        run: |
-          set -euo pipefail
-          git clone --depth 1 https://gitlab.com/LostGamer/ndk-binaries.git ndk-binaries
-          git clone --depth 1 https://gitlab.com/LostGamer/android-sdk.git android-sdk
-          git init srcsdk
-          git -C srcsdk remote add origin https://github.com/nillerusr/srcsdk.git
-          git -C srcsdk fetch --depth 1 origin "$SOURCE_SDK_COMMIT"
-          git -C srcsdk checkout --detach FETCH_HEAD
-          git -C srcsdk submodule update --init --recursive --depth 1
-          {
-            echo "NDK_BINARIES_COMMIT=$(git -C ndk-binaries rev-parse HEAD)"
-            echo "ANDROID_SDK_COMMIT=$(git -C android-sdk rev-parse HEAD)"
-            echo "SOURCE_SDK_COMMIT=$(git -C srcsdk rev-parse HEAD)"
-          } >> "$GITHUB_ENV"
-          echo "Resolved native dependency revisions:"
-          git -C ndk-binaries log -1 --format='%H %s'
-          git -C android-sdk log -1 --format='%H %s'
-          git -C srcsdk log -1 --format='%H %s'
-          git -C srcsdk submodule status --recursive
+      - name: Fetch native build dependencies at locked revisions
+        run: bash scripts/fetch-build-deps.sh
       - name: Build, verify APK, and record checksums
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
