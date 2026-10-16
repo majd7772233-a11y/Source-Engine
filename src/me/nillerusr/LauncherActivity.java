@@ -7,6 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Date;
+import java.text.DateFormat;
 
 import android.Manifest;
 import android.os.Build;
@@ -46,6 +50,8 @@ public class LauncherActivity extends Activity {
 	static EditText cmdArgs, GamePath = null, EnvEdit, res_width, res_height;
 	private Button launchButton;
 	private boolean launchInProgress = false;
+	private LinearLayout libraryItems;
+	private TextView librarySummary;
 	public SharedPreferences mPref;
 	public static final int sdk = Integer.valueOf(Build.VERSION.SDK).intValue();
 	static CheckBox useVolumeButtons, check_updates;
@@ -137,6 +143,222 @@ public class LauncherActivity extends Activity {
 	}
 
 
+
+	private static final String LIBRARY_ROOTS = "library_roots";
+	private static final String LIBRARY_HIDDEN = "library_hidden_paths";
+
+	private void setupGameLibrary(LinearLayout body) {
+		LinearLayout section = new LinearLayout(this);
+		section.setOrientation(LinearLayout.VERTICAL);
+		section.setPadding(10, 10, 10, 12);
+		android.graphics.drawable.GradientDrawable panel = new android.graphics.drawable.GradientDrawable();
+		panel.setColor(0xFF292F36);
+		panel.setCornerRadius(16 * getResources().getDisplayMetrics().density);
+		panel.setStroke(1, 0x664BD8D0);
+		section.setBackground(panel);
+		TextView title = new TextView(this);
+		title.setText(R.string.srceng_library_title);
+		title.setTextColor(0xFFFFFFFF);
+		title.setTextSize(21);
+		title.setTypeface(null, android.graphics.Typeface.BOLD);
+		section.addView(title, new LinearLayout.LayoutParams(-1, -2));
+		librarySummary = new TextView(this);
+		librarySummary.setTextColor(0xFFCFD8E3);
+		librarySummary.setTextSize(13);
+		librarySummary.setPadding(0, 4, 0, 8);
+		section.addView(librarySummary, new LinearLayout.LayoutParams(-1, -2));
+		LinearLayout actions = new LinearLayout(this);
+		actions.setOrientation(LinearLayout.HORIZONTAL);
+		Button scanCurrent = new Button(this);
+		scanCurrent.setText(R.string.srceng_library_scan_current);
+		scanCurrent.setOnClickListener(new View.OnClickListener() {
+			@Override public void onClick(View view) { scanLibrary(true, true); }
+		});
+		Button rescan = new Button(this);
+		rescan.setText(R.string.srceng_library_rescan);
+		rescan.setOnClickListener(new View.OnClickListener() {
+			@Override public void onClick(View view) { scanLibrary(false, false); }
+		});
+		actions.addView(scanCurrent, new LinearLayout.LayoutParams(0, -2, 1));
+		actions.addView(rescan, new LinearLayout.LayoutParams(0, -2, 1));
+		section.addView(actions, new LinearLayout.LayoutParams(-1, -2));
+		libraryItems = new LinearLayout(this);
+		libraryItems.setOrientation(LinearLayout.VERTICAL);
+		section.addView(libraryItems, new LinearLayout.LayoutParams(-1, -2));
+		body.addView(section, 0, new LinearLayout.LayoutParams(-1, -2));
+		renderGameLibrary();
+	}
+
+	private Set<String> preferenceSet(String key) {
+		Set<String> stored = mPref.getStringSet(key, new HashSet<String>());
+		return stored == null ? new HashSet<String>() : new HashSet<String>(stored);
+	}
+
+	private String canonicalPath(String path) {
+		try { return new File(path).getCanonicalPath(); }
+		catch (IOException e) { return new File(path).getAbsolutePath(); }
+	}
+
+	private void scanLibrary(boolean includeCurrentRoot, boolean unhideCurrentRoot) {
+		String currentRoot = GamePath == null ? "" : GamePath.getText().toString().trim();
+		if (includeCurrentRoot && (currentRoot.length() == 0
+				|| !new File(currentRoot).isDirectory() || !new File(currentRoot).canRead())) {
+			new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error)
+					.setMessage(R.string.srceng_library_scan_invalid)
+					.setPositiveButton(R.string.srceng_launcher_ok, null).show();
+			return;
+		}
+		Set<String> roots = preferenceSet(LIBRARY_ROOTS);
+		Set<String> hidden = preferenceSet(LIBRARY_HIDDEN);
+		if (includeCurrentRoot) {
+			currentRoot = canonicalPath(currentRoot);
+			roots.add(currentRoot);
+			if (unhideCurrentRoot) {
+				final String selectedRoot = currentRoot;
+				java.util.Iterator<String> iterator = hidden.iterator();
+				while (iterator.hasNext()) {
+					String hiddenPath = iterator.next();
+					if (hiddenPath.equals(selectedRoot) || hiddenPath.startsWith(selectedRoot + File.separator)) iterator.remove();
+				}
+			}
+		}
+		Set<String> discovered = new HashSet<String>();
+		for (String root : new HashSet<String>(roots)) {
+			File directory = new File(root);
+			if (!directory.isDirectory() || !directory.canRead()) {
+				roots.remove(root);
+				continue;
+			}
+			List<GameDiscovery.GameEntry> entries = GameDiscovery.scan(this, root);
+			for (GameDiscovery.GameEntry entry : entries) {
+				if (entry != null && !hidden.contains(entry.path) && new File(entry.path).isDirectory()) discovered.add(entry.path);
+			}
+		}
+		mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(roots))
+				.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
+		GameDiscovery.savePaths(this, discovered);
+		renderGameLibrary();
+		if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);
+		else librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
+	}
+
+	private void renderGameLibrary() {
+		if (libraryItems == null || mPref == null) return;
+		libraryItems.removeAllViews();
+		Set<String> paths = GameDiscovery.getSavedPaths(this);
+		Set<String> livePaths = new HashSet<String>();
+		List<GameDiscovery.GameEntry> entries = new ArrayList<GameDiscovery.GameEntry>();
+		for (String path : paths) {
+			GameDiscovery.GameEntry entry = GameDiscovery.inspectPath(this, path);
+			if (entry != null && new File(path).isDirectory()) {
+				livePaths.add(path);
+				entries.add(entry);
+			}
+		}
+		if (!livePaths.equals(paths)) GameDiscovery.savePaths(this, livePaths);
+		java.util.Collections.sort(entries, new java.util.Comparator<GameDiscovery.GameEntry>() {
+			@Override public int compare(GameDiscovery.GameEntry left, GameDiscovery.GameEntry right) {
+				if (left.launchable != right.launchable) return left.launchable ? -1 : 1;
+				return left.displayName.compareToIgnoreCase(right.displayName);
+			}
+		});
+		if (entries.isEmpty()) {
+			TextView empty = new TextView(this);
+			empty.setText(R.string.srceng_library_empty);
+			empty.setTextColor(0xFFD0D7E0);
+			empty.setTextSize(14);
+			empty.setPadding(0, 12, 0, 12);
+			libraryItems.addView(empty, new LinearLayout.LayoutParams(-1, -2));
+			librarySummary.setText(R.string.srceng_library_empty);
+			return;
+		}
+		int ready = 0;
+		for (final GameDiscovery.GameEntry entry : entries) {
+			if (entry.launchable) ready++;
+			LinearLayout card = new LinearLayout(this);
+			card.setOrientation(LinearLayout.VERTICAL);
+			card.setPadding(10, 8, 10, 8);
+			card.setBackgroundColor(0xFF202830);
+			LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(-1, -2);
+			cardParams.topMargin = 7;
+			card.setLayoutParams(cardParams);
+			TextView name = new TextView(this);
+			name.setText("\uD83C\uDFAE  " + entry.displayName);
+			name.setTextColor(0xFFFFFFFF);
+			name.setTextSize(17);
+			name.setTypeface(null, android.graphics.Typeface.BOLD);
+			card.addView(name, new LinearLayout.LayoutParams(-1, -2));
+			TextView status = new TextView(this);
+			status.setText(entry.status + " — " + entry.detail);
+			status.setTextColor(entry.launchable ? 0xFF7BE0B5 : 0xFFFFC27A);
+			status.setTextSize(12);
+			status.setPadding(0, 3, 0, 3);
+			card.addView(status, new LinearLayout.LayoutParams(-1, -2));
+			TextView path = new TextView(this);
+			path.setText(getString(R.string.srceng_library_path, entry.path));
+			path.setTextColor(0xFFB8C4D1);
+			path.setTextSize(11);
+			card.addView(path, new LinearLayout.LayoutParams(-1, -2));
+			TextView last = new TextView(this);
+			if (entry.lastLaunched > 0) {
+				last.setText(getString(R.string.srceng_library_last,
+						DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(new Date(entry.lastLaunched))));
+			} else last.setText(R.string.srceng_library_last_never);
+			last.setTextColor(0xFFB8C4D1);
+			last.setTextSize(11);
+			card.addView(last, new LinearLayout.LayoutParams(-1, -2));
+			LinearLayout buttons = new LinearLayout(this);
+			buttons.setOrientation(LinearLayout.HORIZONTAL);
+			Button use = new Button(this);
+			use.setText(R.string.srceng_library_use);
+			use.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View view) {
+					selectGame(entry);
+					Toast.makeText(LauncherActivity.this,
+							getString(R.string.srceng_library_selected, entry.displayName), Toast.LENGTH_SHORT).show();
+				}
+			});
+			Button play = new Button(this);
+			play.setText(R.string.srceng_library_play);
+			play.setEnabled(entry.launchable);
+			play.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View view) {
+					if (!entry.launchable) { showStartupError(entry.detail); return; }
+					selectGame(entry);
+					startSource(view);
+				}
+			});
+			Button remove = new Button(this);
+			remove.setText(R.string.srceng_library_remove);
+			remove.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View view) {
+					Set<String> saved = GameDiscovery.getSavedPaths(LauncherActivity.this);
+					saved.remove(entry.path);
+					GameDiscovery.savePaths(LauncherActivity.this, saved);
+					Set<String> hidden = preferenceSet(LIBRARY_HIDDEN);
+					hidden.add(entry.path);
+					mPref.edit().putStringSet(LIBRARY_HIDDEN, hidden).apply();
+					renderGameLibrary();
+					Toast.makeText(LauncherActivity.this, R.string.srceng_library_removed, Toast.LENGTH_SHORT).show();
+				}
+			});
+			buttons.addView(use, new LinearLayout.LayoutParams(0, -2, 1));
+			buttons.addView(play, new LinearLayout.LayoutParams(0, -2, 1));
+			buttons.addView(remove, new LinearLayout.LayoutParams(0, -2, 1));
+			card.addView(buttons, new LinearLayout.LayoutParams(-1, -2));
+			libraryItems.addView(card);
+		}
+		librarySummary.setText(getString(R.string.srceng_library_selected, ready + " / " + entries.size()));
+	}
+
+	private void selectGame(GameDiscovery.GameEntry entry) {
+		if (entry == null) return;
+		if (GamePath != null) GamePath.setText(entry.launchRoot);
+		mPref.edit().putString("gamepath", entry.launchRoot)
+				.putString("gamedir", entry.directoryName).apply();
+		if (cmdArgs != null && EnvEdit != null) saveSettings(mPref.edit());
+	}
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		PKG_NAME = getApplication().getPackageName();
@@ -156,6 +378,7 @@ public class LauncherActivity extends Activity {
 		cmdArgs = (EditText)findViewById(R.id.edit_cmdline);
 		EnvEdit = (EditText)findViewById(R.id.edit_env);
 		GamePath = (EditText)findViewById(R.id.edit_gamepath);
+		setupGameLibrary(body);
 
 //		immersiveMode = (CheckBox)findViewById(R.id.checkbox_immersive_mode);
 
@@ -254,6 +477,15 @@ public class LauncherActivity extends Activity {
 		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
 		File root = new File(gamepath);
 		if (!root.isDirectory() || !root.canRead()) { showStartupError(getString(R.string.srceng_launcher_error_invalid_path, gamepath)); return; }
+		String selectedDirectory = mPref.getString("gamedir", "hl2");
+		GameDiscovery.GameEntry selectedEntry = GameDiscovery.inspectPath(this, new File(root, selectedDirectory).getPath());
+		if (selectedEntry == null || !selectedEntry.launchable) {
+			String reason = selectedEntry == null
+					? "The selected folder was not recognized as a Source game with readable metadata and required assets."
+					: selectedEntry.detail;
+			showStartupError(reason + "\n\n" + getString(R.string.srceng_library_compatibility));
+			return;
+		}
 		SharedPreferences.Editor editor = mPref.edit();
 		saveSettings(editor);
 
@@ -272,7 +504,12 @@ public class LauncherActivity extends Activity {
 		intent.putExtra("env", EnvEdit.getText().toString());
 		intent.putExtra("gamedir", mPref.getString("gamedir", "hl2"));
 		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		try { launchInProgress = true; if (launchButton != null) launchButton.setEnabled(false); startActivity(intent); }
+		try {
+			GameDiscovery.recordLaunch(this, selectedEntry.path);
+			launchInProgress = true;
+			if (launchButton != null) launchButton.setEnabled(false);
+			startActivity(intent);
+		}
 		catch (RuntimeException e) { launchInProgress = false; if (launchButton != null) launchButton.setEnabled(true); Log.e("SRCAPK", "Unable to start SDL activity", e); showStartupError(getString(R.string.srceng_launcher_error_start_failed, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())); }
 
 
@@ -310,7 +547,12 @@ public class LauncherActivity extends Activity {
 		if (isFinishing()) return;
 		new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show();
 	}
-	@Override protected void onResume() { super.onResume(); launchInProgress = false; if (launchButton != null) launchButton.setEnabled(true); }
+	@Override protected void onResume() {
+		super.onResume();
+		launchInProgress = false;
+		if (launchButton != null) launchButton.setEnabled(true);
+		renderGameLibrary();
+	}
 	@Override protected void onPause() { Log.v("SRCAPK", "onPause"); if (mPref != null && cmdArgs != null && GamePath != null && EnvEdit != null) saveSettings(mPref.edit()); super.onPause(); }
 }
 
