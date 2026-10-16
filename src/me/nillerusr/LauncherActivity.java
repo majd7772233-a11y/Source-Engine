@@ -310,6 +310,12 @@ public class LauncherActivity extends Activity {
 			path.setTextColor(0xFFB8C4D1);
 			path.setTextSize(11);
 			card.addView(path, new LinearLayout.LayoutParams(-1, -2));
+			TextView optional = new TextView(this);
+			optional.setText(entry.optionalContentAvailable
+					? R.string.srceng_library_optional_found : R.string.srceng_library_optional_none);
+			optional.setTextColor(0xFFB8C4D1);
+			optional.setTextSize(11);
+			card.addView(optional, new LinearLayout.LayoutParams(-1, -2));
 			TextView last = new TextView(this);
 			if (entry.lastLaunched > 0) {
 				last.setText(getString(R.string.srceng_library_last,
@@ -359,7 +365,7 @@ public class LauncherActivity extends Activity {
 			card.addView(buttons, new LinearLayout.LayoutParams(-1, -2));
 			libraryItems.addView(card);
 		}
-		librarySummary.setText(getString(R.string.srceng_library_selected, ready + " / " + entries.size()));
+		librarySummary.setText(getString(R.string.srceng_library_count, ready, entries.size()));
 	}
 
 	private void selectGame(GameDiscovery.GameEntry entry) {
