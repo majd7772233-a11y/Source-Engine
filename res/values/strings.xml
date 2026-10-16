@@ -68,4 +68,5 @@
     <string name="srceng_library_unrecognized">The selected folder was not recognized as a Source game with readable metadata and required assets.</string>
     <string name="srceng_library_status_native_missing">Native runtime unavailable</string>
     <string name="srceng_library_detail_native_missing">Required native engine libraries were not found in the installed app. Reinstall a valid build.</string>
+    <string name="srceng_library_scanning">Scanning game folders…</string>
 </resources>
