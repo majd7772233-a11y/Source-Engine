@@ -1,39 +1,58 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-export NDK_HOME=$(pwd)/ndk-binaries PATH=$PATH:$(pwd)/ndk-binaries LIBPATH=$(pwd)/libs/armeabi-v7a NDK_TOOLCHAIN_VERSION=4.9
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
-build()
-{
-	PW=$(pwd)
-	cd $1
-	make NDK=1 NDK_PATH=$NDK_HOME APP_API_LEVEL=19 CFG=debug NDK_VERBOSE=1 -j$(nproc --all) || exit 1
-	cp $2 $LIBPATH && echo $2 Installed || exit 1
-	cd $PW
+export NDK_HOME="${NDK_HOME:-$ROOT_DIR/ndk-binaries}"
+export LIBPATH="${LIBPATH:-$ROOT_DIR/libs/armeabi-v7a}"
+export NDK_TOOLCHAIN_VERSION="${NDK_TOOLCHAIN_VERSION:-4.9}"
+export ANDROID_HOME="${ANDROID_HOME:-$ROOT_DIR/android-sdk}"
+export COMMIT="${COMMIT:-$(git rev-parse HEAD)}"
+export DEPLOY_BRANCH="${DEPLOY_BRANCH:-$(git branch --show-current 2>/dev/null || echo local)}"
+
+for required in "$NDK_HOME" "$ANDROID_HOME" "$ROOT_DIR/srcsdk" "$LIBPATH"; do
+  [[ -d "$required" ]] || { echo "ERROR: Required build directory is missing: $required" >&2; exit 2; }
+done
+command -v make >/dev/null 2>&1 || { echo "ERROR: make is required." >&2; exit 2; }
+command -v ant >/dev/null 2>&1 || { echo "ERROR: Apache Ant is required." >&2; exit 2; }
+command -v java >/dev/null 2>&1 || { echo "ERROR: Java is required." >&2; exit 2; }
+
+build() {
+  local dir="$1" library="$2"
+  local previous="$PWD"
+  cd "$ROOT_DIR/$dir"
+  make NDK=1 NDK_PATH="$NDK_HOME" APP_API_LEVEL=19 CFG=debug NDK_VERBOSE=1 -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)"
+  [[ -s "$library" ]] || { echo "ERROR: Native build did not produce $dir/$library" >&2; exit 1; }
+  cp "$library" "$LIBPATH/"
+  echo "Installed $library"
+  cd "$previous"
 }
 
-RES=res/values/build_info.xml
-generate_resources()
-{
-	echo '<?xml version="1.0" encoding="utf-8"?>' > $RES
-	echo '<resources>' >> $RES
-	echo '<string name="last_commit">'$COMMIT'</string>' >> $RES
-	echo '<string name="deploy_branch">'$DEPLOY_BRANCH'</string>' >> $RES
-	echo '</resources>' >> $RES
+generate_resources() {
+  local res="$ROOT_DIR/res/values/build_info.xml"
+  mkdir -p "$(dirname "$res")"
+  {
+    printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>'
+    printf '  <string name="last_commit">%s</string>\n' "$COMMIT"
+    printf '  <string name="deploy_branch">%s</string>\n' "$DEPLOY_BRANCH"
+    printf '%s\n' '</resources>'
+  } > "$res"
 }
 
-build jni/src/tierhook libtierhook.so
+build "jni/src/tierhook" "libtierhook.so"
 
-cd srcsdk/
-build main libmain.so
-build gl4es libRegal.so
-build vinterface_wrapper/client libclient.so
-build vinterface_wrapper/server libserver.so
-cd ../
+cd "$ROOT_DIR/srcsdk"
+build "main" "libmain.so"
+build "gl4es" "libRegal.so"
+build "vinterface_wrapper/client" "libclient.so"
+build "vinterface_wrapper/server" "libserver.so"
+cd "$ROOT_DIR"
 
 generate_resources
-
-mkdir $HOME/.android
-cp debug.keystore $HOME/.android
-JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/ ANDROID_HOME=android-sdk/ ant debug || exit 1
-
-echo -n $COMMIT > version
+mkdir -p "$HOME/.android"
+# Let the Android tools create/use the local debug key; never copy a repository key into the user's signing directory.
+ant debug
+[[ -s "$ROOT_DIR/bin/srceng-debug.apk" ]] || { echo "ERROR: Expected APK was not produced." >&2; exit 1; }
+printf '%s' "$COMMIT" > "$ROOT_DIR/version"
+echo "Build succeeded: $ROOT_DIR/bin/srceng-debug.apk"
