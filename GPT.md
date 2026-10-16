@@ -165,3 +165,5 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Launch is now gated by metadata, asset markers, packaged ARMv7 ABI support, and required installed native libraries. “Ready to try” explicitly warns that it does not prove game/mod compatibility. This is a conservative filesystem heuristic, not a compatibility certification.
 - Added `scripts/verify-stage3.sh` and wired it into CI after Stage 0/1/2 checks. Build/static verification and review are still pending; do not mark the stage verified until the actual workflow result is inspected.
 - **Not device-verified:** no physical-device scan against several real game/mod folder layouts has been run. CI can verify compilation and static guardrails but cannot establish that all real folder variants are detected.
+
+- Follow-up review: metadata validation now rejects unbalanced KeyValues braces/quotes and ignores braces inside quoted values and `//` comments; optional `custom`/`addons`/`workshop` content is surfaced separately, and the library summary reports ready candidates accurately. The Stage 3 verifier covers these behaviors.
