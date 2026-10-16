@@ -15,7 +15,8 @@ for tool in make ant java git python3 unzip sha256sum readelf; do command -v "$t
 AAPT="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name aapt -print 2>/dev/null | sort -V | tail -n 1)"
 [[ -n "$AAPT" && -x "$AAPT" ]] || { echo "ERROR: No executable aapt under $ANDROID_HOME/build-tools." >&2; exit 2; }
 build() {
-  local dir="$1" library="$2" output="$ROOT_DIR/$dir/$library"
+  local dir="$1" library="$2"
+  local output="$ROOT_DIR/$dir/$library"
   rm -f "$output" "$LIBPATH/$library"
   (cd "$ROOT_DIR/$dir" && make NDK=1 NDK_PATH="$NDK_HOME" APP_API_LEVEL=19 CFG=debug NDK_VERBOSE=1 -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 2)")
   [[ -s "$output" ]] || { echo "ERROR: Native build did not produce $dir/$library" >&2; exit 1; }
