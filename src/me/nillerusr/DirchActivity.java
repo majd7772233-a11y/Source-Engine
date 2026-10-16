@@ -2,179 +2,163 @@ package me.nillerusr;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.SpannableString;
-import android.text.style.StyleSpan;
-import android.text.util.Linkify;
-import android.util.Log;
-import android.view.*;
-import android.widget.*;
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Comparator;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.regex.Pattern;
-import org.libsdl.app.SDLActivity;
-import android.content.pm.PackageManager;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 import com.magd.source.engine.R;
-import android.widget.LinearLayout.LayoutParams;
-import android.content.pm.PackageInfo;
-import android.content.pm.Signature;
-import java.security.MessageDigest;
-import android.util.Base64;
-import android.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import me.nillerusr.LauncherActivity;
-import android.view.LayoutInflater;
-import android.graphics.Bitmap;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
-import android.view.MotionEvent;
-import android.view.View.OnTouchListener;
+import java.util.Comparator;
 
-public class DirchActivity extends Activity implements OnTouchListener{
-	public static final int sdk = Integer.valueOf(Build.VERSION.SDK).intValue();
-	public static String cur_dir;
-	static LinearLayout body;
-	public SharedPreferences mPref;
+/** Storage picker: SAF on Android 5+, constrained legacy browsing on older Android. */
+public class DirchActivity extends Activity implements View.OnClickListener {
+    private static final int REQUEST_TREE = 604;
+    private SharedPreferences preferences;
+    private LinearLayout body;
+    private TextView header;
+    private String currentDirectory;
 
-	@Override
-	public boolean onTouch(View v, MotionEvent event)
-	{
-		if (event.getAction() == MotionEvent.ACTION_UP)
-		{
-			TextView btn = (TextView)v.findViewById(R.id.dirname);
-			if( cur_dir == null )
-				ListDirectory(""+btn.getText());
-			else
-				ListDirectory(cur_dir+"/"+btn.getText());
-		}
-		return false;
-	}
+    @Override public void onCreate(Bundle state) {
+        super.onCreate(state);
+        preferences = getSharedPreferences("mod", MODE_PRIVATE);
+        requestWindowFeature(1);
+        setContentView(R.layout.activity_directory_choice);
+        body = (LinearLayout) findViewById(R.id.bodych);
+        header = (TextView) findViewById(R.id.header_txt);
+        Button choose = (Button) findViewById(R.id.button_choice);
+        if (Build.VERSION.SDK_INT >= 21) {
+            header.setText(R.string.srceng_storage_picker_explanation);
+            choose.setText(R.string.srceng_storage_choose_folder);
+            choose.setOnClickListener(this);
+            TextView info = new TextView(this);
+            info.setText(R.string.srceng_storage_saf_info);
+            info.setTextColor(0xFFFFFFFF);
+            info.setTextSize(15);
+            info.setPadding(16, 16, 16, 16);
+            body.addView(info, new LinearLayout.LayoutParams(-1, -2));
+            chooseFolder();
+        } else {
+            choose.setText(R.string.srceng_dir_choice_btn);
+            choose.setOnClickListener(this);
+            currentDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
+            listDirectory(currentDirectory);
+        }
+        LauncherActivity.changeButtonsStyle((ViewGroup) getWindow().getDecorView());
+    }
 
-	public void ListDirectory( String path )
-	{
-		TextView header = (TextView)findViewById(R.id.header_txt);
-		File myDirectory = new File(path);
+    private void chooseFolder() {
+        try {
+            startActivityForResult(StorageAccess.createTreePickerIntent(), REQUEST_TREE);
+        } catch (RuntimeException e) {
+            new AlertDialog.Builder(this).setTitle(R.string.srceng_storage_error_title)
+                    .setMessage(R.string.srceng_storage_picker_unavailable)
+                    .setPositiveButton(R.string.srceng_launcher_ok, null).show();
+        }
+    }
 
-		File[] directories = myDirectory.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.isDirectory();
-			}
-		});
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQUEST_TREE) return;
+        if (resultCode != RESULT_OK || data == null || data.getData() == null) {
+            Toast.makeText(this, R.string.srceng_storage_selection_cancelled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Uri uri = data.getData();
+        String path = StorageAccess.resolveFilesystemPath(this, uri);
+        if (path == null || !StorageAccess.persistSelection(this, uri, data.getFlags())) {
+            new AlertDialog.Builder(this).setTitle(R.string.srceng_storage_error_title)
+                    .setMessage(R.string.srceng_storage_unsupported_provider)
+                    .setPositiveButton(R.string.srceng_launcher_ok, null).show();
+            return;
+        }
+        File selected = new File(path);
+        if (!selected.isDirectory() || !selected.canRead()) {
+            new AlertDialog.Builder(this).setTitle(R.string.srceng_storage_error_title)
+                    .setMessage(R.string.srceng_storage_unavailable)
+                    .setPositiveButton(R.string.srceng_launcher_ok, null).show();
+            return;
+        }
+        String gamePath = path;
+        String gameDir = preferences.getString("gamedir", "hl2");
+        if (new File(selected, "gameinfo.txt").isFile()) {
+            File parent = selected.getParentFile();
+            if (parent != null) { gamePath = parent.getAbsolutePath(); gameDir = selected.getName(); }
+        }
+        preferences.edit().putString("gamepath", normalizePath(gamePath)).putString("gamedir", gameDir).apply();
+        Intent result = new Intent();
+        result.putExtra("selected_path", normalizePath(gamePath));
+        result.putExtra("selected_gamedir", gameDir);
+        setResult(RESULT_OK, result);
+        finish();
+    }
 
-		if (directories != null && directories.length > 1) {
-			Arrays.sort(directories, new Comparator<File>() {
-				@Override
-				public int compare(File object1, File object2) {
-					return object1.getName().toUpperCase().compareTo(object2.getName().toUpperCase());
-				}
-			});
-		}
+    private String normalizePath(String path) {
+        if (path == null) return "";
+        String value = path.trim();
+        while (value.length() > 1 && value.endsWith(File.separator)) value = value.substring(0, value.length() - 1);
+        try { return new File(value).getCanonicalPath(); }
+        catch (IOException e) { return new File(value).getAbsolutePath(); }
+    }
 
-		LayoutInflater ltInflater = getLayoutInflater();
-		if( directories == null )
-			return;
+    @Override public void onClick(View view) {
+        if (Build.VERSION.SDK_INT >= 21) { chooseFolder(); return; }
+        if (currentDirectory == null) return;
+        File chosen = new File(currentDirectory);
+        if (!chosen.isDirectory() || !chosen.canRead() || !chosen.canWrite()) {
+            Toast.makeText(this, R.string.srceng_storage_unavailable, Toast.LENGTH_LONG).show();
+            return;
+        }
+        preferences.edit().putString("gamepath", normalizePath(currentDirectory)).apply();
+        Intent result = new Intent();
+        result.putExtra("selected_path", normalizePath(currentDirectory));
+        result.putExtra("selected_gamedir", preferences.getString("gamedir", "hl2"));
+        setResult(RESULT_OK, result);
+        finish();
+    }
 
-		try {
-			cur_dir = myDirectory.getCanonicalPath();
-			header.setText(cur_dir);
-		} catch( IOException e ) { }
+    private void listDirectory(String path) {
+        File directory = new File(path);
+        File[] children;
+        try { children = directory.listFiles(new java.io.FileFilter() {
+            @Override public boolean accept(File file) { return file.isDirectory(); }
+        }); } catch (SecurityException e) { children = null; }
+        if (children == null || !directory.canRead()) {
+            Toast.makeText(this, R.string.srceng_storage_unavailable, Toast.LENGTH_LONG).show();
+            return;
+        }
+        Arrays.sort(children, new Comparator<File>() {
+            @Override public int compare(File a, File b) { return a.getName().compareToIgnoreCase(b.getName()); }
+        });
+        try { currentDirectory = directory.getCanonicalPath(); }
+        catch (IOException ignored) { currentDirectory = directory.getAbsolutePath(); }
+        header.setText(currentDirectory);
+        body.removeAllViews();
+        File parent = directory.getParentFile();
+        String primaryRoot = normalizePath(Environment.getExternalStorageDirectory().getAbsolutePath());
+        boolean insidePrimary = currentDirectory.equals(primaryRoot)
+                || currentDirectory.startsWith(primaryRoot + File.separator);
+        addDirectoryEntry("..", !insidePrimary || currentDirectory.equals(primaryRoot) || parent == null
+                ? currentDirectory : parent.getAbsolutePath());
+        for (File child : children) addDirectoryEntry(child.getName(), child.getAbsolutePath());
+    }
 
-		body.removeAllViews();
-		View view = ltInflater.inflate(R.layout.directory, body, false);
-		TextView txt = (TextView)view.findViewById(R.id.dirname);
-		txt.setText("..");
-		body.addView(view);
-		view.setOnTouchListener(this);
-
-		for ( File dir : directories ) {
-			view = ltInflater.inflate(R.layout.directory, body, false);
-			txt = (TextView)view.findViewById(R.id.dirname);
-			txt.setText(dir.getName());
-			body.addView(view);
-			view.setOnTouchListener(this);
-		}
-	}
-
-	public List<String> getExtStoragePaths() {
-		List<String> list = new ArrayList<String>();
-		File fileList[] = new File("/storage/").listFiles();
-		if( fileList == null )
-			return list;
-
-		for (File file : fileList) {
-			if(!file.getAbsolutePath().equalsIgnoreCase(Environment.getExternalStorageDirectory().getAbsolutePath()) && file.isDirectory() && file.canRead())
-           		list.add(file.getAbsolutePath());
-		}
-		return list;
-	}
-
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		mPref = getSharedPreferences("mod", 0);
-
-		requestWindowFeature(1);
-		if (sdk >= 21)
-			super.setTheme(16974372);
-		else
-			super.setTheme(16973829);
-
-		setContentView(R.layout.activity_directory_choice);
-		cur_dir = null;
-		body = (LinearLayout)findViewById(R.id.bodych);
-		TextView header = (TextView)findViewById(R.id.header_txt);
-		header.setText("");
-
-		Button button = (Button)findViewById(R.id.button_choice);
-
-		button.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				if( cur_dir != null ) {
-					if( LauncherActivity.GamePath != null )
-						LauncherActivity.GamePath.setText(cur_dir+"/");
-					SharedPreferences.Editor editor = mPref.edit();
-					editor.putString("gamepath", cur_dir+"/");
-					editor.commit();
-					finish();
-				}
-			}
-		});
-
-		LauncherActivity.changeButtonsStyle((ViewGroup)this.getWindow().getDecorView());
-
-		List<String> l = getExtStoragePaths();
-		if( l == null || l.isEmpty() ) {
-			ListDirectory(LauncherActivity.getDefaultDir());
-			return;
-		}
-
-		LayoutInflater ltInflater = getLayoutInflater();
-		View view = ltInflater.inflate(R.layout.directory, body, false);
-		TextView txt = (TextView)view.findViewById(R.id.dirname);
-		txt.setText(LauncherActivity.getDefaultDir());
-		body.addView(view);
-		view.setOnTouchListener(this);
-
-		for( String dir : l) {
-			view = ltInflater.inflate(R.layout.directory, body, false);
-			txt = (TextView)view.findViewById(R.id.dirname);
-			txt.setText(dir);
-			body.addView(view);
-			view.setOnTouchListener(this);
-		}
-	}
+    private void addDirectoryEntry(String label, final String path) {
+        TextView item = new TextView(this);
+        item.setText(label); item.setTextColor(0xFFFFFFFF); item.setTextSize(16);
+        item.setPadding(14, 12, 14, 12);
+        item.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { listDirectory(path); }
+        });
+        body.addView(item, new LinearLayout.LayoutParams(-1, -2));
+    }
 }

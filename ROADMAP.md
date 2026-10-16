@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status:** Stages 0 and 1 are complete. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
+> **Roadmap status:** Stages 0–3 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Stage 4 storage implementation is in review. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
 
 ## 1. Product goal
 
@@ -72,11 +72,11 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - **Runtime acceptance note:** CI and APK packaging passed, but physical-device validation with multiple real game/mod folder layouts remains necessary before claiming every valid game is discovered or that engine compatibility is proven. The UI labels readiness as “Ready to try” and explicitly does not guarantee compatibility.
  
 ### Stage 4 — Storage permissions, removable media, and path reliability
-- [ ] Replace unreliable `/storage/` guessing and broad `java.io.File` browsing with Android Storage Access Framework where appropriate; persist URI grants and revalidate them.
-- [ ] Support internal shared storage, user-selected folders, and removable SD/USB storage only where Android/device permissions actually allow it. Never imply the app can bypass scoped storage.
-- [ ] Resolve URI-to-engine access safely; if native engine code requires real filesystem paths, implement and document a supported access strategy rather than pretending every URI is a path.
-- [ ] Fix path normalization, trailing separators, spaces/non-ASCII paths, missing directories, read-only media, revoked permissions, and removable media disconnects.
-- [ ] Acceptance: users can select/reselect a supported game folder, the selection survives process restart when permitted, and access errors are clear rather than silent.
+- [x] Replace guessed `/storage/` volume enumeration with Android's Storage Access Framework (SAF) tree picker on API 21+; persist the read grant and selected tree URI, then revalidate the grant on launch.
+- [x] Support primary shared storage and local removable SD/USB volumes only when the Android external-storage document provider maps the tree to a canonical, readable and writable filesystem path. Android 17–20 retain a constrained primary-storage browser because SAF tree selection is unavailable there.
+- [x] Bridge SAF to the engine's real-path requirement conservatively: only accept `com.android.externalstorage.documents` tree URIs with validated volume/document IDs and canonical-path containment. Generic cloud/document providers are rejected; the engine is never given a `content://` URI as if it were a filesystem path.
+- [x] Normalize selected paths and trailing separators; handle spaces/non-ASCII as ordinary Java path strings; recheck directory readability/writability, persisted grants, mounted removable volume state, and clear revoked/disconnected/read-only selections with actionable messages.
+- [ ] **Device acceptance pending:** install the APK on Android 5+ and Android 4.2–4.4 where available; verify internal-storage selection, SD/USB selection on a device that exposes it, app process restart and persisted grant, permission revocation, read-only media, and volume removal/reconnect. CI cannot simulate the platform document provider or real removable media.
 
 ### Stage 5 — Launcher information architecture and core UX
 - [ ] Replace the legacy form-heavy launcher with a coherent, responsive game-library home while preserving working launch arguments, environment overrides, and advanced settings.

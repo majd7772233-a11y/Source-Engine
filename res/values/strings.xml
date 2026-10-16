@@ -72,4 +72,13 @@
     <string name="srceng_library_optional_found">Optional content: detected</string>
     <string name="srceng_library_optional_none">Optional content: none detected</string>
     <string name="srceng_library_count">Ready to try: %1$d of %2$d candidates</string>
+    <string name="srceng_storage_picker_explanation">Choose the folder that contains your Source game files.</string>
+    <string name="srceng_storage_choose_folder">Choose folder…</string>
+    <string name="srceng_storage_saf_info">Android will ask you to grant folder access. This build can launch only from storage providers that expose a readable real filesystem path to the native engine. Generic cloud/document providers are not supported as game paths. The app does not bypass Android storage restrictions.</string>
+    <string name="srceng_storage_error_title">Storage access problem</string>
+    <string name="srceng_storage_picker_unavailable">Android could not open the system folder picker. Check your device software and try again.</string>
+    <string name="srceng_storage_unsupported_provider">This provider cannot be used by the native engine. Choose a local shared-storage folder on internal storage or a mounted SD/USB volume, and make sure it is readable.</string>
+    <string name="srceng_storage_unavailable">The selected folder is missing, unreadable, read-only in an unsupported way, or its removable volume is disconnected. Reconnect the volume or select the folder again.</string>
+    <string name="srceng_storage_revoked">Saved storage access is no longer valid. The storage may have been disconnected or Android may have revoked the folder grant. Select the folder again.</string>
+    <string name="srceng_storage_selection_cancelled">Folder selection cancelled.</string>
 </resources>
