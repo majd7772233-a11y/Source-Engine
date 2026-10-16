@@ -25,10 +25,7 @@ public final class StorageAccess {
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                 | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
-        if (Build.VERSION.SDK_INT >= 26) {
-            SharedPreferences preferences = null;
-            // No guessed initial URI: the system picker chooses an available provider/volume.
-        }
+        // No guessed initial URI: the system picker chooses an available provider/volume.
         return intent;
     }
 
@@ -85,6 +82,8 @@ public final class StorageAccess {
         String path = resolveFilesystemPath(context, uri);
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         if (path == null) {
+            try { context.getContentResolver().releasePersistableUriPermission(uri, grants); }
+            catch (RuntimeException ignored) { }
             preferences.edit().remove(TREE_URI_KEY).remove(TREE_PATH_KEY).apply();
             return false;
         }
