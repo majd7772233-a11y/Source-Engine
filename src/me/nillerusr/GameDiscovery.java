@@ -16,8 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Bounded, permission-aware Source game folder discovery.
@@ -29,8 +27,6 @@ public final class GameDiscovery {
     public static final int MAX_DEPTH = 4;
     public static final int MAX_DIRECTORIES = 1200;
     private static final long MAX_GAMEINFO_BYTES = 256L * 1024L;
-    private static final Pattern TITLE_PATTERN = Pattern.compile(
-            "(?im)^\\s*\\"?(?:game|title)\\"?\\s+\\"([^\\"]{1,160})\\"");
     private static final String PREFS = "mod";
     private static final String LIBRARY_PATHS = "library_paths";
     private static final String LAST_LAUNCHED_PREFIX = "last_launched:";
@@ -68,13 +64,19 @@ public final class GameDiscovery {
             return results;
         }
         File root = new File(rootPath.trim());
-        if (!root.isDirectory() || !root.canRead()) {
+        try {
+            if (!root.isDirectory() || !root.canRead()) return results;
+        } catch (SecurityException e) {
             return results;
         }
 
         Set<String> visited = new HashSet<String>();
         int[] count = new int[] { 0 };
-        scanDirectory(context, root, 0, visited, count, results);
+        try {
+            scanDirectory(context, root, 0, visited, count, results);
+        } catch (SecurityException e) {
+            // Preserve entries discovered before Android denied a later path.
+        }
 
         Collections.sort(results, new Comparator<GameEntry>() {
             @Override public int compare(GameEntry left, GameEntry right) {
@@ -254,15 +256,24 @@ public final class GameDiscovery {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             String line;
             int total = 0;
+            String quote = String.valueOf('"');
             while ((line = reader.readLine()) != null && total < MAX_GAMEINFO_BYTES) {
                 total += line.length();
-                Matcher matcher = TITLE_PATTERN.matcher(line);
-                if (matcher.find()) {
-                    String value = matcher.group(1).trim();
-                    if (value.length() > 0) return value;
-                }
+                String lower = line.toLowerCase(Locale.US);
+                int keyStart = lower.indexOf(quote + "game" + quote);
+                if (keyStart < 0) keyStart = lower.indexOf(quote + "title" + quote);
+                if (keyStart < 0) continue;
+                int keyEnd = line.indexOf('"', keyStart + 1);
+                if (keyEnd < 0) continue;
+                int valueStart = line.indexOf('"', keyEnd + 1);
+                if (valueStart < 0) continue;
+                int valueEnd = line.indexOf('"', valueStart + 1);
+                if (valueEnd <= valueStart + 1) continue;
+                String value = line.substring(valueStart + 1, valueEnd).trim();
+                if (value.length() > 0 && value.length() <= 160) return value;
             }
         } catch (IOException ignored) {
+        } catch (SecurityException ignored) {
         } finally {
             if (reader != null) try { reader.close(); } catch (IOException ignored) { }
         }
@@ -324,14 +335,18 @@ public final class GameDiscovery {
 
     public static GameEntry inspectPath(Context context, String path) {
         if (context == null || path == null || path.trim().length() == 0) return null;
-        File directory = new File(path.trim());
-        if (!directory.isDirectory() || !directory.canRead()) return null;
-        File[] children = directory.listFiles();
-        if (children == null) return null;
-        boolean hasInfo = findChildIgnoreCase(children, "gameinfo.txt") != null;
-        boolean hasContent = hasContentMarkers(directory, children);
-        if (!hasInfo && !hasContent) return null;
-        return inspect(context, directory, children, hasInfo, hasContent);
+        try {
+            File directory = new File(path.trim());
+            if (!directory.isDirectory() || !directory.canRead()) return null;
+            File[] children = directory.listFiles();
+            if (children == null) return null;
+            boolean hasInfo = findChildIgnoreCase(children, "gameinfo.txt") != null;
+            boolean hasContent = hasContentMarkers(directory, children);
+            if (!hasInfo && !hasContent) return null;
+            return inspect(context, directory, children, hasInfo, hasContent);
+        } catch (SecurityException e) {
+            return null;
+        }
     }
 
     public static Set<String> getSavedPaths(Context context) {
