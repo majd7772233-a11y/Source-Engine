@@ -113,6 +113,11 @@ public class DirchActivity extends Activity implements View.OnClickListener {
     @Override public void onClick(View view) {
         if (Build.VERSION.SDK_INT >= 21) { chooseFolder(); return; }
         if (currentDirectory == null) return;
+        File chosen = new File(currentDirectory);
+        if (!chosen.isDirectory() || !chosen.canRead() || !chosen.canWrite()) {
+            Toast.makeText(this, R.string.srceng_storage_unavailable, Toast.LENGTH_LONG).show();
+            return;
+        }
         preferences.edit().putString("gamepath", normalizePath(currentDirectory)).apply();
         Intent result = new Intent();
         result.putExtra("selected_path", normalizePath(currentDirectory));
@@ -139,7 +144,11 @@ public class DirchActivity extends Activity implements View.OnClickListener {
         header.setText(currentDirectory);
         body.removeAllViews();
         File parent = directory.getParentFile();
-        addDirectoryEntry("..", parent == null ? currentDirectory : parent.getAbsolutePath());
+        String primaryRoot = normalizePath(Environment.getExternalStorageDirectory().getAbsolutePath());
+        boolean insidePrimary = currentDirectory.equals(primaryRoot)
+                || currentDirectory.startsWith(primaryRoot + File.separator);
+        addDirectoryEntry("..", !insidePrimary || currentDirectory.equals(primaryRoot) || parent == null
+                ? currentDirectory : parent.getAbsolutePath());
         for (File child : children) addDirectoryEntry(child.getName(), child.getAbsolutePath());
     }
 
