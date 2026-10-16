@@ -26,10 +26,10 @@ COMMIT="${COMMIT:-$(git rev-parse HEAD)}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-$(git branch --show-current 2>/dev/null || echo local)}"
 mkdir -p "$ROOT_DIR/res/values"
 {
-  printf '%s\\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>'
-  printf '  <string name="last_commit">%s</string>\\n' "$COMMIT"
-  printf '  <string name="deploy_branch">%s</string>\\n' "$DEPLOY_BRANCH"
-  printf '%s\\n' '</resources>'
+  printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>'
+  printf '  <string name="last_commit">%s</string>\n' "$COMMIT"
+  printf '  <string name="deploy_branch">%s</string>\n' "$DEPLOY_BRANCH"
+  printf '%s\n' '</resources>'
 } > "$ROOT_DIR/res/values/build_info.xml"
 
 ant -Dsdk.dir="$ANDROID_HOME" clean debug
