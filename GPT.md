@@ -124,3 +124,14 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Fixed the selected SDK path in the workflow and Ant invocations, added a fail-fast SDK Ant-build-file check, installed required 32-bit runtime packages, and made root `build.sh` generate the build metadata resources it needs.
 - GitHub Actions run `38937163563` completed successfully on `5116d037a074e3c15652e465a3224576767e3b41`; native library compilation, APK packaging, and artifact upload all passed. The uploaded artifact is named `source-engine-android-debug`.
 - A final verification candidate adds source/package/shell checks and validates the APK's manifest package and required ARMv7 native libraries. Its CI result must be inspected before Stage 0 is marked complete.
+
+
+### 2026-10-17 — Stage 1 build integrity work in progress
+- Working branch: `stage1-build-integrity`; pull request: https://github.com/majd7772233-a11y/Source-Engine/pull/4. Do not merge or mark Stage 1 complete until the actual CI build is green and the remaining external GitLab dependency revisions are pinned.
+- Re-read `ROADMAP.md` and this notebook before work. Stage 0's actual passing run is recorded above; physical-device/runtime behavior remains untested.
+- Reworked `build.sh` and `scripts/workflow.sh` to use explicit SDK checks, XML-escape generated metadata, remove stale APK outputs before packaging, remove each native output before rebuilding it, and call the shared APK verifier after Ant succeeds.
+- Added `scripts/verify-apk.sh`: validates ZIP integrity, application ID `com.magd.source.engine`, required dex/resources, the five required native libraries, ARM ELF headers for packaged native libraries, ABI directory consistency, APK byte size, SHA-256, and a generated metadata/checksum report.
+- Added `scripts/verify-stage1.sh` to statically check shell syntax, stale-output guards, verification integration, artifact upload gating, XML escaping, and retired deployment scripts.
+- CI now uses a fixed Ubuntu 24.04 runner label and pinned action commit SHAs observed in the previous successful run. It checks out `nillerusr/srcsdk` at commit `413f5848d9a4534cdf8a4d10f5c1e7b1eaf3835d`, logs exact external dependency revisions and recursive submodule SHAs, verifies the APK, then uploads APK + metadata + SHA-256 report only on success.
+- Retired `scripts/upload-to-github.sh`, which embedded a token in a remote URL and force-pushed to an unrelated repository, and the unused Discord notifier. Neither is invoked by the current workflow; both now fail closed without reading credentials.
+- **Still unverified:** the new PR's Actions run, exact lock commits for the GitLab `ndk-binaries` and `android-sdk` repositories, local clean build on a separate machine, and actual installation/game launch. Resolve the GitLab SHAs from the first CI log, pin them in the workflow, rerun CI, fix all failures, then merge and record final run/commit/artifact details.
