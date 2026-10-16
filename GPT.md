@@ -145,3 +145,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 - **Intermediate verified APK** (this commit predates final documentation/trigger cleanup): 56,516,557 bytes; SHA-256 `e5e4c64baf0e660997d20a2bfc0ea2ab0dcea6ade371a45e183f0750edcdb177`. Artifact `source-engine-android-debug` ID `12077976000`, ZIP size 54,489,118 bytes, artifact ZIP digest `sha256:b97434f6553dc80c25ce4673bd88225a4e89b60a22277b6a037415184a4fd27c`.
 - No GitHub deployment token or Discord token is used by the build workflow. The legacy push script and Discord notifier remain disabled and fail closed.
 - **Not tested:** installation/launch on a physical device, real game-content compatibility, controls, rendering, or runtime stability. Do not claim those as passed.
+
+
+### 2026-10-17 — Stage 2 startup/lifecycle implementation (runtime acceptance pending)
+- Working branch: `stage2-startup-lifecycle`, based on canonical Stage 1 commit `96092dbfc7f030d643125505dbd51c36e2cb3145`.
+- Fixed launcher-to-SDL value handoff: current `gamepath`, `argv`, `env`, and `gamedir` are forwarded as explicit extras; launch root is checked before starting, repeated taps are blocked while launch is in progress, and Launch is re-enabled when returning to the launcher.
+- Hardened startup validation in `ValveActivity2`: path and game directory are null-safe; rejects traversal/path separators in game directory; handles unreadable/null directory listings; validates the selected game's `gameinfo.txt`; logs actionable failures.
+- `ExtractAssets.extractVPK` now returns a result, closes streams, flushes/syncs the output, verifies a non-empty file, and commits the pak version only after successful extraction. Native initialization stops and explains failures rather than continuing.
+- User environment overrides are parsed as NAME=VALUE entries, malformed names are ignored with diagnostics, reserved required engine variables cannot be overridden, optional custom VPKs are checked, and required native `setenv` results are checked.
+- Fixed the Android pre-23 runtime-permission API call path in `SDLActivity`; empty permission results are handled explicitly. Added SDL new-intent handling and static-state reset after both normal and failed shutdown.
+- **Not yet verified:** Java/Ant build and workflow are still pending; no physical-device launch/pause/resume test or complete lawful game content is available in CI. Inspect the Stage 2 PR's CI and logs before merging; do not claim gameplay works from static validation alone.

@@ -1,123 +1,263 @@
 package com.valvesoftware;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.graphics.Point;
-import android.os.Bundle;
-import android.view.Display;
-import java.util.HashMap;
+import android.util.Log;
+
 import java.io.File;
 import java.util.Locale;
-import org.libsdl.app.SDLActivity;
-import me.nillerusr.LauncherActivity;
-import android.content.SharedPreferences;
-import android.content.Context;
-import android.util.Log;
+import java.util.regex.Pattern;
+
 import me.nillerusr.ExtractAssets;
+import me.nillerusr.LauncherActivity;
 
-public class ValveActivity2 { // not activity, i am lazy to change native methods
-	private static Activity mSingleton;
-	public static SharedPreferences mPref;
+/**
+ * Java bridge between the Android launcher and the native Source runtime.
+ * Keep native declarations stable: native code may resolve these methods by JNI name.
+ */
+public final class ValveActivity2 {
+    private static final String TAG = "SRCAPK";
+    private static final Pattern ENV_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
+    private static Activity mSingleton;
+    public static SharedPreferences mPref;
 
-	public static native void setArgs(String args);
-	public static native int setenv(String name, String value, int overwrite);
-	private static native void nativeOnActivityResult(Activity activity, int i, int i2, Intent intent);
+    public static native void setArgs(String args);
+    public static native int setenv(String name, String value, int overwrite);
+    private static native void nativeOnActivityResult(Activity activity, int requestCode, int resultCode, Intent data);
 
-	public static boolean findGameinfo(String path)
-	{
-		File dir = new File(path);
-		if( !dir.isDirectory() )
-			return false;
+    private ValveActivity2() {
+    }
 
-		for( File file : dir.listFiles() )
-		{
-			if( file.isDirectory() )
-			{
-				for( File f : file.listFiles() )
-				{
-					if( f.getName().toLowerCase().equals("gameinfo.txt") )
-						return true;
-				}
-			}
-		}
+    private static String clean(String value) {
+        return value == null ? "" : value.trim();
+    }
 
-		return false;
-	}
+    private static String getGamePath(Context context, Intent intent) {
+        String extra = intent == null ? null : intent.getStringExtra("gamepath");
+        if (extra != null && !extra.trim().isEmpty()) {
+            return extra.trim();
+        }
+        return clean(context.getSharedPreferences("mod", 0).getString(
+                "gamepath", LauncherActivity.getDefaultDir() + "/srceng"));
+    }
 
-	static public boolean isModGameinfoExists(String path)
-	{
-		File dir = new File(path);
-		if( !dir.isDirectory() )
-			return false;
+    private static String getGameDirectory(Intent intent, SharedPreferences preferences) {
+        String name = intent == null ? null : intent.getStringExtra("gamedir");
+        if (name == null || name.trim().isEmpty()) {
+            name = preferences.getString("gamedir", "hl2");
+        }
+        name = clean(name);
+        if (name.isEmpty()) {
+            name = "hl2";
+        }
 
-		for( File file : dir.listFiles() )
-		{
-			if( file.isFile() && file.getName().toLowerCase().equals("gameinfo.txt") )
-				return true;
-		}
+        // A game directory must be a single child name, never a path traversal expression.
+        if (".".equals(name) || "..".equals(name) || name.contains("/")
+                || name.contains("\\") || name.indexOf('\0') >= 0) {
+            return "";
+        }
+        return name;
+    }
 
-		return false;
-	}
+    private static boolean hasGameInfo(File directory) {
+        if (directory == null || !directory.isDirectory() || !directory.canRead()) {
+            return false;
+        }
+        File[] children = directory.listFiles();
+        if (children == null) {
+            return false;
+        }
+        for (File child : children) {
+            if (child != null && child.isFile()
+                    && "gameinfo.txt".equalsIgnoreCase(child.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	static public boolean preInit(Context context, Intent intent)
-	{
-		mPref = context.getSharedPreferences("mod", 0);
-		String gamepath = mPref.getString("gamepath", LauncherActivity.getDefaultDir() + "/srceng");
-		String gamedir = intent.getStringExtra("gamedir");
-		if( gamedir == null || gamedir.isEmpty() )
-			gamedir = "hl2";
+    /** Compatibility helper retained for existing Java/native integrations. */
+    public static boolean findGameinfo(String path) {
+        File root = new File(clean(path));
+        if (!root.isDirectory() || !root.canRead()) {
+            return false;
+        }
+        File[] children = root.listFiles();
+        if (children == null) {
+            return false;
+        }
+        for (File child : children) {
+            if (child != null && child.isDirectory() && hasGameInfo(child)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-		if( !findGameinfo(gamepath) || !isModGameinfoExists(gamepath+"/"+gamedir) )
-			return false;
+    /** Compatibility helper retained for existing Java/native integrations. */
+    public static boolean isModGameinfoExists(String path) {
+        return hasGameInfo(new File(clean(path)));
+    }
 
-		return true;
-	}
+    public static String getStartupError(Context context, Intent intent) {
+        if (context == null) {
+            return "Android context is unavailable. Close and reopen the launcher.";
+        }
 
-	static public void initNatives(Context context, Intent intent) {
-		mPref = context.getSharedPreferences("mod", 0);
-		ApplicationInfo appinf = context.getApplicationInfo();
-		String gamepath = mPref.getString("gamepath", LauncherActivity.getDefaultDir() + "/srceng");
+        SharedPreferences preferences = context.getSharedPreferences("mod", 0);
+        String path = getGamePath(context, intent);
+        if (path.isEmpty()) {
+            return "The game folder path is empty. Select the folder containing your game files.";
+        }
 
-		String argv = intent.getStringExtra("argv");
-		String gamedir = intent.getStringExtra("gamedir");
-		String gamelibdir = intent.getStringExtra("gamelibdir");
-		String customVPK = intent.getStringExtra("vpk");
-		Log.v("SRCAPK", "argv="+argv);
+        File root = new File(path);
+        if (!root.isDirectory()) {
+            return "The selected game folder does not exist or is not a directory:\n" + path;
+        }
+        if (!root.canRead()) {
+            return "Android cannot read the selected game folder:\n" + path
+                    + "\nCheck storage permission and select it again.";
+        }
 
-		if( gamedir == null || gamedir.isEmpty() )
-			gamedir = "hl2";
+        String gameDirectory = getGameDirectory(intent, preferences);
+        if (gameDirectory.isEmpty()) {
+            return "The game folder name is invalid. Use one folder name, such as hl2.";
+        }
 
-		if( argv == null || argv.isEmpty() )
-			argv = mPref.getString("argv", "-console");
+        File selectedGame = new File(root, gameDirectory);
+        if (!hasGameInfo(selectedGame)) {
+            return "Required game metadata was not found or cannot be read:\n"
+                    + new File(selectedGame, "gameinfo.txt").getPath()
+                    + "\n\nSelect the correct game folder. The APK does not include proprietary game files.";
+        }
+        return null;
+    }
 
-		argv = "-game "+gamedir+" "+argv;
+    public static boolean preInit(Context context, Intent intent) {
+        mPref = context.getSharedPreferences("mod", 0);
+        String error = getStartupError(context, intent);
+        if (error != null) {
+            Log.e(TAG, "Startup validation failed: " + error.replace('\n', ' '));
+        }
+        return error == null;
+    }
 
-		if( gamelibdir != null && !gamelibdir.isEmpty() )
-			setenv( "APP_MOD_LIB", gamelibdir, 1 );
+    private static boolean setRequiredEnvironment(String name, String value) {
+        int result = setenv(name, value, 1);
+        if (result != 0) {
+            Log.e(TAG, "setenv failed for " + name + " (result " + result + ")");
+        }
+        return result == 0;
+    }
 
-		ExtractAssets.extractVPK(context, false);
+    private static boolean applyUserEnvironment(String rawEnvironment) {
+        if (rawEnvironment == null || rawEnvironment.trim().isEmpty()) {
+            return true;
+        }
 
-		String vpks = context.getFilesDir().getPath()+"/"+ExtractAssets.VPK_NAME;
-		if( customVPK != null && !customVPK.isEmpty() )
-			vpks = customVPK+","+vpks;
+        for (String item : rawEnvironment.split("[\\r\\n;]+")) {
+            String entry = item.trim();
+            if (entry.isEmpty()) {
+                continue;
+            }
+            int separator = entry.indexOf('=');
+            if (separator <= 0) {
+                Log.w(TAG, "Ignoring malformed environment override; expected NAME=VALUE");
+                continue;
+            }
 
-		Log.v("SRCAPK", "vpks="+vpks);
+            String name = entry.substring(0, separator).trim();
+            String value = entry.substring(separator + 1).trim();
+            if (!ENV_NAME.matcher(name).matches()) {
+                Log.w(TAG, "Ignoring invalid environment name: " + name);
+                continue;
+            }
 
-		setenv( "EXTRAS_VPK_PATH", vpks, 1 );
-		setenv( "LANG", Locale.getDefault().toString(), 1 );
-		setenv( "APP_DATA_PATH", appinf.dataDir, 1);
-		setenv( "APP_LIB_PATH", appinf.nativeLibraryDir, 1);
+            // Keep engine-critical paths controlled by startup initialization.
+            if ("VALVE_GAME_PATH".equals(name) || "APP_DATA_PATH".equals(name)
+                    || "APP_LIB_PATH".equals(name) || "EXTRAS_VPK_PATH".equals(name)
+                    || "LANG".equals(name)) {
+                Log.w(TAG, "Ignoring reserved environment override " + name);
+                continue;
+            }
+            if (!setRequiredEnvironment(name, value)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-		if (mPref.getBoolean("rodir", false))
-			setenv( "VALVE_GAME_PATH", LauncherActivity.getAndroidDataDir(), 1 );
-		else
-			setenv( "VALVE_GAME_PATH", gamepath, 1 );
+    public static String initNatives(Context context, Intent intent) {
+        mPref = context.getSharedPreferences("mod", 0);
+        ApplicationInfo appInfo = context.getApplicationInfo();
+        String gamePath = getGamePath(context, intent);
+        String gameDirectory = getGameDirectory(intent, mPref);
+        String arguments = intent == null ? null : intent.getStringExtra("argv");
+        if (arguments == null) {
+            arguments = mPref.getString("argv", "-console");
+        }
+        arguments = clean(arguments);
 
-		Log.v("SRCAPK", "argv="+argv);
-		setArgs(argv);
-	}
+        if (!ExtractAssets.extractVPK(context, false)) {
+            return "Runtime data extraction failed. Check free internal storage and reopen the app. "
+                    + "See Android logs (tag ExtractAssets).";
+        }
+
+        File bundledVpk = new File(context.getFilesDir(), ExtractAssets.VPK_NAME);
+        if (!bundledVpk.isFile() || bundledVpk.length() <= 0) {
+            return "Runtime data file is missing or empty: " + bundledVpk.getAbsolutePath();
+        }
+
+        String customVpk = intent == null ? null : intent.getStringExtra("vpk");
+        if (customVpk != null && !customVpk.trim().isEmpty()) {
+            for (String name : customVpk.split(",")) {
+                File customFile = new File(name.trim());
+                if (!customFile.isFile() || !customFile.canRead()) {
+                    return "Configured VPK is missing or unreadable: " + name.trim();
+                }
+            }
+        }
+
+        String environment = intent == null ? mPref.getString("env", "") : intent.getStringExtra("env");
+        if (!applyUserEnvironment(environment)) {
+            return "An environment override could not be applied. Check overrides and Android logs (tag SRCAPK).";
+        }
+
+        String vpkPaths = bundledVpk.getAbsolutePath();
+        if (customVpk != null && !customVpk.trim().isEmpty()) {
+            vpkPaths = customVpk.trim() + "," + vpkPaths;
+        }
+
+        String gameLibraryDirectory = intent == null ? null : intent.getStringExtra("gamelibdir");
+        if (gameLibraryDirectory != null && !gameLibraryDirectory.trim().isEmpty()
+                && !setRequiredEnvironment("APP_MOD_LIB", gameLibraryDirectory.trim())) {
+            return "The game library path could not be configured. Check the selected game files and retry.";
+        }
+
+        String gameRootForEngine = mPref.getBoolean("rodir", false)
+                ? LauncherActivity.getAndroidDataDir() : gamePath;
+        if (!setRequiredEnvironment("EXTRAS_VPK_PATH", vpkPaths)
+                || !setRequiredEnvironment("LANG", Locale.getDefault().toString())
+                || !setRequiredEnvironment("APP_DATA_PATH", appInfo.dataDir)
+                || !setRequiredEnvironment("APP_LIB_PATH", appInfo.nativeLibraryDir)
+                || !setRequiredEnvironment("VALVE_GAME_PATH", gameRootForEngine)) {
+            return "The native runtime rejected a required startup setting. Check Android logs (tag SRCAPK).";
+        }
+
+        String gameArgument = gameDirectory;
+        if (gameDirectory.matches(".*\\s+.*")) {
+            gameArgument = "\"" + gameDirectory.replace("\\", "\\\\")
+                    .replace("\"", "\\\"") + "\"";
+        }
+        String finalArguments = "-game " + gameArgument
+                + (arguments.isEmpty() ? "" : " " + arguments);
+        Log.i(TAG, "Preparing native launch for game '" + gameDirectory
+                + "' (argument length " + finalArguments.length() + ")");
+        setArgs(finalArguments);
+        return null;
+    }
 }

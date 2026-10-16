@@ -227,18 +227,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 		}
 	}
 
-	public void onRequestPermissionsResult( int requestCode,  String[] permissions,  int[] grantResults ) {
-		if( requestCode == REQUEST_PERMISSIONS ) {
-			for( int grantResult : grantResults ) {
-				if( grantResult == PackageManager.PERMISSION_DENIED ) {
-					Toast.makeText( this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG ).show();
-					finish();
-					return;
-				}
-			}
-			init();
-		}
-	}
+	@Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults) {
+  super.onRequestPermissionsResult(requestCode,permissions,grantResults);if(requestCode!=REQUEST_PERMISSIONS)return;
+  if(grantResults==null||grantResults.length==0){showStartupError(getString(R.string.srceng_launcher_error_permission_result));finish();return;}
+  for(int result:grantResults)if(result!=PackageManager.PERMISSION_GRANTED){showStartupError(getString(R.string.srceng_launcher_error_no_permission));finish();return;}init();
+ }
+ private void showStartupError(String message){if(isFinishing())return;new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok,new DialogInterface.OnClickListener(){@Override public void onClick(DialogInterface d,int w){finish();}}).setOnCancelListener(new DialogInterface.OnCancelListener(){@Override public void onCancel(DialogInterface d){finish();}}).show();}
 
     public void init()
     {
@@ -292,34 +286,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
 
-        if( !ValveActivity2.preInit(this, getIntent()) )
-        {
-        	mBrokenLibraries = true; // Funny hack, but should work
-            mSingleton = this;
-            AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-            dlgAlert.setTitle(getResources().getString(R.string.srceng_launcher_error));
-            dlgAlert.setMessage(getResources().getString(R.string.srceng_launcher_error_find_gameinfo));
-            dlgAlert.setNegativeButton(R.string.srceng_launcher_set, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                	Intent intent = new Intent(SDLActivity.this, DirchActivity.class);
-					intent.addFlags(268435456);
-					startActivity(intent);
-                    mSingleton.finish();
-                }
-            });
-
-            dlgAlert.setPositiveButton(R.string.srceng_launcher_ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                    mSingleton.finish();
-                }
-            });
-            dlgAlert.setCancelable(false);
-            dlgAlert.create().show();
-
-            return;
-        }
+        String validationError=ValveActivity2.getStartupError(this,getIntent());
+        if(validationError!=null){mBrokenLibraries=true;mSingleton=this;
+          new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(validationError)
+           .setNegativeButton(R.string.srceng_launcher_set,new DialogInterface.OnClickListener(){@Override public void onClick(DialogInterface d,int id){startActivity(new Intent(SDLActivity.this,DirchActivity.class));finish();}})
+           .setPositiveButton(R.string.srceng_launcher_ok,new DialogInterface.OnClickListener(){@Override public void onClick(DialogInterface d,int id){finish();}}).setCancelable(false).show();return;}
 
         // Set up JNI
         SDL.setupJNI();
@@ -332,8 +303,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         SDL.setContext(this);
 
         Intent intent = getIntent();
-        ValveActivity2.initNatives(this, getIntent());
-
+        String nativeInitError=ValveActivity2.initNatives(this,intent);
+        if(nativeInitError!=null){mBrokenLibraries=true;showStartupError(nativeInitError);return;}
         mClipboardHandler = new SDLClipboardHandler();
 
     if (Build.VERSION.SDK_INT >= 19) {
@@ -399,9 +370,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if( Build.VERSION.SDK_INT >= 23 )
             applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO }, REQUEST_PERMISSIONS );
 
-        if( checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && 
-            checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED )
+        if (Build.VERSION.SDK_INT < 23) {
+            // Before Android 6.0 manifest permissions are granted at install time.
             init();
+        } else if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            init();
+        }
     }
 
     protected void pauseNativeThread() {
@@ -546,10 +521,25 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);setIntent(intent);
+        if(mIsInitCalled&&!isFinishing())Log.w(TAG,"New launch intent received while native session is active; keeping current session.");
+    }
+
+    @Override
     protected void onDestroy() {
         Log.v(TAG, "onDestroy()");
 
         if (SDLActivity.mBrokenLibraries) {
+           // Failed startup must not poison the next launch through static SDL state.
+           mSDLThread = null;
+           mSurface = null;
+           mLayout = null;
+           mClipboardHandler = null;
+           mSingleton = null;
+           mIsInitCalled = false;
+           mIsResumedCalled = false;
+           mHasFocus = false;
            super.onDestroy();
            return;
         }
@@ -568,7 +558,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         SDLActivity.nativeQuit();
-
+        mSDLThread=null;mSurface=null;mLayout=null;mClipboardHandler=null;mSingleton=null;mIsInitCalled=false;mIsResumedCalled=false;mHasFocus=false;
         super.onDestroy();
     }
 

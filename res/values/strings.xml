@@ -34,4 +34,8 @@
 
     <string name="srceng_dir_choice_btn">Set current directory</string>
     <string name="srceng_update">Update avalible!</string>
+    <string name="srceng_launcher_error_empty_path">The game folder path is empty. Select the folder containing your game files.</string>
+    <string name="srceng_launcher_error_invalid_path">The selected game folder does not exist or cannot be read:\n%1$s\nSelect the folder containing your game files.</string>
+    <string name="srceng_launcher_error_start_failed">The game activity could not be started:\n%1$s\nCheck Android logs if the problem persists.</string>
+    <string name="srceng_launcher_error_permission_result">Android returned no permission result. Reopen the app and grant the requested permissions before launching.</string>
 </resources>

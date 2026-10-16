@@ -61,5 +61,5 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 - The project still uses the legacy Ant/Android SDK build system and an old NDK toolchain.
 - The project still depends on legacy external SDK/NDK repositories. Their exact source revisions are pinned, but the legacy toolchain remains old and no physical-device/game-runtime validation has been performed.
 - A successful APK build is not proof of game compatibility, storage behavior, performance, or runtime stability.
-- The launcher currently retains legacy game discovery and storage-picker behavior; these are tracked in the roadmap.
+- Startup now validates the configured game folder and `gameinfo.txt`, forwards current launch arguments/environment explicitly, and reports missing runtime data with actionable errors. Game discovery, SAF/removable-media handling, and device-level game-session verification remain future work.
 - Use the roadmap's acceptance criteria before advertising support for a game, ABI, input mode, or online feature.

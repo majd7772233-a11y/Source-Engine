@@ -44,6 +44,8 @@ public class LauncherActivity extends Activity {
 
 	public static boolean can_write = true;
 	static EditText cmdArgs, GamePath = null, EnvEdit, res_width, res_height;
+	private Button launchButton;
+	private boolean launchInProgress = false;
 	public SharedPreferences mPref;
 	public static final int sdk = Integer.valueOf(Build.VERSION.SDK).intValue();
 	static CheckBox useVolumeButtons, check_updates;
@@ -51,6 +53,7 @@ public class LauncherActivity extends Activity {
 	final static int REQUEST_PERMISSIONS = 42;
 
 	public void applyPermissions( final String permissions[], final int code ) {
+		if (Build.VERSION.SDK_INT < 23) return;
 		List<String> requestPermissions = new ArrayList<String>();
 		for( int i = 0; i < permissions.length; i++ ) {
 			if( checkSelfPermission(permissions[i]) != PackageManager.PERMISSION_GRANTED )
@@ -68,11 +71,10 @@ public class LauncherActivity extends Activity {
 	@Override
 	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults ) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if( requestCode == REQUEST_PERMISSIONS ) {
-			if( grantResults == null || grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED ) {
-				Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show();
-				finish();
-			}
+		if (requestCode == REQUEST_PERMISSIONS) {
+			boolean granted = grantResults != null && grantResults.length > 0;
+			if (granted) for (int result : grantResults) if (result != PackageManager.PERMISSION_GRANTED) { granted = false; break; }
+			if (!granted) { Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show(); launchInProgress = false; if (launchButton != null) launchButton.setEnabled(true); }
 		}
 	}
 
@@ -167,8 +169,8 @@ public class LauncherActivity extends Activity {
 			}
 		});*/
 
-		Button button = (Button)findViewById(R.id.button_launch);
-		button.setOnClickListener(new View.OnClickListener() {
+		launchButton = (Button)findViewById(R.id.button_launch);
+		launchButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				LauncherActivity.this.startSource(v);
 			}
@@ -247,8 +249,11 @@ public class LauncherActivity extends Activity {
 
 	public void startSource(View view)
 	{
-		String gamepath = GamePath.getText().toString();
-
+		if (launchInProgress) return;
+		String gamepath = GamePath == null ? "" : GamePath.getText().toString().trim();
+		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
+		File root = new File(gamepath);
+		if (!root.isDirectory() || !root.canRead()) { showStartupError(getString(R.string.srceng_launcher_error_invalid_path, gamepath)); return; }
 		SharedPreferences.Editor editor = mPref.edit();
 		saveSettings(editor);
 
@@ -260,11 +265,15 @@ public class LauncherActivity extends Activity {
 		else
 			editor.putBoolean("immersive_mode", false);
 
-		editor.commit();
-
+		if (!editor.commit()) Log.w("SRCAPK", "Preferences commit failed; forwarding current values to SDL.");
 		Intent intent = new Intent(LauncherActivity.this, SDLActivity.class);
-		intent.addFlags(268435456);
-		startActivity(intent);
+		intent.putExtra("gamepath", gamepath);
+		intent.putExtra("argv", cmdArgs.getText().toString().trim());
+		intent.putExtra("env", EnvEdit.getText().toString());
+		intent.putExtra("gamedir", mPref.getString("gamedir", "hl2"));
+		intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		try { launchInProgress = true; if (launchButton != null) launchButton.setEnabled(false); startActivity(intent); }
+		catch (RuntimeException e) { launchInProgress = false; if (launchButton != null) launchButton.setEnabled(true); Log.e("SRCAPK", "Unable to start SDL activity", e); showStartupError(getString(R.string.srceng_launcher_error_start_failed, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())); }
 
 
 /*		if (can_write || rodir) {
@@ -297,11 +306,11 @@ public class LauncherActivity extends Activity {
 */
 	}
 
-	public void onPause()
-	{
-		Log.v("SRCAPK", "onPause");
-		saveSettings(mPref.edit());
-		super.onPause();
+	private void showStartupError(String message) {
+		if (isFinishing()) return;
+		new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show();
 	}
+	@Override protected void onResume() { super.onResume(); launchInProgress = false; if (launchButton != null) launchButton.setEnabled(true); }
+	@Override protected void onPause() { Log.v("SRCAPK", "onPause"); if (mPref != null && cmdArgs != null && GamePath != null && EnvEdit != null) saveSettings(mPref.edit()); super.onPause(); }
 }
 
