@@ -76,9 +76,9 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 
 ## 6. Current phase hand-off
 
-- Active task: Stage 0 in `ROADMAP.md`: audit all branches, consolidate the unique working code into one canonical branch, normalize package ID to `com.magd.source.engine`, organize safely, and establish a coherent build baseline.
+- Active task: finish Stage 0 in `ROADMAP.md`. A curated integration commit has been created on `android-fixes` with `con-wrappers` and `test` as additional parents. Canonical application ID is now `com.magd.source.engine`; build scripts, workflow, ignore rules, and debug-keystore handling have been normalized. Do not call Stage 0 complete until a clean build/CI result and the remaining file-level checks are verified.
 - Required outcome before Stage 1: one canonical integrated tree with its branch provenance understood, package references consistent, build instructions and workflow aligned, and every unresolved build blocker documented.
-- Do not mark Stage 0 complete until its full acceptance criteria are checked. The initial inspection is not a substitute for merging and verifying the branch content.
+- Do not mark Stage 0 complete until its full acceptance criteria are checked. The initial inspection and curated merge are not a substitute for verifying every relevant call site and running the build. At the last check, GitHub Actions had zero runs for `android-fixes`.
 
 ## 7. Dated engineering log
 
@@ -94,3 +94,16 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 Use this section for new observations that do not yet fit another heading. Date each entry, include file paths/commit SHAs where available, and state whether a claim is verified, suspected, or still untested.
 
 - [Open note] Record newly discovered architecture details, branch conflicts, build blockers, user decisions, and test results here.
+
+
+### 2026-10-16 — Stage 0 implementation update
+- **Latest curated integration commit:** `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`; subsequent roadmap log commit: `c9608269403a39146654fe59ed64f159df9cedd1`.
+- Integrated branch ancestry for `con-wrappers` and `test` while preserving the canonical `android-fixes` tree and applying a selective, code-aware merge. Do not describe this as a blind full merge: incompatible alternate launcher/package code and unrelated Python/Discord automation were excluded deliberately.
+- Set `AndroidManifest.xml` package to `com.magd.source.engine`; changed the generated resource import to `com.magd.source.engine.R` in `LauncherActivity.java`, `DirchActivity.java`, `UpdateService.java`, and `UpdateSystem.java`. Preserve the Java implementation namespaces.
+- Integrated the NDK tierhook subtree from `test`, kept the ARMv7 shared library set, and carried forward the useful localized community contact text from `con-wrappers`.
+- Removed `debug.keystore` from the repository after removing the workflow copy step. Never use a checked-in debug key for release signing.
+- Replaced the developer-specific root `build.sh` SDK path with SDK/environment checks; `scripts/build-java.sh` now delegates to the root script; `scripts/workflow.sh` uses environment-driven paths and corrected native source paths; `.gitignore` excludes local toolchains and generated output.
+- Replaced the old CI workflow that targeted `con-wrappers` and pushed through external deploy/Discord credentials. It now targets `android-fixes`, supports manual dispatch, checks for the expected APK, and uploads a workflow artifact.
+- Added a guard to `LauncherActivity.onRequestPermissionsResult` so an empty result array no longer crashes the launcher.
+- **Not verified:** no successful CI run/build is available yet; GitHub Actions API returned zero runs for `android-fixes`. Script/toolchain assumptions and actual APK package/resources/native loading remain untested. Keep Stage 0 open until verified.
+- **Next action:** inspect the final integrated tree and file modes, obtain a real CI/build result, fix all failures, and update both `ROADMAP.md` and this log with the exact result.
