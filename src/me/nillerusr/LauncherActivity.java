@@ -58,6 +58,7 @@ public class LauncherActivity extends Activity {
 	static CheckBox useVolumeButtons, check_updates;
 
 	final static int REQUEST_PERMISSIONS = 42;
+	private static final int REQUEST_STORAGE_PICKER = 604;
 
 	public void applyPermissions( final String permissions[], final int code ) {
 		if (Build.VERSION.SDK_INT < 23) return;
@@ -73,6 +74,29 @@ public class LauncherActivity extends Activity {
 				requestPermissionsArray[i] = requestPermissions.get(i);
 			requestPermissions(requestPermissionsArray, code);
 		}
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode != REQUEST_STORAGE_PICKER || resultCode != RESULT_OK || data == null) return;
+		String selectedPath = data.getStringExtra("selected_path");
+		String selectedGameDir = data.getStringExtra("selected_gamedir");
+		if (selectedPath == null || selectedPath.trim().length() == 0) {
+			showStartupError(getString(R.string.srceng_storage_unavailable));
+			return;
+		}
+		File selected = new File(selectedPath);
+		if (!selected.isDirectory() || !selected.canRead()) {
+			showStartupError(getString(R.string.srceng_storage_unavailable));
+			return;
+		}
+		String normalized = canonicalPath(selectedPath);
+		if (GamePath != null) GamePath.setText(normalized);
+		SharedPreferences.Editor editor = mPref.edit().putString("gamepath", normalized);
+		if (selectedGameDir != null && selectedGameDir.trim().length() > 0) editor.putString("gamedir", selectedGameDir);
+		editor.apply();
+		scanLibrary(true, true);
 	}
 
 	@Override
@@ -439,8 +463,7 @@ public class LauncherActivity extends Activity {
 		dirButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Intent intent = new Intent(LauncherActivity.this, DirchActivity.class);
-				intent.addFlags(268435456);
-				startActivity(intent);
+				startActivityForResult(intent, REQUEST_STORAGE_PICKER);
 			}
 		});
 
@@ -491,6 +514,14 @@ public class LauncherActivity extends Activity {
 	{
 		if (launchInProgress) return;
 		String gamepath = GamePath == null ? "" : GamePath.getText().toString().trim();
+		if (Build.VERSION.SDK_INT >= 21) {
+			String savedTree = StorageAccess.getValidatedSelectedPath(this);
+			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
+			if (expectedTree != null && savedTree == null) {
+				showStartupError(getString(R.string.srceng_storage_revoked));
+				return;
+			}
+		}
 		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
 		File root = new File(gamepath);
 		if (!root.isDirectory() || !root.canRead()) { showStartupError(getString(R.string.srceng_launcher_error_invalid_path, gamepath)); return; }
