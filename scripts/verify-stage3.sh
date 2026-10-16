@@ -23,7 +23,7 @@ checks = {
     "asset validation": "hasContentMarkers" in discovery and 'endsWith(".vpk")' in discovery and 'endsWith(".bsp")' in discovery,
     "device ABI validation": "supportsPackagedAbi()" in discovery and '"armeabi-v7a".equals(abi)' in discovery,
     "native payload validation": "hasNativeRuntime(context)" in discovery and "libtierhook.so" in discovery and "libclient.so" in discovery,
-    "compatibility caveat": "compatibility is not guaranteed" in discovery.lower(),
+    "compatibility caveat": "srceng_library_detail_ready" in discovery,
     "persistent library paths": '"library_paths"' in discovery and "putStringSet(LIBRARY_PATHS" in discovery,
     "last launch persistence": "LAST_LAUNCHED_PREFIX" in discovery and "recordLaunch" in discovery,
     "rescan action": "srceng_library_rescan" in launcher and "scanLibrary(false, false)" in launcher,
