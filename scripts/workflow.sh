@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
-export NDK_HOME="\${NDK_HOME:-$ROOT_DIR/ndk-binaries}"
-export LIBPATH="\${LIBPATH:-$ROOT_DIR/libs/armeabi-v7a}"
-export NDK_TOOLCHAIN_VERSION="\${NDK_TOOLCHAIN_VERSION:-4.9}"
-export ANDROID_HOME="\${ANDROID_HOME:-\${ANDROID_SDK_ROOT:-$ROOT_DIR/android-sdk}}"
+export NDK_HOME="${NDK_HOME:-$ROOT_DIR/ndk-binaries}"
+export LIBPATH="${LIBPATH:-$ROOT_DIR/libs/armeabi-v7a}"
+export NDK_TOOLCHAIN_VERSION="${NDK_TOOLCHAIN_VERSION:-4.9}"
+export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$ROOT_DIR/android-sdk}}"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
-export COMMIT="\${COMMIT:-$(git rev-parse HEAD)}"
-export BUILD_BRANCH="\${BUILD_BRANCH:-$(git branch --show-current 2>/dev/null || printf local)}"
+export COMMIT="${COMMIT:-$(git rev-parse HEAD)}"
+export BUILD_BRANCH="${BUILD_BRANCH:-$(git branch --show-current 2>/dev/null || printf local)}"
 for required in "$NDK_HOME" "$ANDROID_HOME" "$ROOT_DIR/srcsdk" "$LIBPATH"; do [[ -d "$required" ]] || { echo "ERROR: Required build directory missing: $required" >&2; exit 2; }; done
 for tool in make ant java git python3 unzip sha256sum readelf; do command -v "$tool" >/dev/null 2>&1 || { echo "ERROR: Missing required tool: $tool" >&2; exit 2; }; done
 [[ -f "$ANDROID_HOME/tools/ant/build.xml" ]] || { echo "ERROR: $ANDROID_HOME lacks tools/ant/build.xml." >&2; exit 2; }
