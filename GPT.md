@@ -108,3 +108,9 @@ Use this section for new observations that do not yet fit another heading. Date 
 - A post-change scan of the 10 Java files under `src/me/nillerusr`, `src/com/valvesoftware`, and `src/org/libsdl/app` found no remaining `com.valvesoftware.source.R` imports; all five discovered resource imports now target `com.magd.source.engine.R`.
 - **Not verified:** no successful CI run/build is available yet; GitHub Actions API returned zero runs for `android-fixes`. Script/toolchain assumptions and actual APK package/resources/native loading remain untested. Keep Stage 0 open until verified.
 - **Next action:** inspect the final integrated tree and file modes, obtain a real CI/build result, fix all failures, and update both `ROADMAP.md` and this log with the exact result.
+
+
+### 2026-10-16 — Branch synchronization
+- The canonical tree was committed as a curated multi-parent integration commit, then all branch refs were fast-forwarded (or lease-updated for the temporary validation ref) to the same final commit: `5daf4cb07129bbbf40119169097ca148d4bdd813`.
+- Current refs checked: `android-fixes`, `con-wrappers`, `test`, and `stage0-build-validation` all resolve to that same SHA. The temporary validation PR was closed because GitHub Actions returned zero runs; its roadmap clarification was applied directly to the canonical branch.
+- This synchronization does not mean CI or runtime behavior has passed. Stage 0 remains open until a real build/CI result and remaining file-level checks are available.
