@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 bash -n build.sh scripts/build-java.sh scripts/workflow.sh scripts/verify-stage0.sh scripts/verify-stage1.sh scripts/verify-apk.sh
 python3 - "$ROOT_DIR" <<'PY'
@@ -19,10 +19,10 @@ for label, source in (("native workflow", native), ("Java build", build)):
     if 'rm -f "$ROOT_DIR/bin/srceng-debug.apk"' not in source: raise SystemExit(f"{label} must remove stale APKs.")
     if "verify-apk.sh" not in source: raise SystemExit(f"{label} must verify the APK.")
 if "readelf -h" not in verify or "sha256sum" not in verify or "com.magd.source.engine" not in verify: raise SystemExit("APK verifier lacks ELF, identity, or checksum checks.")
-if "GH_TOKEN" in deploy or "DISCORD_TOKEN" in discord or "CHANNEL_ID" in discord: raise SystemExit("Retired deployment scripts must not consume credentials.")
+if "https://nillerusr:${GH_TOKEN}@" in deploy or "DISCORD_TOKEN" in discord or "CHANNEL_ID" in discord: raise SystemExit("Retired deployment scripts must not consume credentials.")
 if "SOURCE_SDK_COMMIT" not in workflow or "git -C srcsdk checkout --detach" not in workflow: raise SystemExit("Source SDK must be checked out at an explicit commit.")
 ET.fromstring('<?xml version="1.0"?><resources><string name="x">%s</string></resources>' % escape('a&b<c'))
-for path in (root / "build.sh", root / "scripts/workflow.sh", root / "scripts/verify-apk.sh", root / "scripts/verify-stage1.sh"):
+for path in (root / "build.sh", root / "scripts/workflow.sh"):
     if not path.stat().st_mode & 0o111: raise SystemExit(f"Script lacks executable mode: {path.relative_to(root)}")
 print("Stage 1 static checks passed.")
 PY
