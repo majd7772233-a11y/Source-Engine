@@ -53,7 +53,7 @@ public final class StorageAccess {
             String state;
             try { state = Environment.getExternalStorageState(base); }
             catch (RuntimeException e) { return null; }
-            if (!Environment.MEDIA_MOUNTED.equals(state) && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) return null;
+            if (!Environment.MEDIA_MOUNTED.equals(state)) return null;
         }
         File candidate = relative.length() == 0 ? base : new File(base, relative);
         try {
@@ -61,7 +61,7 @@ public final class StorageAccess {
             String canonicalCandidate = candidate.getCanonicalPath();
             if (!canonicalCandidate.equals(canonicalBase)
                     && !canonicalCandidate.startsWith(canonicalBase + File.separator)) return null;
-            if (!candidate.isDirectory() || !candidate.canRead()) return null;
+            if (!candidate.isDirectory() || !candidate.canRead() || !candidate.canWrite()) return null;
             return canonicalCandidate;
         } catch (IOException | SecurityException e) {
             return null;
