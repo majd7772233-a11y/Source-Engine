@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 
+import com.magd.source.engine.R;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
