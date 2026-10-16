@@ -55,4 +55,15 @@
     <string name="srceng_library_no_candidates">No candidate game folders found. A candidate needs gameinfo.txt or recognizable Source game assets.</string>
     <string name="srceng_library_compatibility">Ready to try does not guarantee game/mod compatibility.</string>
     <string name="srceng_library_use_help">Selects this game's folder and launch path.</string>
+    <string name="srceng_library_status_missing_info">Missing gameinfo.txt</string>
+    <string name="srceng_library_detail_missing_info">This folder has game-like assets but no readable gameinfo.txt.</string>
+    <string name="srceng_library_status_invalid_info">Invalid game metadata</string>
+    <string name="srceng_library_detail_invalid_info">gameinfo.txt is empty, malformed, too large, or unreadable.</string>
+    <string name="srceng_library_status_missing_assets">Missing game assets</string>
+    <string name="srceng_library_detail_missing_assets">Metadata exists, but no VPK archive or BSP map was found.</string>
+    <string name="srceng_library_status_unsupported_abi">Unsupported device ABI</string>
+    <string name="srceng_library_detail_unsupported_abi">This build contains ARMv7 native libraries; this device ABI is not supported.</string>
+    <string name="srceng_library_status_ready">Ready to try</string>
+    <string name="srceng_library_detail_ready">Required metadata and asset markers found. Game compatibility is not guaranteed.</string>
+    <string name="srceng_library_unrecognized">The selected folder was not recognized as a Source game with readable metadata and required assets.</string>
 </resources>
