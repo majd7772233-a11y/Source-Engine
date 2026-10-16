@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
-APK="\${1:-$ROOT_DIR/bin/srceng-debug.apk}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APK="${1:-$ROOT_DIR/bin/srceng-debug.apk}"
 [[ -s "$APK" ]] || { echo "ERROR: APK missing or empty: $APK" >&2; exit 1; }
 for tool in unzip readelf sha256sum; do command -v "$tool" >/dev/null 2>&1 || { echo "ERROR: Missing required tool: $tool" >&2; exit 2; }; done
-if [[ -z "\${AAPT:-}" ]]; then SDK="\${ANDROID_HOME:-\${ANDROID_SDK_ROOT:-$ROOT_DIR/android-sdk}}"; AAPT="$(find "$SDK/build-tools" -maxdepth 2 -type f -name aapt -print 2>/dev/null | sort -V | tail -n 1)"; fi
+if [[ -z "${AAPT:-}" ]]; then SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$ROOT_DIR/android-sdk}}"; AAPT="$(find "$SDK/build-tools" -maxdepth 2 -type f -name aapt -print 2>/dev/null | sort -V | tail -n 1)"; fi
 [[ -n "$AAPT" && -x "$AAPT" ]] || { echo "ERROR: Unable to locate executable aapt." >&2; exit 2; }
 unzip -t "$APK" >/dev/null
 BADGING="$("$AAPT" dump badging "$APK")"
@@ -18,7 +18,7 @@ tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 count=0
 while IFS= read -r entry; do
   [[ "$entry" == lib/armeabi-v7a/*.so ]] || continue
-  name="\${entry##*/}"; unzip -p "$APK" "$entry" > "$tmp/$name"
+  name="${entry##*/}"; unzip -p "$APK" "$entry" > "$tmp/$name"
   [[ -s "$tmp/$name" ]] || { echo "ERROR: Empty library: $entry" >&2; exit 1; }
   header="$(readelf -h "$tmp/$name" 2>&1)" || { echo "ERROR: Invalid ELF library: $entry" >&2; exit 1; }
   printf '%s\n' "$header" | grep -Eq 'Machine:[[:space:]]+ARM' || { echo "ERROR: Library is not ARM ELF: $entry" >&2; exit 1; }
@@ -26,8 +26,8 @@ while IFS= read -r entry; do
 done <<< "$FILES"
 (( count >= 5 )) || { echo "ERROR: Expected at least five ARMv7 libraries; found $count." >&2; exit 1; }
 sha="$(sha256sum "$APK" | awk '{print $1}')"; bytes="$(wc -c < "$APK" | tr -d ' ')"
-commit="\${COMMIT:-$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || printf unknown)}"
-branch="\${BUILD_BRANCH:-$(git -C "$ROOT_DIR" branch --show-current 2>/dev/null || printf unknown)}"
+commit="${COMMIT:-$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || printf unknown)}"
+branch="${BUILD_BRANCH:-$(git -C "$ROOT_DIR" branch --show-current 2>/dev/null || printf unknown)}"
 mkdir -p "$ROOT_DIR/build-reports"
 {
   printf 'application_id=com.magd.source.engine\nabi=armeabi-v7a\nnative_libraries_verified=%s\napk_bytes=%s\napk_sha256=%s\ncommit=%s\nbranch=%s\n' "$count" "$bytes" "$sha" "$commit" "$branch"
