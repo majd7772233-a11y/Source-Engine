@@ -36,7 +36,7 @@ The full native workflow also requires the legacy NDK toolchain in `ndk-binaries
 bash scripts/workflow.sh
 ```
 
-This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrapper libraries before invoking Ant. Each required native output is deleted before rebuilding so stale files cannot mask a failure. GitHub Actions records exact dependency revisions and uses the pinned Source SDK commit; the final lock of the legacy GitLab SDK/NDK checkouts is part of Stage 1 verification.
+This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrapper libraries before invoking Ant. Each required native output is deleted before rebuilding so stale files cannot mask a failure. GitHub Actions records exact dependency revisions and uses the pinned Source SDK commit; the exact revisions are locked in `scripts/dependencies.lock` and fetched by `scripts/fetch-build-deps.sh`; nested Source SDK submodules are pinned by the parent commit's gitlinks.
 
 ## Repository map
 
@@ -48,7 +48,9 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 - `scripts/workflow.sh` — full native-library and APK build.
 - `scripts/verify-stage0.sh` — source/manifest/package/shell preflight checks.
 - `scripts/verify-stage1.sh` — build-pipeline static integrity checks.
-- `scripts/verify-apk.sh` — APK package, native ABI/ELF, archive, and checksum verification.
+- `scripts/verify-apk.sh` — APK package, native ABI/ELF/dependency, archive, and checksum verification.
+- `scripts/dependencies.lock` — immutable full commit SHAs for the legacy NDK, Android SDK, and Source SDK repositories.
+- `scripts/fetch-build-deps.sh` — fetches only the locked commits and checks out pinned Source SDK submodules.
 - `build-reports/` — generated build metadata and SHA-256 checksum report (not committed).
 - `.github/workflows/build.yml` — CI build and debug APK artifact upload.
 - `ROADMAP.md` — staged implementation plan and acceptance criteria.
@@ -57,7 +59,7 @@ This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrappe
 ## Known limitations and next work
 
 - The project still uses the legacy Ant/Android SDK build system and an old NDK toolchain.
-- The project still depends on legacy external SDK/NDK repositories; exact revisions must be recorded and pinned before Stage 1 can be considered complete.
+- The project still depends on legacy external SDK/NDK repositories. Their exact source revisions are pinned, but the legacy toolchain remains old and no physical-device/game-runtime validation has been performed.
 - A successful APK build is not proof of game compatibility, storage behavior, performance, or runtime stability.
 - The launcher currently retains legacy game discovery and storage-picker behavior; these are tracked in the roadmap.
 - Use the roadmap's acceptance criteria before advertising support for a game, ABI, input mode, or online feature.
