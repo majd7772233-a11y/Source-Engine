@@ -1,3 +1,6 @@
+# Generated build reports
+build-reports/
+
 # Android / Ant build output
 bin/
 gen/
