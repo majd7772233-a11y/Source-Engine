@@ -458,11 +458,11 @@ public class LauncherActivity extends Activity {
 	private void styleGlassDialog(AlertDialog dialog) {
 		if (dialog == null) return;
 		if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawable(
-				LiquidGlassTheme.panel(0xEE152737, 0xAA5DE6DF, dp(22)));
+				LiquidGlassTheme.panel(0xEE152737, 0xAA5DE6DF, 22));
 			Button positive = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
 			Button negative = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
-			if (positive != null) { positive.setBackgroundDrawable(LiquidGlassTheme.panel(0xD52A5965, 0xAA8CF5EB, dp(14))); positive.setTextColor(0xFFF2F7FC); }
-			if (negative != null) { negative.setBackgroundDrawable(LiquidGlassTheme.panel(0xB9274051, 0x775DE6DF, dp(14))); negative.setTextColor(0xFFF2F7FC); }
+			if (positive != null) { positive.setBackgroundDrawable(LiquidGlassTheme.panel(0xD52A5965, 0xAA8CF5EB, 14)); positive.setTextColor(0xFFF2F7FC); }
+			if (negative != null) { negative.setBackgroundDrawable(LiquidGlassTheme.panel(0xB9274051, 0x775DE6DF, 14)); negative.setTextColor(0xFFF2F7FC); }
 	}
 
 	private void applyGlassTheme() {
