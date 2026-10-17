@@ -205,7 +205,7 @@ public class LauncherActivity extends Activity {
 		librarySummary.setTextColor(0xFFCFD8E3);
 		librarySummary.setTextSize(13);
 		librarySummary.setPadding(0, dp(4), 0, dp(8));
-		librarySummary.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+		if (Build.VERSION.SDK_INT >= 19) librarySummary.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
 		section.addView(librarySummary, new LinearLayout.LayoutParams(-1, -2));
 		scanProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
 		scanProgress.setIndeterminate(true);
