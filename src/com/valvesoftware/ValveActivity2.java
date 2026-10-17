@@ -233,7 +233,7 @@ public final class ValveActivity2 {
 
         String customVpk = intent == null ? null : intent.getStringExtra("vpk");
         if (customVpk != null && !customVpk.trim().isEmpty()) {
-            String[] customPaths = customVpk.split(",");
+            String[] customPaths = customVpk.split(",", -1);
             if (customPaths.length > 16 || customVpk.length() > 8192 || customVpk.indexOf('\0') >= 0) {
                 return "Too many or invalid custom VPK paths are configured. Keep at most 16 readable files.";
             }
