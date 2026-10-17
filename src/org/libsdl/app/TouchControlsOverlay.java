@@ -249,6 +249,7 @@ final class TouchControlsOverlay extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (SDLActivity.mBrokenLibraries) return false;
         int action = event.getActionMasked();
         int index = event.getActionIndex();
         int pointer = event.getPointerId(index);
