@@ -657,6 +657,6 @@ public class LauncherActivity extends Activity {
 		if (launcherProgress != null) launcherProgress.setVisibility(View.GONE);
 		if (launchButton != null) launchButton.setText(R.string.srceng_launcher_launch);
 	}
-	@Override protected void onPause() { Log.v("SRCAPK", "onPause"); if (mPref != null && cmdArgs != null && GamePath != null && EnvEdit != null) saveSettings(mPref.edit()); super.onPause(); }
+	@Override protected void onPause() { Log.v("SRCAPK", "onPause"); LiquidGlassTheme.pause(this); if (mPref != null && cmdArgs != null && GamePath != null && EnvEdit != null) saveSettings(mPref.edit()); super.onPause(); }
 }
 
