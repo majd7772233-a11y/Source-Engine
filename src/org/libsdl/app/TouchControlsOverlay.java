@@ -380,7 +380,8 @@ final class TouchControlsOverlay extends View {
         Boolean joy = joystickKeys.get(k);
         boolean wanted = (count != null && count.intValue() > 0) || (joy != null && joy.booleanValue());
         Boolean old = nativeKeys.get(k);
-        if (old == null || old.booleanValue() != wanted) {
+        boolean wasDown = old != null && old.booleanValue();
+        if (wasDown != wanted) {
             nativeKeys.put(k, Boolean.valueOf(wanted));
             if (wanted) SDLActivity.onNativeKeyDown(key);
             else SDLActivity.onNativeKeyUp(key);
