@@ -134,4 +134,10 @@
     <string name="srceng_compatibility_native_missing">Required native libraries missing from the installed app: %1$s</string>
     <string name="srceng_compatibility_limits">These are system-reported diagnostics, not an actual GL context probe or a game benchmark. They cannot confirm frame pacing, temperature, sound playback, or game compatibility. No unsupported graphics/audio toggles are offered; command-line arguments and environment overrides remain advanced options.</string>
 
+    <string name="srceng_online_features">Online features and server browser</string>
+    <string name="srceng_online_title">Online features status</string>
+    <string name="srceng_online_network_connected">Network state: Android reports an active connected network. This does not confirm that a game server is reachable.</string>
+    <string name="srceng_online_network_disconnected">Network state: Android does not report an active connected network.</string>
+    <string name="srceng_online_server_browser_unavailable">In-app server browser: unavailable. The current launcher has no verified native server discovery/list/join bridge. A native library by itself would not prove that server browsing works.</string>
+    <string name="srceng_online_multiplayer_note">Multiplayer depends on the selected game or mod and its compatible servers. This app does not host a game server or provide a multiplayer backend. Internet access alone does not guarantee online play.</string>
 </resources>
