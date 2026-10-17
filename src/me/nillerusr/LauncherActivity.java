@@ -731,7 +731,7 @@ public class LauncherActivity extends Activity {
 
 	private static final class Api23 {
 		private static int getAudioOutputCount(Activity activity) {
-			android.media.AudioManager audio = (android.media.AudioManager) activity.getSystemService(ACTIVITY_SERVICE.equals("audio") ? "audio" : "audio");
+			android.media.AudioManager audio = (android.media.AudioManager) activity.getSystemService("audio");
 			return audio == null ? 0 : audio.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).length;
 		}
 	}
