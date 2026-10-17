@@ -115,4 +115,23 @@
     <string name="srceng_controls_use">USE</string>
     <string name="srceng_controls_reload">RELOAD</string>
     <string name="srceng_controls_edit_hint">Drag controls to reposition, then tap the gear to finish.</string>
+
+    <string name="srceng_compatibility_diagnostics">Device compatibility diagnostics</string>
+    <string name="srceng_compatibility_title">Graphics, audio and device report</string>
+    <string name="srceng_compatibility_device">Device: %1$s %2$s</string>
+    <string name="srceng_compatibility_android">Android: %1$s (API %2$d)</string>
+    <string name="srceng_compatibility_abi">Reported ABI: %1$s</string>
+    <string name="srceng_compatibility_display">Current display: %1$d × %2$d px; density %3$d dpi</string>
+    <string name="srceng_compatibility_refresh">Reported display refresh: %1$.1f Hz</string>
+    <string name="srceng_compatibility_gles">Advertised GLES level: %1$d.%2$d (system feature report)</string>
+    <string name="srceng_compatibility_gles_unknown">Advertised GLES level: not reported by Android</string>
+    <string name="srceng_compatibility_memory">Available system memory: %1$d MB; %2$s</string>
+    <string name="srceng_compatibility_memory_low">Android reports low memory</string>
+    <string name="srceng_compatibility_memory_ok">Android does not currently report low memory</string>
+    <string name="srceng_compatibility_audio_outputs">Audio output devices reported by Android: %1$d</string>
+    <string name="srceng_compatibility_audio_unknown">Audio output enumeration is unavailable on this Android version</string>
+    <string name="srceng_compatibility_native_ok">Required packaged native libraries: present</string>
+    <string name="srceng_compatibility_native_missing">Required native libraries missing from the installed app: %1$s</string>
+    <string name="srceng_compatibility_limits">These are system-reported diagnostics, not an actual GL context probe or a game benchmark. They cannot confirm frame pacing, temperature, sound playback, or game compatibility. No unsupported graphics/audio toggles are offered; command-line arguments and environment overrides remain advanced options.</string>
+
 </resources>
