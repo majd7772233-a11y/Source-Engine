@@ -93,7 +93,7 @@ public final class LiquidGlassTheme {
     public static GradientDrawable panel(int fill, int edge, int radiusDp) {
         GradientDrawable d = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                 new int[] { blend(fill, 0x183E8290), fill, blend(fill, 0xD008111B) });
-        d.setCornerRadius(radiusDp);
+        d.setCornerRadius(radiusDp * android.content.res.Resources.getSystem().getDisplayMetrics().density);
         d.setStroke(1, edge);
         return d;
     }
