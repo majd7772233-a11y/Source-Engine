@@ -62,20 +62,15 @@ public class LauncherActivity extends Activity {
 	final static int REQUEST_PERMISSIONS = 42;
 	private static final int REQUEST_STORAGE_PICKER = 604;
 
-	public void applyPermissions( final String permissions[], final int code ) {
-		if (Build.VERSION.SDK_INT < 23) return;
-		List<String> requestPermissions = new ArrayList<String>();
-		for( int i = 0; i < permissions.length; i++ ) {
-			if( checkSelfPermission(permissions[i]) != PackageManager.PERMISSION_GRANTED )
-				requestPermissions.add(permissions[i]);
+	public void applyPermissions(final String[] permissions, final int code) {
+		if (Build.VERSION.SDK_INT < 23 || permissions == null || permissions.length == 0) return;
+		List<String> missing = new ArrayList<String>();
+		for (String permission : permissions) {
+			if (permission != null && checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+				missing.add(permission);
+			}
 		}
-
-		if( !requestPermissions.isEmpty() ) {
-			String[] requestPermissionsArray = new String[requestPermissions.size()];
-			for( int i = 0; i < requestPermissions.size(); i++ )
-				requestPermissionsArray[i] = requestPermissions.get(i);
-			requestPermissions(requestPermissionsArray, code);
-		}
+		if (!missing.isEmpty()) requestPermissions(missing.toArray(new String[missing.size()]), code);
 	}
 
 	@Override
@@ -110,8 +105,20 @@ public class LauncherActivity extends Activity {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if (requestCode == REQUEST_PERMISSIONS) {
 			boolean granted = grantResults != null && grantResults.length > 0;
-			if (granted) for (int result : grantResults) if (result != PackageManager.PERMISSION_GRANTED) { granted = false; break; }
-			if (!granted) { Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show(); launchInProgress = false; if (launchButton != null) launchButton.setEnabled(true); }
+			if (granted) {
+				for (int result : grantResults) {
+					if (result != PackageManager.PERMISSION_GRANTED) { granted = false; break; }
+				}
+			}
+			if (!granted) {
+				Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show();
+				launchInProgress = false;
+				if (launchButton != null) {
+					launchButton.setEnabled(true);
+					launchButton.setText(R.string.srceng_launcher_launch);
+				}
+				if (launcherProgress != null) launcherProgress.setVisibility(View.GONE);
+			}
 		}
 	}
 
@@ -167,8 +174,8 @@ public class LauncherActivity extends Activity {
 					b.setTextSize( 15f );
 				}
 			}
-			catch( Exception e )
-			{
+			catch (Exception e) {
+				Log.w("SRCAPK", "Unable to apply legacy launcher control styling.", e);
 			}
 		}
 	}
@@ -661,7 +668,7 @@ public class LauncherActivity extends Activity {
 			if (launcherProgress != null) launcherProgress.setVisibility(View.VISIBLE);
 			startActivity(intent);
 		}
-		catch (RuntimeException e) { launchInProgress = false; if (launchButton != null) { launchButton.setEnabled(true); launchButton.setText(R.string.srceng_launcher_launch); } if (launcherProgress != null) launcherProgress.setVisibility(View.GONE); Log.e("SRCAPK", "Unable to start SDL activity", e); showStartupError(getString(R.string.srceng_launcher_error_start_failed, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())); }
+		catch (RuntimeException e) { launchInProgress = false; if (launchButton != null) { launchButton.setEnabled(true); launchButton.setText(R.string.srceng_launcher_launch); } if (launcherProgress != null) launcherProgress.setVisibility(View.GONE); Log.e("SRCAPK", "Unable to start SDL activity (" + e.getClass().getSimpleName() + ")."); showStartupError(getString(R.string.srceng_launcher_error_start_failed, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())); }
 
 
 	}
