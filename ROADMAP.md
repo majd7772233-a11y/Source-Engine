@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status:** Stages 0–3 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Stage 4 storage implementation is merged; physical-device acceptance remains pending. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
+> **Roadmap status:** Stages 0–5 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
 
 ## 1. Product goal
 
@@ -80,11 +80,12 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] **Device acceptance pending:** install the APK on Android 5+ and Android 4.2–4.4 where available; verify internal-storage selection, SD/USB selection on a device that exposes it, app process restart and persisted grant, permission revocation, read-only media, and volume removal/reconnect. CI cannot simulate the platform document provider or real removable media.
 
 ### Stage 5 — Launcher information architecture and core UX
-- [ ] Replace the legacy form-heavy launcher with a coherent, responsive game-library home while preserving working launch arguments, environment overrides, and advanced settings.
-- [ ] Add clear first-run setup, game-folder selection, scan/rescan, per-game details, launch readiness, loading/progress, empty states, errors, and recovery actions.
-- [ ] Remove dead/hidden controls and commented-out UI that misleads users; every visible action must work and persist as intended.
-- [ ] Improve accessibility, touch target sizing, landscape/portrait behavior where supported, keyboard/controller navigation, contrast, localization, and long-name handling.
-- [ ] Acceptance: a new user can understand what is required, select a game, see why it is or is not ready, launch it, and return without needing undocumented knowledge.
+- [x] Replace the legacy form-heavy landing screen with a library-first home, first-run guidance, a prominent folder picker, library scan/rescan actions, and collapsed advanced settings while preserving saved command-line arguments, environment overrides, game path, and explicit SDL launch extras.
+- [x] Add per-game details (readiness, explanation, detected folder, launch root, game directory, optional content, last launch), clear empty/error states, recoverable scan errors, and visible scan/launch progress.
+- [x] Remove obsolete commented-out launcher controls and the legacy commented launch fallback. Keep every visible primary action wired; retain library remove/hide and explicit rescan behavior.
+- [x] Improve cards, long-name/path truncation, 48dp minimum action targets, keyboard focusability, accessible details/status descriptions, Android 4.2 API guarding for live-region announcements, portrait-device install eligibility, and Arabic translations for launcher/library states.
+- [x] **CI acceptance:** PR [#8](https://github.com/majd7772233-a11y/Source-Engine/pull/8) merged as `772a49b15163e3d354fda4d550a01e17930a1214`. Run [39070653298](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39070653298) passed Stage 0–5 static checks (16 Stage 5 assertions), locked native dependency fetch, native compilation, Java/Ant packaging, APK identity/ABI/dependency verification, and artifact upload. APK: 56,548,121 bytes; SHA-256 `22f26e01e5ffaa26718bc525bd7457126e6c320bdc1bc72e93a16e8a3741c1e9`; artifact [12115152142](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39070653298/artifacts/12115152142), expires 2026-10-31.
+- [ ] **Device acceptance pending:** verify first-run flow, picker cancellation and successful selection, scan/rescan, game details/readiness, advanced settings persistence, portrait/landscape layouts, keyboard/controller focus, launch progress, and returning from an actual compatible game on physical Android hardware. CI cannot prove these user-visible interactions or game launch.
 
 ### Stage 6 — Liquid Glass visual system and motion
 - [ ] Define design tokens for material, tint, blur, edge highlights, gradients, depth, typography, iconography, spacing, animation timing, and pressed/focused/disabled states.
