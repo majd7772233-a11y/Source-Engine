@@ -93,4 +93,5 @@
     <string name="srceng_library_launching">Launching…</string>
     <string name="srceng_library_scan_failed">Scan could not finish: %1$s. Check folder access and try again.</string>
     <string name="srceng_library_details">Game: %1$s\n\nReadiness: %2$s\n%3$s\n\nDetected folder: %4$s\nLaunch root: %5$s\nGame directory: %6$s\n\n%7$s\n%8$s</string>
+    <string name="srceng_liquid_motion">Animate ambient glass lighting (uses more power)</string>
 </resources>
