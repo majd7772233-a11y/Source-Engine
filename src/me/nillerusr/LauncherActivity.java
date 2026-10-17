@@ -36,8 +36,6 @@ import android.graphics.*;
 import android.graphics.drawable.*;
 import android.net.Uri;
 
-import me.nillerusr.UpdateService;
-import me.nillerusr.UpdateSystem;
 import me.nillerusr.ExtractAssets;
 import me.nillerusr.DirchActivity;
 
@@ -483,17 +481,7 @@ public class LauncherActivity extends Activity {
 		if (advancedPanel != null) advancedPanel.setVisibility(View.GONE);
 		if (advancedToggle != null) advancedToggle.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { if (advancedPanel == null) return; boolean show = advancedPanel.getVisibility() != View.VISIBLE; advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE); advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced); } });
 
-//		immersiveMode = (CheckBox)findViewById(R.id.checkbox_immersive_mode);
 
-/*		useVolumeButtons = (CheckBox)findViewById(R.id.checkbox_use_volume);
-
-		useVolumeButtons.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-				if( isChecked )
-					Toast.makeText(LauncherActivity.this, R.string.srceng_launcher_volume_buttons_desc, 5000).show();
-			}
-		});*/
 
 		launchButton = (Button)findViewById(R.id.button_launch);
 		launcherProgress = (ProgressBar)findViewById(R.id.launcher_progress);
@@ -532,33 +520,22 @@ public class LauncherActivity extends Activity {
 		});
 
 		
-/*		if (sdk >= 19) {
-			immersiveMode.setChecked(true);
-		}*/
 
-//		check_updates = (CheckBox)findViewById(R.id.checkbox_check_updates);
-		String last_commit = getResources().getString(R.string.last_commit);
+
+
 
 		cmdArgs.setText(mPref.getString("argv", "-console"));
 		GamePath.setText(mPref.getString("gamepath", getDefaultDir() + "/srceng"));
 		EnvEdit.setText(mPref.getString("env", "LIBGL_USEVBO=0"));
 
-//		useVolumeButtons.setChecked(mPref.getBoolean("use_volume_buttons", false));
-//		check_updates.setChecked(mPref.getBoolean("check_updates", true));
+
 
 		changeButtonsStyle((ViewGroup)this.getWindow().getDecorView());
 
 		// permissions check
 		if( sdk >= 23 )
 			applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO }, REQUEST_PERMISSIONS );
-/*
-		if( last_commit == null || last_commit.isEmpty() )
-			check_updates.setVisibility(View.GONE);
-		else if( check_updates.isChecked() ) {
-			UpdateSystem update = new UpdateSystem(this);
-			update.execute();
-		}
-*/
+
 	}
 
 	public void saveSettings(SharedPreferences.Editor editor)
@@ -570,8 +547,7 @@ public class LauncherActivity extends Activity {
 		editor.putString("argv", argv);
 		editor.putString("gamepath", gamepath);
 		editor.putString("env", env);
-//		editor.putBoolean("use_volume_buttons", useVolumeButtons.isChecked());
-//		editor.putBoolean("check_updates", check_updates.isChecked());
+
 		editor.commit();
 	}
 
