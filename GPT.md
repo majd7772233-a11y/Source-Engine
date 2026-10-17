@@ -216,3 +216,10 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Early CI candidates failed because the new class lacked the generated `com.magd.source.engine.R` import; this was corrected. Final candidate `d172abdd639d314cae8f104d09dd35206f1a32b3` passed workflow [39073005622](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39073005622): all Stage 0–7 static checks, pinned dependency fetch, native compilation, Java/Ant packaging, APK identity/ABI/dependency verification, and artifact upload.
 - Verified debug APK: 56,562,054 bytes; SHA-256 `d9f0a8e4ce192d4122514b2ee774e095d56488d9a8c3a1d6f2880d46828337e4`; artifact ID `12115648990`, expires 2026-10-31.
 - **Not device-verified:** do not claim the virtual controls work in a real game until a compatible game is run on hardware. Test simultaneous movement/fire, key mappings, control edits and persistence per game, orientation changes, pass-through touch, controller connect/disconnect, Android volume keys, and pause/resume without stuck inputs. Keep Stage 7 device/game acceptance open in `ROADMAP.md`.
+
+
+### 2026-10-17 — Stage 7 merged and canonical CI verified
+- PR [#10](https://github.com/majd7772233-a11y/Source-Engine/pull/10) was squash-merged to `android-fixes` as `b46a6ae5fdff9b1c3328fe10b50dd1701f344c0a`.
+- Post-merge canonical workflow [39073356292](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39073356292) succeeded. Stage 0–7 checks passed, pinned dependencies fetched, native libraries compiled, Ant APK packaging succeeded, APK identity/ABI/dependency checks passed, and the artifact uploaded.
+- Canonical APK: 56,562,047 bytes; SHA-256 `c78883743d21c5cf56372553096a59c3c148a5f9057dfd9a21eadfe6e3b8de69`; artifact ID `12115514936`, expires 2026-10-31.
+- This closes the implementation and CI portion of Stage 7 only. The physical-device/gameplay acceptance checkbox stays open until a compatible game is tested on real hardware.
