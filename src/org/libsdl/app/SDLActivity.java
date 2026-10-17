@@ -113,6 +113,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // Main components
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
+    protected TouchControlsOverlay mTouchControls;
     protected static View mTextEdit;
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
@@ -325,7 +326,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSurface = new SDLSurface(getApplication());
 
         mLayout = new RelativeLayout(this);
+        mLayout.setMotionEventSplittingEnabled(true);
         mLayout.addView(mSurface);
+        Intent controlsIntent = getIntent();
+        String controlsProfile = controlsIntent == null ? "default" :
+                String.valueOf(controlsIntent.getStringExtra("gamepath")) + "|" +
+                String.valueOf(controlsIntent.getStringExtra("gamedir"));
+        mTouchControls = new TouchControlsOverlay(this, controlsProfile);
+        mLayout.addView(mTouchControls, new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         // Get our current screen orientation and pass it down.
         mCurrentOrientation = SDLActivity.getCurrentOrientation();
@@ -405,6 +414,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     @Override
     protected void onPause() {
         Log.v(TAG, "onPause()");
+        if (mTouchControls != null) mTouchControls.releaseAll();
         super.onPause();
 
         if (!mHasMultiWindow) {
@@ -529,6 +539,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     @Override
     protected void onDestroy() {
         Log.v(TAG, "onDestroy()");
+        if (mTouchControls != null) { mTouchControls.releaseAll(); mTouchControls = null; }
 
         if (SDLActivity.mBrokenLibraries) {
            // Failed startup must not poison the next launch through static SDL state.
