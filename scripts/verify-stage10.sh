@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+bash -n scripts/verify-stage10.sh build.sh scripts/workflow.sh scripts/fetch-build-deps.sh
+python3 - "$ROOT_DIR" <<'PY'
+import pathlib
+import sys
+import xml.etree.ElementTree as ET
+
+root = pathlib.Path(sys.argv[1])
+ns = "{http://schemas.android.com/apk/res/android}"
+manifest = ET.parse(root / "AndroidManifest.xml").getroot()
+application = manifest.find("application")
+if application is None:
+    raise SystemExit("FAIL: application element is missing")
+
+def source(path):
+    return (root / path).read_text(encoding="utf-8")
+
+launcher = source("src/me/nillerusr/LauncherActivity.java")
+sdl = source("src/org/libsdl/app/SDLActivity.java")
+extract = source("src/me/nillerusr/ExtractAssets.java")
+valve = source("src/com/valvesoftware/ValveActivity2.java")
+updater = source("src/me/nillerusr/UpdateSystem.java")
+service = source("src/me/nillerusr/UpdateService.java")
+discovery = source("src/me/nillerusr/GameDiscovery.java")
+workflow = source(".github/workflows/build.yml")
+
+components = {c.get(ns + "name"): c for c in list(application.findall("activity")) + list(application.findall("service"))}
+checks = {
+    "manifest does not force a debuggable production application": application.get(ns + "debuggable", "false").lower() != "true",
+    "launcher is explicitly exported as the entry point": components.get("me.nillerusr.LauncherActivity") is not None and components["me.nillerusr.LauncherActivity"].get(ns + "exported") == "true",
+    "directory picker is not externally callable": components.get("me.nillerusr.DirchActivity") is not None and components["me.nillerusr.DirchActivity"].get(ns + "exported") == "false",
+    "native SDL activity is not externally callable": components.get("org.libsdl.app.SDLActivity") is not None and components["org.libsdl.app.SDLActivity"].get(ns + "exported") == "false",
+    "legacy updater service is not externally callable": components.get("me.nillerusr.UpdateService") is not None and components["me.nillerusr.UpdateService"].get(ns + "exported") == "false",
+    "launcher runtime permission method handles pre-23 and null/empty inputs": "Build.VERSION.SDK_INT < 23 || permissions == null || permissions.length == 0" in launcher,
+    "launcher permission denial resets button and progress UI": "launcherProgress.setVisibility(View.GONE)" in launcher and "launchButton.setText(R.string.srceng_launcher_launch)" in launcher,
+    "SDL runtime permission method guards API level and empty arrays": "Build.VERSION.SDK_INT < 23 || permissions == null || permissions.length == 0" in sdl,
+    "SDL empty permission results fail safely": "grantResults == null || grantResults.length == 0" in sdl and "srceng_launcher_error_permission_result" in sdl,
+    "startup validation does not log full user-supplied path/error text": 'Log.e(TAG, "Startup validation failed; details are shown in the launcher.")' in valve and 'error.replace(\'\\n\', \' \')' not in valve,
+    "runtime asset extraction has no shell chmod or command interpolation": "Runtime.getRuntime().exec" not in extract and "chmod(" not in extract,
+    "runtime asset is written to a temporary file before replacement": 'VPK_NAME + TEMP_SUFFIX' in extract and "temporary.renameTo(destination)" in extract,
+    "runtime asset output is flushed and synced before installation": "output.flush()" in extract and "output.getFD().sync()" in extract,
+    "runtime asset cache validates saved byte count rather than trusting nonempty files": 'PAK_BYTES_KEY' in extract and "destination.length() == expectedBytes" in extract,
+    "failed extraction cleans up incomplete temporary output": "!installed && temporary.exists() && !temporary.delete()" in extract,
+    "updater pins HTTPS deployment host and validates branch": "https://raw.githubusercontent.com/nillerusr/srceng-deploy/" in updater and "SAFE_BRANCH" in updater and "raw.githubusercontent.com" in updater,
+    "updater has finite network timeouts and bounded response": "setConnectTimeout(8000)" in updater and "setReadTimeout(8000)" in updater and "value.length() + line.length() > 128" in updater,
+    "updater rejects redirects and validates version as a commit hash": "setInstanceFollowRedirects(false)" in updater and "COMMIT_SHA.matcher(remote).matches()" in updater,
+    "legacy updater cannot launch an arbitrary URL or install an APK": "Legacy update notification ignored" in service and "Uri.parse" not in service and "startActivity" not in service,
+    "game discovery handles unreadable directory listings": "listFiles()" in discovery and "children == null" in discovery,
+    "CI runs Stage 10 reliability/security assertions": "bash scripts/verify-stage10.sh" in workflow,
+}
+for name, ok in checks.items():
+    print(("PASS" if ok else "FAIL") + ": " + name)
+failed = [name for name, ok in checks.items() if not ok]
+if failed:
+    raise SystemExit("Stage 10 verification failed: " + "; ".join(failed))
+print("Stage 10 static checks passed: %d assertions." % len(checks))
+PY
