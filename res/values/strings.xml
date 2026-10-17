@@ -81,4 +81,16 @@
     <string name="srceng_storage_unavailable">The selected folder is missing, unreadable, read-only in an unsupported way, or its removable volume is disconnected. Reconnect the volume or select the folder again.</string>
     <string name="srceng_storage_revoked">Saved storage access is no longer valid. The storage may have been disconnected or Android may have revoked the folder grant. Select the folder again.</string>
     <string name="srceng_storage_selection_cancelled">Folder selection cancelled.</string>
+    <string name="srceng_library_header_subtitle">Your games, one library. Local game files required.</string>
+    <string name="srceng_library_eyebrow">SOURCE ENGINE • ANDROID</string>
+    <string name="srceng_library_intro">Choose the folder containing your game files, then scan it. Open a game card for its folder, readiness checks, and launch details. A successful scan does not guarantee compatibility.</string>
+    <string name="srceng_library_empty_title">Let’s add your first game</string>
+    <string name="srceng_library_advanced">Advanced settings</string>
+    <string name="srceng_library_advanced_hide">Hide advanced settings</string>
+    <string name="srceng_library_details_title">Game details</string>
+    <string name="srceng_library_details_action">Details</string>
+    <string name="srceng_library_open_details">Open details for %1$s</string>
+    <string name="srceng_library_launching">Launching…</string>
+    <string name="srceng_library_scan_failed">Scan could not finish: %1$s. Check folder access and try again.</string>
+    <string name="srceng_library_details">Game: %1$s\n\nReadiness: %2$s\n%3$s\n\nDetected folder: %4$s\nLaunch root: %5$s\nGame directory: %6$s\n\n%7$s\n%8$s</string>
 </resources>
