@@ -132,8 +132,14 @@ public class LauncherActivity extends Activity {
 	public static String getAndroidDataDir() {
 		String path = getDefaultDir() + "/Android/data/" + PKG_NAME + "/files";
 		File directory = new File(path);
-		if (!directory.exists())
-			directory.mkdirs();
+		if (!directory.isDirectory() && !directory.mkdirs()) {
+			Log.e("SRCAPK", "Could not create the optional game data directory.");
+			return "";
+		}
+		if (!directory.isDirectory() || !directory.canWrite()) {
+			Log.e("SRCAPK", "The optional game data directory is not writable.");
+			return "";
+		}
 		return path;
 	}
 
