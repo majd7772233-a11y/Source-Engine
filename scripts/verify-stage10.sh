@@ -45,7 +45,7 @@ checks = {
     "environment overrides have per-entry and count limits": "rawEnvironment.length() > 8192" in valve and "entries.length > 64" in valve and "item.length() > 2048" in valve,
     "optional data directory creation and write access are checked": "!directory.mkdirs()" in launcher and "!directory.canWrite()" in launcher and "gameRootForEngine.isEmpty()" in valve,
     "native startup stops when required environment values fail": "if (!setRequiredEnvironment(" in valve and "return \"The native runtime rejected a required startup setting." in valve,
-    "native build metadata is passed as arguments and XML escaped": '"%s" % escape(commit)' in workflow_script and '"%s" % escape(branch)' in workflow_script,
+    "native build metadata is passed as arguments and XML escaped": "escape(commit)" in workflow_script and "escape(branch)" in workflow_script and ' "$COMMIT" "$BUILD_BRANCH" ' in workflow_script,
     "runtime asset is written to a temporary file before replacement": 'VPK_NAME + TEMP_SUFFIX' in extract and "temporary.renameTo(destination)" in extract,
     "runtime asset output is flushed and synced before installation": "output.flush()" in extract and "output.getFD().sync()" in extract,
     "runtime asset cache validates saved byte count rather than trusting nonempty files": 'PAK_BYTES_KEY' in extract and "destination.length() == expectedBytes" in extract,
