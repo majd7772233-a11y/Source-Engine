@@ -335,6 +335,7 @@ public class LauncherActivity extends Activity {
 			empty.setPadding(0, 12, 0, 12);
 			libraryItems.addView(empty, new LinearLayout.LayoutParams(-1, -2));
 			librarySummary.setText(R.string.srceng_library_empty);
+			applyGlassTheme();
 			return;
 		}
 		int ready = 0;
@@ -342,6 +343,7 @@ public class LauncherActivity extends Activity {
 			if (entry.launchable) ready++;
 			LinearLayout card = new LinearLayout(this);
 			card.setOrientation(LinearLayout.VERTICAL);
+			card.setTag("liquid_glass_card");
 			card.setPadding(dp(12), dp(10), dp(12), dp(10));
 			GradientDrawable cardBg = new GradientDrawable();
 			cardBg.setColor(0xDD253441);
@@ -432,6 +434,7 @@ public class LauncherActivity extends Activity {
 			libraryItems.addView(card);
 		}
 		librarySummary.setText(getString(R.string.srceng_library_count, ready, entries.size()));
+		applyGlassTheme();
 	}
 
 	private void showGameDetails(final GameDiscovery.GameEntry entry) {
@@ -450,6 +453,11 @@ public class LauncherActivity extends Activity {
 		if (entry.launchable) builder.setPositiveButton(R.string.srceng_library_play, new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) { selectGame(entry); startSource(null); } });
 		else builder.setPositiveButton(R.string.srceng_library_use, new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) { selectGame(entry); Toast.makeText(LauncherActivity.this, getString(R.string.srceng_library_selected, entry.displayName), Toast.LENGTH_SHORT).show(); } });
 		builder.show();
+	}
+
+	private void applyGlassTheme() {
+		LiquidGlassTheme.apply(this, findViewById(android.R.id.content),
+				mPref != null && mPref.getBoolean("liquid_motion", true));
 	}
 
 	private void selectGame(GameDiscovery.GameEntry entry) {
@@ -482,7 +490,21 @@ public class LauncherActivity extends Activity {
 		advancedPanel = (LinearLayout)findViewById(R.id.advanced_panel);
 		advancedToggle = (Button)findViewById(R.id.button_advanced);
 		setupGameLibrary(body);
-		if (advancedPanel != null) advancedPanel.setVisibility(View.GONE);
+		if (advancedPanel != null) {
+			CheckBox motionToggle = new CheckBox(this);
+			motionToggle.setText(R.string.srceng_liquid_motion);
+			motionToggle.setTextColor(0xFFF2F7FC);
+			motionToggle.setMinHeight(dp(48));
+			motionToggle.setChecked(mPref.getBoolean("liquid_motion", true));
+			motionToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				@Override public void onCheckedChanged(CompoundButton button, boolean checked) {
+					mPref.edit().putBoolean("liquid_motion", checked).apply();
+					applyGlassTheme();
+				}
+			});
+			advancedPanel.addView(motionToggle, new LinearLayout.LayoutParams(-1, -2));
+			advancedPanel.setVisibility(View.GONE);
+		}
 		if (advancedToggle != null) advancedToggle.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { if (advancedPanel == null) return; boolean show = advancedPanel.getVisibility() != View.VISIBLE; advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE); advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced); } });
 
 
@@ -535,6 +557,7 @@ public class LauncherActivity extends Activity {
 
 
 		changeButtonsStyle((ViewGroup)this.getWindow().getDecorView());
+		applyGlassTheme();
 
 		// permissions check
 		if( sdk >= 23 )
