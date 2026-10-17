@@ -113,6 +113,9 @@ public final class ValveActivity2 {
         if (path.isEmpty()) {
             return "The game folder path is empty. Select the folder containing your game files.";
         }
+        if (path.length() > 4096 || path.indexOf('\0') >= 0) {
+            return "The selected game folder path is invalid or too long. Select the folder again.";
+        }
 
         File root = new File(path);
         if (!root.isDirectory()) {
@@ -158,8 +161,21 @@ public final class ValveActivity2 {
         if (rawEnvironment == null || rawEnvironment.trim().isEmpty()) {
             return true;
         }
+        if (rawEnvironment.length() > 8192 || rawEnvironment.indexOf('\0') >= 0) {
+            Log.w(TAG, "Environment overrides are invalid or exceed the size limit.");
+            return false;
+        }
 
-        for (String item : rawEnvironment.split("[\\r\\n;]+")) {
+        String[] entries = rawEnvironment.split("[\\r\\n;]+");
+        if (entries.length > 64) {
+            Log.w(TAG, "Too many environment overrides were supplied.");
+            return false;
+        }
+        for (String item : entries) {
+            if (item.length() > 2048) {
+                Log.w(TAG, "An environment override exceeds the size limit.");
+                return false;
+            }
             String entry = item.trim();
             if (entry.isEmpty()) {
                 continue;
@@ -201,6 +217,9 @@ public final class ValveActivity2 {
             arguments = mPref.getString("argv", "-console");
         }
         arguments = clean(arguments);
+        if (arguments.length() > 4096 || arguments.indexOf('\0') >= 0) {
+            return "Launch arguments are invalid or too long (maximum 4096 characters). Shorten the arguments and retry.";
+        }
 
         if (!ExtractAssets.extractVPK(context, false)) {
             return "Runtime data extraction failed. Check free internal storage and reopen the app. "
@@ -214,7 +233,14 @@ public final class ValveActivity2 {
 
         String customVpk = intent == null ? null : intent.getStringExtra("vpk");
         if (customVpk != null && !customVpk.trim().isEmpty()) {
-            for (String name : customVpk.split(",")) {
+            String[] customPaths = customVpk.split(",");
+            if (customPaths.length > 16 || customVpk.length() > 8192 || customVpk.indexOf('\0') >= 0) {
+                return "Too many or invalid custom VPK paths are configured. Keep at most 16 readable files.";
+            }
+            for (String name : customPaths) {
+                if (name.trim().isEmpty() || name.trim().length() > 4096) {
+                    return "A custom VPK path is empty or too long. Correct the path and retry.";
+                }
                 File customFile = new File(name.trim());
                 if (!customFile.isFile() || !customFile.canRead()) {
                     return "Configured VPK is missing or unreadable: " + name.trim();
@@ -238,8 +264,13 @@ public final class ValveActivity2 {
             return "The game library path could not be configured. Check the selected game files and retry.";
         }
 
-        String gameRootForEngine = mPref.getBoolean("rodir", false)
-                ? LauncherActivity.getAndroidDataDir() : gamePath;
+        String gameRootForEngine = gamePath;
+        if (mPref.getBoolean("rodir", false)) {
+            gameRootForEngine = LauncherActivity.getAndroidDataDir();
+            if (gameRootForEngine == null || gameRootForEngine.isEmpty()) {
+                return "Could not prepare the optional game data directory. Check storage availability and permissions.";
+            }
+        }
         if (!setRequiredEnvironment("EXTRAS_VPK_PATH", vpkPaths)
                 || !setRequiredEnvironment("LANG", Locale.getDefault().toString())
                 || !setRequiredEnvironment("APP_DATA_PATH", appInfo.dataDir)
