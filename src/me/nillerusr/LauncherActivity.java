@@ -274,14 +274,19 @@ public class LauncherActivity extends Activity {
 			@Override public void run() {
 				final Set<String> discovered = new HashSet<String>();
 				final Set<String> validRoots = new HashSet<String>();
-				for (String root : roots) {
-					File directory = new File(root);
-					if (!directory.isDirectory() || !directory.canRead()) continue;
-					validRoots.add(root);
-					List<GameDiscovery.GameEntry> entries = GameDiscovery.scan(LauncherActivity.this, root);
-					for (GameDiscovery.GameEntry entry : entries) {
-						if (entry != null && !hidden.contains(entry.path) && new File(entry.path).isDirectory()) discovered.add(entry.path);
+				final String[] scanFailure = new String[1];
+				try {
+					for (String root : roots) {
+						File directory = new File(root);
+						if (!directory.isDirectory() || !directory.canRead()) continue;
+						validRoots.add(root);
+						List<GameDiscovery.GameEntry> entries = GameDiscovery.scan(LauncherActivity.this, root);
+						for (GameDiscovery.GameEntry entry : entries) {
+							if (entry != null && !hidden.contains(entry.path) && new File(entry.path).isDirectory()) discovered.add(entry.path);
+						}
 					}
+				} catch (RuntimeException error) {
+					scanFailure[0] = error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage();
 				}
 				runOnUiThread(new Runnable() {
 					@Override public void run() {
@@ -291,7 +296,8 @@ public class LauncherActivity extends Activity {
 								.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
 						GameDiscovery.savePaths(LauncherActivity.this, discovered);
 						renderGameLibrary();
-						if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);
+						if (scanFailure[0] != null) librarySummary.setText(getString(R.string.srceng_library_scan_failed, scanFailure[0]));
+						else if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);
 						else librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
 					}
 				});
