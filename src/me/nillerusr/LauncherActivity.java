@@ -212,10 +212,6 @@ public class LauncherActivity extends Activity {
 		scanProgress.setVisibility(View.GONE);
 		scanProgress.setContentDescription(getString(R.string.srceng_library_scanning));
 		section.addView(scanProgress, new LinearLayout.LayoutParams(-1, dp(3)));
-		Button chooseFolder = makeActionButton(R.string.srceng_launcher_set_game_path);
-		chooseFolder.setId(R.id.button_gamedir);
-		chooseFolder.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { Intent intent = new Intent(LauncherActivity.this, DirchActivity.class); startActivityForResult(intent, REQUEST_STORAGE_PICKER); } });
-		section.addView(chooseFolder, new LinearLayout.LayoutParams(-1, -2));
 		LinearLayout actions = new LinearLayout(this);
 		actions.setOrientation(LinearLayout.HORIZONTAL);
 		Button scanCurrent = new Button(this);
@@ -499,6 +495,14 @@ public class LauncherActivity extends Activity {
 		launchButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				LauncherActivity.this.startSource(v);
+			}
+		});
+
+		Button dirButton = (Button)findViewById(R.id.button_gamedir);
+		dirButton.setOnClickListener(new View.OnClickListener() {
+			@Override public void onClick(View view) {
+				Intent intent = new Intent(LauncherActivity.this, DirchActivity.class);
+				startActivityForResult(intent, REQUEST_STORAGE_PICKER);
 			}
 		});
 
