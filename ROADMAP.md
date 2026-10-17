@@ -107,11 +107,11 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] **Device/game acceptance pending:** on a real compatible game, verify movement, firing, jump/use/reload bindings, simultaneous movement + fire multitouch, button dragging, size/opacity/sensitivity adjustments, profile persistence per game and reset, rotation, touch outside controls, controller connect/disconnect, keyboard/mouse, Android volume keys, and pause/resume without stuck inputs. Mods with nonstandard bindings may require in-game rebinding; CI cannot prove gameplay input works end to end.
 
 ### Stage 8 — Graphics, audio, performance, and device compatibility
-- [ ] Trace OpenGL/GLES and GL4ES/Regal configuration, resolution/scaling, texture/memory behavior, audio routing, and device-specific workarounds.
-- [ ] Provide understandable graphics/audio settings only for options the runtime actually honors; validate that settings are applied and persisted.
-- [ ] Measure startup time, frame pacing, memory use, thermal behavior, and crashes on representative hardware/Android versions; optimize evidenced bottlenecks.
-- [ ] Handle unsupported GLES capabilities and missing native dependencies with diagnostics rather than a blank screen.
-- [ ] Acceptance: a documented compatibility matrix exists and settings have verified effects; no untested performance claims.
+- [x] Trace the repository-declared GLES 2.0 minimum, ARMv7-only native payload, packaged Regal/native libraries, SDL display surface, Android memory snapshot, and available audio-output reporting. See [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+- [x] Add localized, API-guarded device compatibility diagnostics in Advanced settings. Do not expose invented renderer/resolution/audio switches: existing command-line arguments and environment overrides remain the only generic advanced controls until a native consumer and effect are verified.
+- [ ] Measure cold/warm startup, frame pacing, memory under a loaded game, sustained thermal behavior, audio routing, and crashes on at least two representative physical devices; optimize only repeatable bottlenecks. Physical-device access/results are not available in CI and have not been fabricated.
+- [x] Diagnose missing required packaged native libraries and show system-reported GLES/ABI/display/audio/memory facts with explicit limits; retain the native startup error path for runtime/game failures.
+- [ ] Acceptance: software implementation and CI checks pass; full stage acceptance remains open until the device matrix in docs/COMPATIBILITY.md contains actual test evidence and any evidenced issues are fixed.
 
 ### Stage 9 — Network/browser and optional online functionality
 - [ ] Audit `libServerBrowser.so`, native server-browser interfaces, network permissions, and actual browser UI/data flow before promising multiplayer or server browsing.
