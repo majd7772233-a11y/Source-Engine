@@ -523,6 +523,17 @@ public class LauncherActivity extends Activity {
 				}
 			});
 			advancedPanel.addView(diagnosticsButton, new LinearLayout.LayoutParams(-1, -2));
+ 
+			Button onlineStatusButton = new Button(this);
+			onlineStatusButton.setText(R.string.srceng_online_features);
+			onlineStatusButton.setContentDescription(getString(R.string.srceng_online_features));
+			onlineStatusButton.setMinHeight(dp(48));
+			onlineStatusButton.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View view) {
+					showOnlineFeaturesStatus();
+				}
+			});
+			advancedPanel.addView(onlineStatusButton, new LinearLayout.LayoutParams(-1, -2));
 			advancedPanel.setVisibility(View.GONE);
 		}
 		if (advancedToggle != null) advancedToggle.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { if (advancedPanel == null) return; boolean show = advancedPanel.getVisibility() != View.VISIBLE; advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE); advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced); } });
@@ -655,6 +666,28 @@ public class LauncherActivity extends Activity {
 
 	}
 
+
+	/**
+	 * Reports network state without pretending that a working server browser exists.
+	 * No server discovery request is made because no verified native browser/join bridge is wired.
+	 */
+	private void showOnlineFeaturesStatus() {
+		StringBuilder report = new StringBuilder();
+		android.net.ConnectivityManager manager = (android.net.ConnectivityManager)
+				getSystemService(CONNECTIVITY_SERVICE);
+			android.net.NetworkInfo active = manager == null ? null : manager.getActiveNetworkInfo();
+		if (active != null && active.isConnected()) {
+			report.append(getString(R.string.srceng_online_network_connected));
+		} else {
+			report.append(getString(R.string.srceng_online_network_disconnected));
+		}
+		report.append("\\n\\n").append(getString(R.string.srceng_online_server_browser_unavailable));
+		report.append("\\n\\n").append(getString(R.string.srceng_online_multiplayer_note));
+		styleGlassDialog(new AlertDialog.Builder(this)
+				.setTitle(R.string.srceng_online_title)
+				.setMessage(report.toString())
+				.setPositiveButton(R.string.srceng_launcher_ok, null).show());
+	}
 
 	/**
 	 * Reports device/runtime facts that can be inspected without launching a game.
