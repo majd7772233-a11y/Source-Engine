@@ -249,3 +249,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 - PR [#12](https://github.com/majd7772233-a11y/Source-Engine/pull/12) merged to `android-fixes` as `b9660ab08752d83c4ecd5f387298636d3d214e05`.
 - Final pre-merge candidate workflow [39075085755](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39075085755) passed all Stage 0–9 checks, native compilation, Java/Ant packaging, APK identity/ABI/dependency verification (35 ARMv7 ELF libraries), and artifact upload. Stage 9 passed 12 online-capability assertions. APK: 56,571,000 bytes; SHA-256 `56cceb193f2b562bf1f5bb32c9c68da8e85f25b72ffa8d8647f81103af5a516f`; artifact `12116274496`, expires 2026-10-31.
 - No device or real multiplayer testing was performed. The GitHub Actions commit-run connector only exposes PR-triggered runs, so no distinct post-merge push run was independently inspected.
+
+
+### 2026-10-18 — Stage 10 reliability/security implementation candidate
+
+- Branch: `stage10-reliability-security`, based on `android-fixes`.
+- Treat Stage 10 as a whole stage: audit/fix permission results, path/argument/environment validation, filesystem write correctness, component exposure, updater safety, user-path logging, and resource cleanup; run every existing verifier plus the native/Java/Ant/APK pipeline; fix all CI failures before merge.
+- Do not claim the updater is production-ready: version checks are advisory only, and automatic APK update notification/installation is disabled until signed release metadata, checksum/signature validation and a verified install flow exist.
+- Asset extraction must never chmod the private app directory to world-writable permissions. Cache validity depends on version plus the recorded extracted byte count; a failed write must not be recorded as successful.
+- Explicitly mark internal activities/services non-exported. Permission callbacks with null/empty results must fail safely and leave no stale progress UI.
+- Candidate adds `scripts/verify-stage10.sh`; CI must pass Stage 0–10 verifiers, pinned native dependency build, Java/Ant packaging, APK identity/ABI/dependency verification, and artifact upload before merge. Do not mark physical device acceptance complete without real hardware evidence.
