@@ -95,4 +95,10 @@
     <string name="srceng_compatibility_native_missing">مكتبات التشغيل الأصلية المطلوبة مفقودة من التطبيق المثبّت: %1$s</string>
     <string name="srceng_compatibility_limits">هذه معلومات تشخيصية يعلنها النظام، وليست فحصًا فعليًا لسياق GL أو اختبار أداء للعبة. لا تؤكد سلاسة الإطارات أو الحرارة أو عمل الصوت أو توافق اللعبة. لن نعرض مفاتيح رسوميات أو صوت غير مؤكدة؛ تبقى وسائط التشغيل ومتغيرات البيئة ضمن الخيارات المتقدمة.</string>
 
+    <string name="srceng_online_features">حالة الاتصال ومتصفح الخوادم</string>
+    <string name="srceng_online_title">حالة الميزات عبر الإنترنت</string>
+    <string name="srceng_online_network_connected">حالة الشبكة: يفيد أندرويد بوجود اتصال نشط. هذا لا يؤكد إمكانية الوصول إلى خادم لعبة.</string>
+    <string name="srceng_online_network_disconnected">حالة الشبكة: لا يفيد أندرويد بوجود اتصال نشط.</string>
+    <string name="srceng_online_server_browser_unavailable">متصفح الخوادم داخل التطبيق: غير متاح. لا يملك المشغّل الحالي واجهة أصلية موثقة لاكتشاف الخوادم أو عرضها أو الانضمام إليها. وجود مكتبة أصلية وحده لا يثبت أن التصفح يعمل.</string>
+    <string name="srceng_online_multiplayer_note">يعتمد اللعب الجماعي على اللعبة أو التعديل المحدد والخوادم المتوافقة معه. لا يستضيف هذا التطبيق خادم لعبة ولا يوفر خلفية خاصة باللعب الجماعي. وجود اتصال بالإنترنت لا يضمن إمكانية اللعب عبر الشبكة.</string>
 </resources>
