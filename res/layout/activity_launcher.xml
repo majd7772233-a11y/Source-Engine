@@ -29,6 +29,13 @@
             android:text="@string/srceng_library_header_subtitle"
             android:textColor="#FF9FD8D4"
             android:textSize="13sp" />
+        <Button
+            android:id="@+id/button_gamedir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/srceng_storage_choose_folder"
+            android:contentDescription="@string/srceng_storage_choose_folder" />
     </LinearLayout>
     <LinearLayout
         android:id="@+id/footer"
