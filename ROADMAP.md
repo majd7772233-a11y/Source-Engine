@@ -121,11 +121,11 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] **Future browser acceptance remains blocked:** implement discovery/refresh/filter/join, timeout/cancel and real server testing only after a documented native interface and a known compatible server are identified.
 
 ### Stage 10 — Reliability, security, and user-visible logical defects
-- [ ] Audit permission requests/results (including empty result arrays), null list results, unchecked filesystem calls, unsafe string/argument construction, shell-script interpolation, silent catch blocks, and resource cleanup.
-- [ ] Remove production debug flags; review exported activities/services, intent validation, file access, update logic, network calls, and logging of sensitive local paths.
-- [ ] Validate updater code and remote endpoints before enabling it; never silently download/execute unverified content.
-- [ ] Add robust validation and understandable recovery for missing game files, wrong paths, failed extraction, native load errors, storage removal, and insufficient space.
-- [ ] Acceptance: critical paths fail safely and explain the next action; no unhandled crash or false-success path remains in the tested scenarios.
+- [x] Audit high-risk permission callbacks, directory-listing nulls, startup argument/environment construction, build-script quoting, runtime asset writes, and cleanup paths. The legacy SDL glue retains upstream-compatible catches for optional platform callbacks; app-owned critical paths now validate results and log actionable failures.
+- [x] Remove forced production debug flags; explicitly export only the launcher entry point and mark the directory picker, SDL activity, and updater service non-exported. Avoid logging complete user-selected game paths.
+- [x] Validate the updater's pinned HTTPS host, branch identifier, bounded response and finite timeouts. Automatic APK update notifications are disabled because there is no signed release manifest/checksum/install-verification flow; no downloaded APK is executed.
+- [x] Validate startup path, argument, custom-VPK and environment sizes; fail when optional data-directory creation or required native environment setup fails. Runtime VPK extraction now writes and syncs a temporary file, atomically replaces the destination, validates cached byte counts, and cleans incomplete output. Failures explain that storage availability should be checked.
+- [ ] **CI acceptance:** all Stage 10 assertions and the full native/Java/Ant/APK workflow must pass. This verifies tested static/build scenarios only; physical-device acceptance is not implied.
 
 ### Stage 11 — Automated tests, static checks, and CI quality gates
 - [ ] Add tests for path normalization, game discovery, readiness checks, preference migration, argument construction, and relevant pure Java logic.
@@ -204,3 +204,14 @@ Update this ledger at the end of every stage with commit SHA, files changed, che
 - Added Advanced settings → Online features and server-browser status, English/Arabic resources, `scripts/verify-stage9.sh`, CI wiring, and `docs/ONLINE-FEATURES.md`.
 - The launcher reports Android connectivity state only and explicitly marks in-app server browsing unavailable because no verified native discovery/list/join bridge or known compatible server is established. This satisfies the roadmap's explicit-unavailability acceptance path; it is not a multiplayer test.
 - PR [#12](https://github.com/majd7772233-a11y/Source-Engine/pull/12) merged into `android-fixes` as `b9660ab08752d83c4ecd5f387298636d3d214e05`. Final pre-merge candidate workflow [39075085755](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39075085755) passed Stage 0–9 static checks, all native builds, Java/Ant packaging, APK identity/ABI/dependency verification (35 ARMv7 ELF libraries), and artifact upload. APK: 56,571,000 bytes; SHA-256 `56cceb193f2b562bf1f5bb32c9c68da8e85f25b72ffa8d8647f81103af5a516f`; artifact [12116274496](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39075085755/artifacts/12116274496), expires 2026-10-31. No real server discovery/join or multiplayer session is claimed. The Actions connector only exposes PR-triggered workflow runs in its commit query, so a distinct post-merge push run was not independently inspected.
+
+
+## Stage 10 engineering ledger — 2026-10-18
+
+- Working branch: `stage10-reliability-security`, based on `android-fixes`.
+- Hardened permission request APIs against pre-23 calls and null/empty input; permission-denial recovery resets launcher button/progress state. SDL startup fails safely on empty permission results.
+- Marked launcher as the only externally exported activity. The directory picker, native SDL activity, and legacy updater service are explicitly non-exported; no forced `android:debuggable=true` is present.
+- Replaced the unsafe `chmod` shell command and broad world-writable permissions with atomic internal asset extraction. A temporary VPK is synced and validated before replacement; cached file length is compared with persisted metadata, and incomplete temporary output is cleaned up.
+- Bounded startup arguments, game path, custom VPK list and environment overrides; checked optional data-directory creation and native environment configuration; removed complete user game paths from startup validation logs.
+- Pinned the advisory version check to the expected HTTPS raw GitHub host, constrained branch names, added connection/read timeouts and response-size/commit-SHA validation, and disabled the legacy notification route because no signed release verification/install mechanism exists.
+- Added `scripts/verify-stage10.sh` to CI, covering manifest exposure, permission callbacks, path/input limits, atomic extraction, updater restrictions, directory-listing guards and shell syntax. Native build/APK verification still must pass before merge; device/runtime acceptance remains pending.

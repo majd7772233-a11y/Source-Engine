@@ -1,61 +1,24 @@
 package me.nillerusr;
 
-import android.content.*;
-import java.io.*;
-import android.os.IBinder;
-import java.util.concurrent.TimeUnit;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.net.Uri;
-import android.os.Bundle;
-import android.widget.RemoteViews;
+import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
 
-import com.magd.source.engine.R;
+/**
+ * Deliberately disabled. The legacy updater did not verify APK signatures or checksums,
+ * so it must not turn an intent extra into an arbitrary browser destination.
+ */
+public final class UpdateService extends Service {
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.w("SRCAPK.Update", "Legacy update notification ignored: verified release installation is not implemented.");
+        stopSelf(startId);
+        return START_NOT_STICKY;
+    }
 
-public class UpdateService extends Service {
-	NotificationManager nm;
-	Bundle extras;
-	static boolean service_work = false;
-
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-	}
-
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		if( !service_work )
-		{
-			service_work = true;
-			try {
-				extras = intent.getExtras();
-				sendNotif();
-			} catch( Exception e ) { }
-		}
-		return START_NOT_STICKY;
-	}
-
-	private void sendNotif() {
-
-		Notification notif = new Notification(R.drawable.ic_launcher, "Update avalible", System.currentTimeMillis());
-		notif.contentView = new RemoteViews(getPackageName(), R.layout.update_notify);
-
-		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(extras.get("update_url").toString()));
-		PendingIntent pIntent = PendingIntent.getActivity(this, 0, browserIntent, 0);
-
-		notif.contentIntent = pIntent;
-		notif.flags |= Notification.FLAG_AUTO_CANCEL;
-		notif.defaults |= Notification.DEFAULT_LIGHTS; // LED
-		notif.defaults |= Notification.DEFAULT_VIBRATE; //Vibration
-		notif.defaults |= Notification.DEFAULT_SOUND; // Sound
-		notif.priority |= Notification.PRIORITY_HIGH;
-
-		nm.notify(1, notif);
-	}
-
-	public IBinder onBind(Intent arg0) {
-		return null;
-	}
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 }
