@@ -223,3 +223,14 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Post-merge canonical workflow [39073356292](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39073356292) succeeded. Stage 0–7 checks passed, pinned dependencies fetched, native libraries compiled, Ant APK packaging succeeded, APK identity/ABI/dependency checks passed, and the artifact uploaded.
 - Canonical APK: 56,562,047 bytes; SHA-256 `c78883743d21c5cf56372553096a59c3c148a5f9057dfd9a21eadfe6e3b8de69`; artifact ID `12115514936`, expires 2026-10-31.
 - This closes the implementation and CI portion of Stage 7 only. The physical-device/gameplay acceptance checkbox stays open until a compatible game is tested on real hardware.
+
+
+## Stage 8 engineering ledger — 2026-10-18
+
+- Work branch: stage8-graphics-audio-compat, based on android-fixes.
+- Added Advanced settings → Device compatibility diagnostics in LauncherActivity. It reports manufacturer/model, Android release/API, system ABI, display dimensions/density/refresh rate, Android-advertised GLES feature level, current available-memory/low-memory snapshot, audio-output count on API 23+, and presence of the five native libraries already required by the APK verifier.
+- Newer API calls are guarded for minSdk 17. The GLES value is explicitly described as Android-advertised feature metadata, not an actual EGL/GL context query. Audio output enumeration is not presented as proof of audible playback. Memory is a snapshot, not peak game memory.
+- Added English and Arabic resource strings, scripts/verify-stage8.sh, CI wiring, and docs/COMPATIBILITY.md with verified repository facts, limitations, device test matrix, and measurement protocol.
+- Deliberately did not add speculative graphics/audio switches. Existing command-line/environment overrides are the only generic controls until their native consumer and effect are verified.
+- Physical testing limitation: no device benchmark was executed. Cold/warm startup, actual GLES extensions/rendering, frame pacing, sustained memory/thermal behavior, audible routing, and crash behavior remain unverified; roadmap acceptance remains open for those device results.
+- Required next action after CI: inspect every workflow job/log, fix all failures, merge only if CI is green, and update canonical documentation. Never mark physical-device acceptance complete without actual evidence.
