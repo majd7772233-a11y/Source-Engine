@@ -28,7 +28,7 @@ checks = {
     "connected state explicitly does not imply a reachable game server": "does not confirm that a game server is reachable" in en.get("srceng_online_network_connected", ""),
     "server browser explicitly unavailable with concrete reason": "no verified native server discovery/list/join bridge" in en.get("srceng_online_server_browser_unavailable", ""),
     "multiplayer is distinguished from a hosted backend": "does not host a game server" in en.get("srceng_online_multiplayer_note", ""),
-    "no fake server list or fabricated join endpoint is introduced": "showOnlineFeaturesStatus" in launcher and "https://" not in launcher[launcher.find("showOnlineFeaturesStatus"):launcher.find("showCompatibilityDiagnostics")],
+    "no fake server list or fabricated join endpoint is introduced": "showOnlineFeaturesStatus" in launcher and "https://" not in launcher[launcher.find("private void showOnlineFeaturesStatus"):launcher.find("private void showCompatibilityDiagnostics")],
     "English online resources are complete": keys <= set(en),
     "Arabic online resources are complete": keys <= set(ar),
     "Arabic server-browser limitation is explicit": "غير متاح" in ar.get("srceng_online_server_browser_unavailable", "") and "لا يملك المشغّل" in ar.get("srceng_online_server_browser_unavailable", ""),
