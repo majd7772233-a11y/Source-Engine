@@ -250,9 +250,9 @@ public class LauncherActivity extends Activity {
 		final String selectedPath = GamePath == null ? "" : GamePath.getText().toString().trim();
 		if (includeCurrentRoot && (selectedPath.length() == 0
 				|| !new File(selectedPath).isDirectory() || !new File(selectedPath).canRead())) {
-			new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error)
+			styleGlassDialog(new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error)
 					.setMessage(R.string.srceng_library_scan_invalid)
-					.setPositiveButton(R.string.srceng_launcher_ok, null).show();
+					.setPositiveButton(R.string.srceng_launcher_ok, null).show());
 			return;
 		}
 		if (scanInProgress) return;
@@ -452,7 +452,17 @@ public class LauncherActivity extends Activity {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle(R.string.srceng_library_details_title).setView(scroll).setNegativeButton(R.string.srceng_launcher_ok, null);
 		if (entry.launchable) builder.setPositiveButton(R.string.srceng_library_play, new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) { selectGame(entry); startSource(null); } });
 		else builder.setPositiveButton(R.string.srceng_library_use, new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) { selectGame(entry); Toast.makeText(LauncherActivity.this, getString(R.string.srceng_library_selected, entry.displayName), Toast.LENGTH_SHORT).show(); } });
-		builder.show();
+		styleGlassDialog(builder.show());
+	}
+
+	private void styleGlassDialog(AlertDialog dialog) {
+		if (dialog == null) return;
+		if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawable(
+				LiquidGlassTheme.panel(0xEE152737, 0xAA5DE6DF, dp(22)));
+			Button positive = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+			Button negative = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+			if (positive != null) { positive.setBackgroundDrawable(LiquidGlassTheme.panel(0xD52A5965, 0xAA8CF5EB, dp(14))); positive.setTextColor(0xFFF2F7FC); }
+			if (negative != null) { negative.setBackgroundDrawable(LiquidGlassTheme.panel(0xB9274051, 0x775DE6DF, dp(14))); negative.setTextColor(0xFFF2F7FC); }
 	}
 
 	private void applyGlassTheme() {
@@ -542,6 +552,8 @@ public class LauncherActivity extends Activity {
 				scroll.addView(text);
 				dialog.setContentView(scroll);
 				dialog.show();
+				if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawable(
+						LiquidGlassTheme.panel(0xEE152737, 0xAA5DE6DF, dp(22)));
 			}
 		});
 
@@ -635,7 +647,7 @@ public class LauncherActivity extends Activity {
 
 	private void showStartupError(String message) {
 		if (isFinishing()) return;
-		new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show();
+		styleGlassDialog(new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show());
 	}
 	@Override protected void onResume() {
 		super.onResume();
