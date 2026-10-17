@@ -37,6 +37,16 @@ public final class LiquidGlassTheme {
         styleTree(root, motionEnabled);
     }
 
+    public static void pause(Activity activity) {
+        if (activity == null) return;
+        View content = activity.findViewById(android.R.id.content);
+        if (content instanceof ViewGroup && ((ViewGroup) content).getChildCount() > 0) {
+            View screen = ((ViewGroup) content).getChildAt(0);
+            Drawable background = screen.getBackground();
+            if (background != null) background.setVisible(false, false);
+        }
+    }
+
     public static void styleLibraryCard(View card, boolean motionEnabled) {
         if (card == null) return;
         card.setBackgroundDrawable(panel(GLASS, 0x995DE6DF, 20));
