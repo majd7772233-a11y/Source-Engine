@@ -94,4 +94,25 @@
     <string name="srceng_library_scan_failed">Scan could not finish: %1$s. Check folder access and try again.</string>
     <string name="srceng_library_details">Game: %1$s\n\nReadiness: %2$s\n%3$s\n\nDetected folder: %4$s\nLaunch root: %5$s\nGame directory: %6$s\n\n%7$s\n%8$s</string>
     <string name="srceng_liquid_motion">Animate ambient glass lighting (uses more power)</string>
+
+    <string name="srceng_controls_title">Touch controls</string>
+    <string name="srceng_controls_layout">Layout preset</string>
+    <string name="srceng_controls_size">Control size</string>
+    <string name="srceng_controls_opacity">Control opacity</string>
+    <string name="srceng_controls_sensitivity">Joystick sensitivity</string>
+    <string name="srceng_controls_edit">Edit positions</string>
+    <string name="srceng_controls_finish_edit">Finish editing</string>
+    <string name="srceng_controls_hide">Hide controls</string>
+    <string name="srceng_controls_show">Show controls</string>
+    <string name="srceng_controls_reset">Reset controls</string>
+    <string name="srceng_controls_done">Done</string>
+    <string name="srceng_controls_cancel">Cancel</string>
+    <string name="srceng_controls_preset_classic">Classic (move left)</string>
+    <string name="srceng_controls_preset_compact">Compact</string>
+    <string name="srceng_controls_preset_right">Right-handed movement</string>
+    <string name="srceng_controls_attack">FIRE</string>
+    <string name="srceng_controls_jump">JUMP</string>
+    <string name="srceng_controls_use">USE</string>
+    <string name="srceng_controls_reload">RELOAD</string>
+    <string name="srceng_controls_edit_hint">Drag controls to reposition, then tap the gear to finish.</string>
 </resources>
