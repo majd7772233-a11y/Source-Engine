@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status:** Stages 0–5 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
+> **Roadmap status:** Stages 0–6 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
 
 ## 1. Product goal
 
@@ -88,12 +88,13 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] **Device acceptance pending:** verify first-run flow, picker cancellation and successful selection, scan/rescan, game details/readiness, advanced settings persistence, portrait/landscape layouts, keyboard/controller focus, launch progress, and returning from an actual compatible game on physical Android hardware. CI cannot prove these user-visible interactions or game launch.
 
 ### Stage 6 — Liquid Glass visual system and motion
-- [ ] Define design tokens for material, tint, blur, edge highlights, gradients, depth, typography, iconography, spacing, animation timing, and pressed/focused/disabled states.
-- [ ] Build layered glass panels with meaningful translucency, subtle distortion/refraction-like effects, specular highlights, ambient color, depth, and a living multicolor background; avoid flat opaque cards pretending to be glass.
-- [ ] Create polished game artwork cards, navigation, dialogs, buttons, selectors, settings, loading/progress states, and empty/error states in one consistent visual language.
-- [ ] Implement animation with lifecycle awareness, reduced-motion/performance controls, and a fallback that works on older Android versions; avoid relying on Android 12-only `RenderEffect` as the only blur path.
-- [ ] Keep effects GPU/memory-conscious and validate on representative low-end devices. Do not sacrifice legibility or interaction feedback for effects.
-- [ ] Acceptance: all launcher screens share the same visual system; effects degrade gracefully; no obvious frame drops, unreadable text, or broken touch interaction. This stage does not claim to redesign the in-game HUD.
+- [x] Define a shared visual system for translucent materials, tint, gradient edges, depth, typography, spacing, motion timing, and pressed/focused/disabled states. The legacy API-17+ app uses custom Drawable/GradientDrawable implementations and does not depend on newer blur APIs.
+- [x] Add layered translucent glass panels with gradient depth, edge highlights, ambient multicolor light, and a continuously moving radial-gradient backdrop. This is a lightweight refraction-like treatment, not a claim of true backdrop blur.
+- [x] Apply the shared style to game-library cards, header/footer navigation surfaces, advanced settings, buttons, text fields, loading/progress context, empty/error surfaces, and dialogs without removing existing interactions.
+- [x] Add a persistent motion toggle, a static background fallback, API-guarded elevation, explicit pressed/focused/disabled button states, and pause the background animation when the launcher is paused.
+- [x] Add `scripts/verify-stage6.sh`; CI checks 16 Liquid Glass assertions before compiling native dependencies and packaging the APK.
+- [x] **CI acceptance:** PR [#9](https://github.com/majd7772233-a11y/Source-Engine/pull/9) candidate commit `96afb4db6cc1f643a86a1b3717fb049b95ebea4c` passed workflow [39071638074](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39071638074), including Stage 0–6 static checks, native compilation, Java/Ant packaging, APK identity/ABI/dependency verification, and artifact upload. Candidate APK: 56,552,070 bytes; SHA-256 `adaa5f81128f11f05a0c83cdef239f6c9523a8815cbf334a585a624d393289b7`; artifact [12115004206](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39071638074/artifacts/12115004206).
+- [ ] **Device/performance acceptance pending:** inspect the visual treatment on real Android devices including a low-end device; test motion enabled/disabled, scrolling, dialogs, touch feedback, rotation, and thermal/battery/frame pacing. CI does not prove visual quality, actual blur, or smoothness. This stage does not redesign the in-game HUD.
 
 ### Stage 7 — Controls, input, and gameplay usability
 - [ ] Inventory the existing SDL touch overlay, gamepad/controller, keyboard, mouse, volume-button, and pointer paths from code and native integration.

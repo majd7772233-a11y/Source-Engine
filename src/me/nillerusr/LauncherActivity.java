@@ -250,9 +250,9 @@ public class LauncherActivity extends Activity {
 		final String selectedPath = GamePath == null ? "" : GamePath.getText().toString().trim();
 		if (includeCurrentRoot && (selectedPath.length() == 0
 				|| !new File(selectedPath).isDirectory() || !new File(selectedPath).canRead())) {
-			new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error)
+			styleGlassDialog(new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error)
 					.setMessage(R.string.srceng_library_scan_invalid)
-					.setPositiveButton(R.string.srceng_launcher_ok, null).show();
+					.setPositiveButton(R.string.srceng_launcher_ok, null).show());
 			return;
 		}
 		if (scanInProgress) return;
@@ -335,6 +335,7 @@ public class LauncherActivity extends Activity {
 			empty.setPadding(0, 12, 0, 12);
 			libraryItems.addView(empty, new LinearLayout.LayoutParams(-1, -2));
 			librarySummary.setText(R.string.srceng_library_empty);
+			applyGlassTheme();
 			return;
 		}
 		int ready = 0;
@@ -342,6 +343,7 @@ public class LauncherActivity extends Activity {
 			if (entry.launchable) ready++;
 			LinearLayout card = new LinearLayout(this);
 			card.setOrientation(LinearLayout.VERTICAL);
+			card.setTag("liquid_glass_card");
 			card.setPadding(dp(12), dp(10), dp(12), dp(10));
 			GradientDrawable cardBg = new GradientDrawable();
 			cardBg.setColor(0xDD253441);
@@ -432,6 +434,7 @@ public class LauncherActivity extends Activity {
 			libraryItems.addView(card);
 		}
 		librarySummary.setText(getString(R.string.srceng_library_count, ready, entries.size()));
+		applyGlassTheme();
 	}
 
 	private void showGameDetails(final GameDiscovery.GameEntry entry) {
@@ -449,7 +452,22 @@ public class LauncherActivity extends Activity {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle(R.string.srceng_library_details_title).setView(scroll).setNegativeButton(R.string.srceng_launcher_ok, null);
 		if (entry.launchable) builder.setPositiveButton(R.string.srceng_library_play, new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) { selectGame(entry); startSource(null); } });
 		else builder.setPositiveButton(R.string.srceng_library_use, new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) { selectGame(entry); Toast.makeText(LauncherActivity.this, getString(R.string.srceng_library_selected, entry.displayName), Toast.LENGTH_SHORT).show(); } });
-		builder.show();
+		styleGlassDialog(builder.show());
+	}
+
+	private void styleGlassDialog(AlertDialog dialog) {
+		if (dialog == null) return;
+		if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawable(
+				LiquidGlassTheme.panel(0xEE152737, 0xAA5DE6DF, 22));
+			Button positive = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+			Button negative = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+			if (positive != null) { positive.setBackgroundDrawable(LiquidGlassTheme.panel(0xD52A5965, 0xAA8CF5EB, 14)); positive.setTextColor(0xFFF2F7FC); }
+			if (negative != null) { negative.setBackgroundDrawable(LiquidGlassTheme.panel(0xB9274051, 0x775DE6DF, 14)); negative.setTextColor(0xFFF2F7FC); }
+	}
+
+	private void applyGlassTheme() {
+		LiquidGlassTheme.apply(this, findViewById(android.R.id.content),
+				mPref != null && mPref.getBoolean("liquid_motion", true));
 	}
 
 	private void selectGame(GameDiscovery.GameEntry entry) {
@@ -482,7 +500,21 @@ public class LauncherActivity extends Activity {
 		advancedPanel = (LinearLayout)findViewById(R.id.advanced_panel);
 		advancedToggle = (Button)findViewById(R.id.button_advanced);
 		setupGameLibrary(body);
-		if (advancedPanel != null) advancedPanel.setVisibility(View.GONE);
+		if (advancedPanel != null) {
+			CheckBox motionToggle = new CheckBox(this);
+			motionToggle.setText(R.string.srceng_liquid_motion);
+			motionToggle.setTextColor(0xFFF2F7FC);
+			motionToggle.setMinHeight(dp(48));
+			motionToggle.setChecked(mPref.getBoolean("liquid_motion", true));
+			motionToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				@Override public void onCheckedChanged(CompoundButton button, boolean checked) {
+					mPref.edit().putBoolean("liquid_motion", checked).apply();
+					applyGlassTheme();
+				}
+			});
+			advancedPanel.addView(motionToggle, new LinearLayout.LayoutParams(-1, -2));
+			advancedPanel.setVisibility(View.GONE);
+		}
 		if (advancedToggle != null) advancedToggle.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { if (advancedPanel == null) return; boolean show = advancedPanel.getVisibility() != View.VISIBLE; advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE); advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced); } });
 
 
@@ -520,6 +552,8 @@ public class LauncherActivity extends Activity {
 				scroll.addView(text);
 				dialog.setContentView(scroll);
 				dialog.show();
+				if (dialog.getWindow() != null) dialog.getWindow().setBackgroundDrawable(
+						LiquidGlassTheme.panel(0xEE152737, 0xAA5DE6DF, dp(22)));
 			}
 		});
 
@@ -535,6 +569,7 @@ public class LauncherActivity extends Activity {
 
 
 		changeButtonsStyle((ViewGroup)this.getWindow().getDecorView());
+		applyGlassTheme();
 
 		// permissions check
 		if( sdk >= 23 )
@@ -612,7 +647,7 @@ public class LauncherActivity extends Activity {
 
 	private void showStartupError(String message) {
 		if (isFinishing()) return;
-		new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show();
+		styleGlassDialog(new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show());
 	}
 	@Override protected void onResume() {
 		super.onResume();
@@ -622,6 +657,6 @@ public class LauncherActivity extends Activity {
 		if (launcherProgress != null) launcherProgress.setVisibility(View.GONE);
 		if (launchButton != null) launchButton.setText(R.string.srceng_launcher_launch);
 	}
-	@Override protected void onPause() { Log.v("SRCAPK", "onPause"); if (mPref != null && cmdArgs != null && GamePath != null && EnvEdit != null) saveSettings(mPref.edit()); super.onPause(); }
+	@Override protected void onPause() { Log.v("SRCAPK", "onPause"); LiquidGlassTheme.pause(this); if (mPref != null && cmdArgs != null && GamePath != null && EnvEdit != null) saveSettings(mPref.edit()); super.onPause(); }
 }
 
