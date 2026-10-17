@@ -17,7 +17,7 @@ checks = {
     "animation can be disabled": "liquid_motion" in launcher and "new AmbientBackdrop(motionEnabled)" in theme,
     "motion setting is localized": "srceng_liquid_motion" in launcher and "srceng_liquid_motion" in resources,
     "motion preference persists": 'putBoolean("liquid_motion", checked)' in launcher,
-    "static fallback avoids Android 12-only blur": "RenderEffect" not in theme and "if (animate)" in theme,
+    "static fallback avoids Android 12-only blur": "RenderEffect" not in theme and "animate ?" in theme,
     "button pressed/focused/disabled states": "state_pressed" in theme and "state_focused" in theme and "state_enabled" in theme,
     "glass material includes translucent gradients and edge strokes": "setStroke(1, edge)" in theme and "GradientDrawable.Orientation.TL_BR" in theme,
     "launcher screen uses shared theme": "LiquidGlassTheme.apply(this" in launcher,
@@ -25,7 +25,7 @@ checks = {
     "dialogs use shared glass surfaces": "styleGlassDialog(builder.show())" in launcher and "LiquidGlassTheme.panel(0xEE152737" in launcher,
     "text fields remain legible": "edit.setTextColor(TEXT)" in theme and "edit.setHintTextColor" in theme,
     "elevation is API guarded": "if (Build.VERSION.SDK_INT >= 21) card.setElevation" in theme and "if (Build.VERSION.SDK_INT >= 21) button.setElevation" in theme,
-    "animation scheduler stops when hidden": "unscheduleSelf(frame)" in theme and "isVisible()" in theme,
+    "animation scheduler stops when hidden": "unscheduleSelf(frame)" in theme and "isVisible()" in theme and "LiquidGlassTheme.pause(this)" in launcher and "public static void pause(Activity activity)" in theme,
     "legacy Java source avoids modern syntax": "->" not in theme and "var " not in theme,
     "CI runs Stage 6 verifier": "bash scripts/verify-stage6.sh" in workflow,
 }
