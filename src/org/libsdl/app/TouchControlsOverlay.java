@@ -47,6 +47,7 @@ final class TouchControlsOverlay extends View {
     private final Map<Integer, Boolean> joystickKeys = new HashMap<Integer, Boolean>();
     private final Map<Integer, Boolean> nativeKeys = new HashMap<Integer, Boolean>();
     private final Map<Integer, Integer> pointerKeys = new HashMap<Integer, Integer>();
+    private final Map<Integer, Boolean> pointerMouse = new HashMap<Integer, Boolean>();
     private final Map<Integer, Integer> pointerControls = new HashMap<Integer, Integer>();
 
     private float size = 1.0f;
@@ -269,10 +270,15 @@ final class TouchControlsOverlay extends View {
                 joystickY = py;
                 updateJoystick();
             } else {
-                int key = keyForControl(control);
-                pointerKeys.put(pointer, Integer.valueOf(key));
                 pointerControls.put(pointer, Integer.valueOf(control));
-                pressButtonKey(key);
+                if (control == CONTROL_ATTACK) {
+                    pointerMouse.put(Integer.valueOf(pointer), Boolean.TRUE);
+                    SDLActivity.onNativeMouse(1, MotionEvent.ACTION_DOWN, 0.0f, 0.0f, true);
+                } else {
+                    int key = keyForControl(control);
+                    pointerKeys.put(Integer.valueOf(pointer), Integer.valueOf(key));
+                    pressButtonKey(key);
+                }
             }
             invalidate();
             return true;
@@ -310,6 +316,9 @@ final class TouchControlsOverlay extends View {
             }
             Integer key = pointerKeys.remove(Integer.valueOf(pointer));
             if (key != null) releaseButtonKey(key.intValue());
+            if (pointerMouse.remove(Integer.valueOf(pointer)) != null) {
+                SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP, 0.0f, 0.0f, true);
+            }
             pointerControls.remove(Integer.valueOf(pointer));
             if (pointer == joystickPointer) {
                 joystickPointer = -1;
@@ -326,7 +335,7 @@ final class TouchControlsOverlay extends View {
     }
 
     private int keyForControl(int control) {
-        if (control == CONTROL_ATTACK) return KeyEvent.KEYCODE_CTRL_LEFT;
+        if (control == CONTROL_ATTACK) return KeyEvent.KEYCODE_UNKNOWN;
         if (control == CONTROL_JUMP) return KeyEvent.KEYCODE_SPACE;
         if (control == CONTROL_USE) return KeyEvent.KEYCODE_E;
         if (control == CONTROL_RELOAD) return KeyEvent.KEYCODE_R;
@@ -379,6 +388,7 @@ final class TouchControlsOverlay extends View {
     }
 
     void releaseAll() {
+        if (!pointerMouse.isEmpty()) SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP, 0.0f, 0.0f, true);
         for (Integer key : nativeKeys.keySet().toArray(new Integer[nativeKeys.size()])) {
             Boolean down = nativeKeys.get(key);
             if (down != null && down.booleanValue()) SDLActivity.onNativeKeyUp(key.intValue());
@@ -387,6 +397,7 @@ final class TouchControlsOverlay extends View {
         buttonCounts.clear();
         joystickKeys.clear();
         pointerKeys.clear();
+        pointerMouse.clear();
         pointerControls.clear();
         joystickPointer = -1;
         dragControl = -1;
