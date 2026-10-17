@@ -681,8 +681,7 @@ public class LauncherActivity extends Activity {
 		android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
 		if (am != null) am.getMemoryInfo(memory);
 		String abi = Build.CPU_ABI == null ? "unknown" : Build.CPU_ABI;
-		if (Build.VERSION.SDK_INT >= 21 && Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0)
-			abi = joinValues(Build.SUPPORTED_ABIS);
+		if (Build.VERSION.SDK_INT >= 21) abi = Api21.getSupportedAbis();
 		File nativeDir = new File(getApplicationInfo().nativeLibraryDir);
 		String[] required = new String[] {"libtierhook.so", "libmain.so", "libRegal.so", "libclient.so", "libserver.so"};
 		StringBuilder missing = new StringBuilder();
@@ -705,8 +704,7 @@ public class LauncherActivity extends Activity {
 		}
 		report.append("\\n").append(getString(R.string.srceng_compatibility_memory, memory.availMem / (1024L * 1024L), memory.lowMemory ? getString(R.string.srceng_compatibility_memory_low) : getString(R.string.srceng_compatibility_memory_ok)));
 		if (Build.VERSION.SDK_INT >= 23) {
-			android.media.AudioManager audio = (android.media.AudioManager) getSystemService(AUDIO_SERVICE);
-			int outputs = audio == null ? 0 : audio.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).length;
+			int outputs = Api23.getAudioOutputCount(this);
 			report.append("\\n").append(getString(R.string.srceng_compatibility_audio_outputs, outputs));
 		} else {
 			report.append("\\n").append(getString(R.string.srceng_compatibility_audio_unknown));
@@ -720,6 +718,22 @@ public class LauncherActivity extends Activity {
 				.setTitle(R.string.srceng_compatibility_title)
 				.setMessage(report.toString())
 				.setPositiveButton(R.string.srceng_launcher_ok, null).show());
+	}
+
+
+	private static final class Api21 {
+		private static String getSupportedAbis() {
+			if (Build.SUPPORTED_ABIS == null || Build.SUPPORTED_ABIS.length == 0)
+				return Build.CPU_ABI == null ? "unknown" : Build.CPU_ABI;
+			return joinValues(Build.SUPPORTED_ABIS);
+		}
+	}
+
+	private static final class Api23 {
+		private static int getAudioOutputCount(Activity activity) {
+			android.media.AudioManager audio = (android.media.AudioManager) activity.getSystemService(ACTIVITY_SERVICE.equals("audio") ? "audio" : "audio");
+			return audio == null ? 0 : audio.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).length;
+		}
 	}
 
 	private static String joinValues(String[] values) {
