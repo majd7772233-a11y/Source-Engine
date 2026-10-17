@@ -481,7 +481,7 @@ final class TouchControlsOverlay extends View {
                 invalidate();
             }
             @Override public void onStartTrackingTouch(SeekBar bar) { }
-            @Override public void onStopTrackingTouch(SeekBar bar) { save(); }
+            @Override public void onStopTrackingTouch(SeekBar bar) { }
         });
         new AlertDialog.Builder(getContext()).setTitle(title).setView(box)
             .setPositiveButton(R.string.srceng_controls_done, new DialogInterface.OnClickListener() {
