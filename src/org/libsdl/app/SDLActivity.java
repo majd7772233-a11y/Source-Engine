@@ -213,27 +213,44 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
 	final static int REQUEST_PERMISSIONS = 42;
 
-	public void applyPermissions( final String permissions[], final int code ) {
-		List<String> requestPermissions = new ArrayList<String>();
-		for( int i = 0; i < permissions.length; i++ ) {
-			if( checkSelfPermission(permissions[i]) != PackageManager.PERMISSION_GRANTED )
-				requestPermissions.add(permissions[i]);
+	public void applyPermissions(final String[] permissions, final int code) {
+		if (Build.VERSION.SDK_INT < 23 || permissions == null || permissions.length == 0) return;
+		List<String> missing = new ArrayList<String>();
+		for (String permission : permissions) {
+			if (permission != null && checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+				missing.add(permission);
+			}
 		}
-
-		if( !requestPermissions.isEmpty() ) {
-			String[] requestPermissionsArray = new String[requestPermissions.size()];
-			for( int i = 0; i < requestPermissions.size(); i++ )
-				requestPermissionsArray[i] = requestPermissions.get(i);
-			requestPermissions(requestPermissionsArray, code);
-		}
+		if (!missing.isEmpty()) requestPermissions(missing.toArray(new String[missing.size()]), code);
 	}
 
-	@Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults) {
-  super.onRequestPermissionsResult(requestCode,permissions,grantResults);if(requestCode!=REQUEST_PERMISSIONS)return;
-  if(grantResults==null||grantResults.length==0){showStartupError(getString(R.string.srceng_launcher_error_permission_result));finish();return;}
-  for(int result:grantResults)if(result!=PackageManager.PERMISSION_GRANTED){showStartupError(getString(R.string.srceng_launcher_error_no_permission));finish();return;}init();
- }
- private void showStartupError(String message){if(isFinishing())return;new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok,new DialogInterface.OnClickListener(){@Override public void onClick(DialogInterface d,int w){finish();}}).setOnCancelListener(new DialogInterface.OnCancelListener(){@Override public void onCancel(DialogInterface d){finish();}}).show();}
+	@Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode != REQUEST_PERMISSIONS) return;
+		if (grantResults == null || grantResults.length == 0) {
+			showStartupError(getString(R.string.srceng_launcher_error_permission_result));
+			finish();
+			return;
+		}
+		for (int result : grantResults) {
+			if (result != PackageManager.PERMISSION_GRANTED) {
+				showStartupError(getString(R.string.srceng_launcher_error_no_permission));
+				finish();
+				return;
+			}
+		}
+		init();
+	}
+	private void showStartupError(String message) {
+		if (isFinishing()) return;
+		new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message)
+				.setPositiveButton(R.string.srceng_launcher_ok, new DialogInterface.OnClickListener() {
+					@Override public void onClick(DialogInterface d, int w) { finish(); }
+				})
+				.setOnCancelListener(new DialogInterface.OnCancelListener() {
+					@Override public void onCancel(DialogInterface d) { finish(); }
+				}).show();
+	}
 
     public void init()
     {
