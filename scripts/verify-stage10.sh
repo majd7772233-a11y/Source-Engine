@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
-bash -n scripts/verify-stage10.sh build.sh scripts/workflow.sh scripts/fetch-build-deps.sh
+for shell_script in build.sh scripts/*.sh; do bash -n "$shell_script"; done
 python3 - "$ROOT_DIR" <<'PY'
 import pathlib
 import sys
@@ -19,6 +19,7 @@ def source(path):
     return (root / path).read_text(encoding="utf-8")
 
 launcher = source("src/me/nillerusr/LauncherActivity.java")
+workflow_script = source("scripts/workflow.sh")
 sdl = source("src/org/libsdl/app/SDLActivity.java")
 extract = source("src/me/nillerusr/ExtractAssets.java")
 valve = source("src/com/valvesoftware/ValveActivity2.java")
@@ -40,6 +41,11 @@ checks = {
     "SDL empty permission results fail safely": "grantResults == null || grantResults.length == 0" in sdl and "srceng_launcher_error_permission_result" in sdl,
     "startup validation does not log full user-supplied path/error text": 'Log.e(TAG, "Startup validation failed; details are shown in the launcher.")' in valve and 'error.replace(\'\\n\', \' \')' not in valve,
     "runtime asset extraction has no shell chmod or command interpolation": "Runtime.getRuntime().exec" not in extract and "chmod(" not in extract,
+    "launch arguments and selected paths have explicit size and NUL guards": "arguments.length() > 4096" in valve and "path.length() > 4096" in valve and "customVpk.length() > 8192" in valve,
+    "environment overrides have per-entry and count limits": "rawEnvironment.length() > 8192" in valve and "entries.length > 64" in valve and "item.length() > 2048" in valve,
+    "optional data directory creation and write access are checked": "!directory.mkdirs()" in launcher and "!directory.canWrite()" in launcher and "gameRootForEngine.isEmpty()" in valve,
+    "native startup stops when required environment values fail": "if (!setRequiredEnvironment(" in valve and "return \"The native runtime rejected a required startup setting." in valve,
+    "native build metadata is passed as arguments and XML escaped": '"%s" % escape(commit)' in workflow_script and '"%s" % escape(branch)' in workflow_script,
     "runtime asset is written to a temporary file before replacement": 'VPK_NAME + TEMP_SUFFIX' in extract and "temporary.renameTo(destination)" in extract,
     "runtime asset output is flushed and synced before installation": "output.flush()" in extract and "output.getFD().sync()" in extract,
     "runtime asset cache validates saved byte count rather than trusting nonempty files": 'PAK_BYTES_KEY' in extract and "destination.length() == expectedBytes" in extract,
