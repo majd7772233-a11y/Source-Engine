@@ -272,8 +272,8 @@ final class TouchControlsOverlay extends View {
             } else {
                 pointerControls.put(pointer, Integer.valueOf(control));
                 if (control == CONTROL_ATTACK) {
+                    if (pointerMouse.isEmpty()) SDLActivity.onNativeMouse(1, MotionEvent.ACTION_DOWN, 0.0f, 0.0f, true);
                     pointerMouse.put(Integer.valueOf(pointer), Boolean.TRUE);
-                    SDLActivity.onNativeMouse(1, MotionEvent.ACTION_DOWN, 0.0f, 0.0f, true);
                 } else {
                     int key = keyForControl(control);
                     pointerKeys.put(Integer.valueOf(pointer), Integer.valueOf(key));
@@ -316,7 +316,7 @@ final class TouchControlsOverlay extends View {
             }
             Integer key = pointerKeys.remove(Integer.valueOf(pointer));
             if (key != null) releaseButtonKey(key.intValue());
-            if (pointerMouse.remove(Integer.valueOf(pointer)) != null) {
+            if (pointerMouse.remove(Integer.valueOf(pointer)) != null && pointerMouse.isEmpty()) {
                 SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP, 0.0f, 0.0f, true);
             }
             pointerControls.remove(Integer.valueOf(pointer));
