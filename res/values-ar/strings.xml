@@ -55,4 +55,25 @@
     <string name="srceng_library_launching">جارٍ التشغيل…</string>
     <string name="srceng_library_scan_failed">تعذّر إكمال الفحص: %1$s. تحقق من صلاحية الوصول إلى المجلد ثم حاول مجددًا.</string>
     <string name="srceng_library_details">اللعبة: %1$s\n\nالجاهزية: %2$s\n%3$s\n\nالمجلد المكتشف: %4$s\nمسار التشغيل: %5$s\nمجلد اللعبة: %6$s\n\n%7$s\n%8$s</string>
+
+    <string name="srceng_controls_title">أزرار اللمس</string>
+    <string name="srceng_controls_layout">نمط الأزرار</string>
+    <string name="srceng_controls_size">حجم الأزرار</string>
+    <string name="srceng_controls_opacity">شفافية الأزرار</string>
+    <string name="srceng_controls_sensitivity">حساسية عصا الحركة</string>
+    <string name="srceng_controls_edit">تعديل المواقع</string>
+    <string name="srceng_controls_finish_edit">إنهاء التعديل</string>
+    <string name="srceng_controls_hide">إخفاء الأزرار</string>
+    <string name="srceng_controls_show">إظهار الأزرار</string>
+    <string name="srceng_controls_reset">إعادة ضبط الأزرار</string>
+    <string name="srceng_controls_done">تم</string>
+    <string name="srceng_controls_cancel">إلغاء</string>
+    <string name="srceng_controls_preset_classic">كلاسيكي (الحركة يسارًا)</string>
+    <string name="srceng_controls_preset_compact">مضغوط</string>
+    <string name="srceng_controls_preset_right">الحركة لليد اليمنى</string>
+    <string name="srceng_controls_attack">إطلاق</string>
+    <string name="srceng_controls_jump">قفز</string>
+    <string name="srceng_controls_use">استخدام</string>
+    <string name="srceng_controls_reload">إعادة تلقيم</string>
+    <string name="srceng_controls_edit_hint">اسحب الأزرار لتغيير مواقعها، ثم اضغط الترس للإنهاء.</string>
 </resources>
