@@ -135,8 +135,7 @@ public final class LiquidGlassTheme {
             glow(canvas, w * (0.82f - 0.42f * (0.5f + 0.5f * (float)Math.cos(t * 6.2831853f))),
                     h * 0.68f, size * 0.92f, 0x553A72D8);
             glow(canvas, w * 0.50f, h * 1.02f, size * 0.76f, 0x3328B9A7);
-            if (animate && isVisible()) scheduleSelf(frame, SystemClock.uptimeMillis() + 80L);
-        }
+            }
 
         private void glow(Canvas c, float x, float y, float radius, int color) {
             paint.setShader(new RadialGradient(x, y, radius,
@@ -147,10 +146,11 @@ public final class LiquidGlassTheme {
         @Override public void setAlpha(int alpha) { paint.setAlpha(alpha); invalidateSelf(); }
         @Override public void setColorFilter(android.graphics.ColorFilter filter) { paint.setColorFilter(filter); invalidateSelf(); }
         @Override public int getOpacity() { return PixelFormat.OPAQUE; }
-        @Override public void setVisible(boolean visible, boolean restart) {
-            super.setVisible(visible, restart);
+        @Override public boolean setVisible(boolean visible, boolean restart) {
+            boolean changed = super.setVisible(visible, restart);
             if (visible && animate) scheduleSelf(frame, SystemClock.uptimeMillis() + 80L);
             else unscheduleSelf(frame);
+            return changed;
         }
     }
 }
