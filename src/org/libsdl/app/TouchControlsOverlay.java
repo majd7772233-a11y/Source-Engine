@@ -1,5 +1,7 @@
 package org.libsdl.app;
 
+import com.magd.source.engine.R;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,7 +13,6 @@ import android.graphics.Typeface;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
