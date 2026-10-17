@@ -675,14 +675,14 @@ public class LauncherActivity extends Activity {
 		StringBuilder report = new StringBuilder();
 		android.net.ConnectivityManager manager = (android.net.ConnectivityManager)
 				getSystemService(CONNECTIVITY_SERVICE);
-			android.net.NetworkInfo active = manager == null ? null : manager.getActiveNetworkInfo();
+		android.net.NetworkInfo active = manager == null ? null : manager.getActiveNetworkInfo();
 		if (active != null && active.isConnected()) {
 			report.append(getString(R.string.srceng_online_network_connected));
 		} else {
 			report.append(getString(R.string.srceng_online_network_disconnected));
 		}
-		report.append("\\n\\n").append(getString(R.string.srceng_online_server_browser_unavailable));
-		report.append("\\n\\n").append(getString(R.string.srceng_online_multiplayer_note));
+		report.append("\n\n").append(getString(R.string.srceng_online_server_browser_unavailable));
+		report.append("\n\n").append(getString(R.string.srceng_online_multiplayer_note));
 		styleGlassDialog(new AlertDialog.Builder(this)
 				.setTitle(R.string.srceng_online_title)
 				.setMessage(report.toString())
