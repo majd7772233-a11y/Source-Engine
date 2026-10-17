@@ -141,7 +141,7 @@ public final class ValveActivity2 {
         mPref = context.getSharedPreferences("mod", 0);
         String error = getStartupError(context, intent);
         if (error != null) {
-            Log.e(TAG, "Startup validation failed: " + error.replace('\n', ' '));
+            Log.e(TAG, "Startup validation failed; details are shown in the launcher.");
         }
         return error == null;
     }
