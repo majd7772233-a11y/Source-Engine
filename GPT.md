@@ -236,3 +236,15 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Candidate CI was inspected end-to-end: workflow [39074171254](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39074171254) passed all 12 Stage 8 assertions, native compilation, Java/Ant packaging, APK verification for 35 ARMv7 ELF libraries, and artifact upload. APK 56,568,273 bytes; SHA-256 `e451d1c06303a2e03ce44bcc979c1393842f045943704eee769d18dda0e4c459`; artifact `12115922638`, expires 2026-10-31.
 - PR [#11](https://github.com/majd7772233-a11y/Source-Engine/pull/11) was squash-merged to `android-fixes` as `fa3459c084df64f187a364ca87e5033e636f2a11`. README updated with merge and artifact evidence. The Actions connector does not expose a post-merge push run in its PR-only workflow query; do not claim a distinct post-merge run was inspected. Candidate code is identical to the merged implementation.
 - Never mark physical-device acceptance complete without actual evidence. Stage 8 remains open only for representative-device measurements and real game graphics/audio/thermal/crash validation.
+
+
+## Stage 9 engineering ledger — 2026-10-18
+
+- Working branch: stage9-online-capability-audit, based on android-fixes.
+- Audited the manifest's INTERNET and ACCESS_NETWORK_STATE permissions, launcher UI and Java/native boundary, native build script, and APK verifier. The Java launcher has no verified server discovery/list/join bridge. The build script compiles engine/client/server-wrapper/GL4ES libraries, and the APK verifier's five required core libraries are not evidence of a working server browser.
+- Added Advanced settings → Online features and server browser status. It reports Android connectivity state only and explicitly says that this does not prove server reachability. It marks the in-app browser unavailable with a concrete reason in English and Arabic.
+- Did not invent a project backend, server list, query endpoint, loading state, or join control. The app is not a game-server host; multiplayer depends on the selected game/mod and a known compatible server.
+- Added scripts/verify-stage9.sh, CI wiring, and docs/ONLINE-FEATURES.md. Static checks validate the disclosure and permission/UI wiring; they do not claim a real server query.
+- Acceptance path: explicitly unavailable when no verified native interface is available. Actual browser implementation is blocked until native discovery/query/join contracts and a known compatible server are established. Do not mark real multiplayer tested.
+- Candidate CI run [39074890383](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39074890383) passed all Stage 0–9 checks, native compilation, Java/Ant packaging, APK identity/ABI/dependency verification, and artifact upload. Stage 9 added 12 static assertions. Candidate APK: 56,571,000 bytes; SHA-256 `9f3bdca78345b8eb8751edf614a4521cec5b9dd343ceaf640df024a502a36141`; artifact `12116990835`, expires 2026-10-31.
+- This is candidate CI evidence before final docs-only commits; rerun/verify the final PR head before merge. No device or real multiplayer testing was performed.

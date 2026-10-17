@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status:** Stages 0–7 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
+> **Roadmap status:** Stages 0–9 implementation and CI verification are complete; physical-device/runtime acceptance remains pending for the items explicitly marked below. Checkboxes are evidence-based: an item is not complete merely because a file exists or a workflow is defined. A phase is complete only when its deliverables, verification, and user-visible behavior have been checked together.
 
 ## 1. Product goal
 
@@ -114,10 +114,11 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] Acceptance: software implementation and CI checks pass; full stage acceptance remains open until the device matrix in docs/COMPATIBILITY.md contains actual test evidence and any evidenced issues are fixed.
 
 ### Stage 9 — Network/browser and optional online functionality
-- [ ] Audit `libServerBrowser.so`, native server-browser interfaces, network permissions, and actual browser UI/data flow before promising multiplayer or server browsing.
-- [ ] Implement server discovery/refresh, loading/error/empty states, filtering, joining, timeout/cancel behavior, and safe network handling only where the underlying engine supports it.
-- [ ] Clearly separate a server browser from a multiplayer backend; do not invent a project server or imply online play is guaranteed for every game/mod.
-- [ ] Acceptance: supported online features work end to end against a known compatible server, or are explicitly marked unavailable with a reason.
+- [x] Audited the canonical manifest, launcher UI/data flow, native build outputs, APK verifier requirements, and Java/native integration. Android INTERNET and ACCESS_NETWORK_STATE permissions are declared; the launcher has no verified native server-list/discovery/join bridge. The current native build pipeline produces the engine, client/server wrappers, and GL4ES/Regal; a binary/library name alone cannot establish browser functionality.
+- [x] Added an Advanced settings → Online features and server browser status panel. It reports Android's connectivity state without making a server request, then explicitly explains why in-app server browsing is unavailable. English and Arabic disclosures are included.
+- [x] Avoided fabricated server lists, invented backends/endpoints, fake loading/progress, and nonfunctional join controls. Clearly separates Android network connectivity from game-server reachability and separates a game/mod's multiplayer support from a hosted project backend.
+- [x] **Acceptance (capability-based):** online functionality unsupported by a verified native interface is explicitly marked unavailable with a concrete reason. No end-to-end server query or multiplayer session is claimed or simulated. See [docs/ONLINE-FEATURES.md](docs/ONLINE-FEATURES.md) and `scripts/verify-stage9.sh`.
+- [ ] **Future browser acceptance remains blocked:** implement discovery/refresh/filter/join, timeout/cancel and real server testing only after a documented native interface and a known compatible server are identified.
 
 ### Stage 10 — Reliability, security, and user-visible logical defects
 - [ ] Audit permission requests/results (including empty result arrays), null list results, unchecked filesystem calls, unsafe string/argument construction, shell-script interpolation, silent catch blocks, and resource cleanup.
@@ -195,3 +196,11 @@ Update this ledger at the end of every stage with commit SHA, files changed, che
 - No physical-device installation, game-content launch, or runtime smoke test was performed. These remain explicitly unverified and belong in the appropriate later-stage acceptance checks.
 - Added `scripts/verify-stage0.sh` and APK manifest/native-payload inspection to CI. Final run [38938001867](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38938001867) passed all checks and uploaded artifact `source-engine-android-debug` (54,488,439 bytes; SHA-256 `0ed0e8919ef6209114eecd35dd15b3abbcca47588570d7dcb11a782a3f557e6b`). All four maintained branch refs were synchronized for the completion-record commit.
 - Stage 0 is complete. Device installation, game-content launch, and physical-device runtime smoke tests were not performed; they must not be inferred from CI packaging success.
+
+
+### Stage 9 execution log — 2026-10-18
+
+- Work branch: `stage9-online-capability-audit`, based on `android-fixes`.
+- Added Advanced settings → Online features and server-browser status, English/Arabic resources, `scripts/verify-stage9.sh`, CI wiring, and `docs/ONLINE-FEATURES.md`.
+- The launcher reports Android connectivity state only and explicitly marks in-app server browsing unavailable because no verified native discovery/list/join bridge or known compatible server is established. This satisfies the roadmap's explicit-unavailability acceptance path; it is not a multiplayer test.
+- Candidate CI passed in [run 39074890383](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39074890383): Stage 0–9 static checks, all native builds, Java/Ant packaging, APK identity/ABI/dependency verification (35 ARMv7 ELF libraries), and artifact upload succeeded. Candidate APK: 56,571,000 bytes; SHA-256 `9f3bdca78345b8eb8751edf614a4521cec5b9dd343ceaf640df024a502a36141`; artifact [12116990835](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39074890383/artifacts/12116990835), expires 2026-10-31. Merge evidence will be recorded after final documentation checks. Physical server discovery/join is not claimed.
