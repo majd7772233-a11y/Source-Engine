@@ -81,7 +81,11 @@ public class LauncherActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode != REQUEST_STORAGE_PICKER || resultCode != RESULT_OK || data == null) return;
+		if (requestCode != REQUEST_STORAGE_PICKER) return;
+		if (resultCode != RESULT_OK || data == null) {
+			if (resultCode == RESULT_CANCELED) Toast.makeText(this, R.string.srceng_storage_selection_cancelled, Toast.LENGTH_SHORT).show();
+			return;
+		}
 		String selectedPath = data.getStringExtra("selected_path");
 		String selectedGameDir = data.getStringExtra("selected_gamedir");
 		if (selectedPath == null || selectedPath.trim().length() == 0) {
