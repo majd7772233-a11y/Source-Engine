@@ -582,11 +582,8 @@ public class LauncherActivity extends Activity {
 		SharedPreferences.Editor editor = mPref.edit();
 		saveSettings(editor);
 
-//		boolean rodir = mPref.getBoolean("rodir", false);
-//		boolean can_write = writeTest(gamepath);
-
 		if (sdk >= 19)
-			editor.putBoolean("immersive_mode", true /*immersiveMode.isChecked()*/ );
+			editor.putBoolean("immersive_mode", true);
 		else
 			editor.putBoolean("immersive_mode", false);
 
@@ -607,34 +604,6 @@ public class LauncherActivity extends Activity {
 		catch (RuntimeException e) { launchInProgress = false; if (launchButton != null) { launchButton.setEnabled(true); launchButton.setText(R.string.srceng_launcher_launch); } if (launcherProgress != null) launcherProgress.setVisibility(View.GONE); Log.e("SRCAPK", "Unable to start SDL activity", e); showStartupError(getString(R.string.srceng_launcher_error_start_failed, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())); }
 
 
-/*		if (can_write || rodir) {
-			if (can_write) {
-				editor.putBoolean("rodir", false);
-				editor.commit();
-				rodir = false;
-			}
-
-			if (sdk >= 19)
-				editor.putBoolean("immersive_mode", true ); //immersiveMode.isChecked() );
-			else
-				editor.putBoolean("immersive_mode", false);
-
-			editor.commit();
-
-			Intent intent = new Intent(this, SDLActivity.class);
-			intent.addFlags(268435456);
-			startActivity(intent);
-
-			return;
-		}
-
-		new AlertDialog.Builder(this).setTitle("Warning").setMessage(
-			this.getResources().getString(R.string.srceng_launcher_error_test_write) + getAndroidDataDir()
-		).setPositiveButton(R.string.srceng_launcher_ok, (DialogInterface.OnClickListener) null).show();
-
-		editor.putBoolean("rodir", true);
-		editor.commit();
-*/
 	}
 
 	private void showStartupError(String message) {
