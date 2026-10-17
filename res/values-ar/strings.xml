@@ -76,4 +76,23 @@
     <string name="srceng_controls_use">استخدام</string>
     <string name="srceng_controls_reload">إعادة تلقيم</string>
     <string name="srceng_controls_edit_hint">اسحب الأزرار لتغيير مواقعها، ثم اضغط الترس للإنهاء.</string>
+
+    <string name="srceng_compatibility_diagnostics">تشخيص توافق الجهاز</string>
+    <string name="srceng_compatibility_title">تقرير الرسوميات والصوت والجهاز</string>
+    <string name="srceng_compatibility_device">الجهاز: %1$s %2$s</string>
+    <string name="srceng_compatibility_android">أندرويد: %1$s (API %2$d)</string>
+    <string name="srceng_compatibility_abi">معمارية النظام المعلنة: %1$s</string>
+    <string name="srceng_compatibility_display">الشاشة الحالية: %1$d × %2$d بكسل؛ الكثافة %3$d نقطة/بوصة</string>
+    <string name="srceng_compatibility_refresh">معدل تحديث الشاشة المعلن: %1$.1f هرتز</string>
+    <string name="srceng_compatibility_gles">مستوى GLES المعلن: %1$d.%2$d (حسب تقرير النظام)</string>
+    <string name="srceng_compatibility_gles_unknown">مستوى GLES المعلن: لم يذكره أندرويد</string>
+    <string name="srceng_compatibility_memory">الذاكرة المتاحة بالنظام: %1$d ميجابايت؛ %2$s</string>
+    <string name="srceng_compatibility_memory_low">أندرويد يبلغ عن انخفاض الذاكرة</string>
+    <string name="srceng_compatibility_memory_ok">أندرويد لا يبلغ حاليًا عن انخفاض الذاكرة</string>
+    <string name="srceng_compatibility_audio_outputs">أجهزة إخراج الصوت التي أبلغ عنها أندرويد: %1$d</string>
+    <string name="srceng_compatibility_audio_unknown">لا يمكن تعداد مخارج الصوت في إصدار أندرويد هذا</string>
+    <string name="srceng_compatibility_native_ok">مكتبات التشغيل الأصلية المطلوبة: موجودة</string>
+    <string name="srceng_compatibility_native_missing">مكتبات التشغيل الأصلية المطلوبة مفقودة من التطبيق المثبّت: %1$s</string>
+    <string name="srceng_compatibility_limits">هذه معلومات تشخيصية يعلنها النظام، وليست فحصًا فعليًا لسياق GL أو اختبار أداء للعبة. لا تؤكد سلاسة الإطارات أو الحرارة أو عمل الصوت أو توافق اللعبة. لن نعرض مفاتيح رسوميات أو صوت غير مؤكدة؛ تبقى وسائط التشغيل ومتغيرات البيئة ضمن الخيارات المتقدمة.</string>
+
 </resources>

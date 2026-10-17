@@ -513,6 +513,16 @@ public class LauncherActivity extends Activity {
 				}
 			});
 			advancedPanel.addView(motionToggle, new LinearLayout.LayoutParams(-1, -2));
+
+			Button diagnosticsButton = new Button(this);
+			diagnosticsButton.setText(R.string.srceng_compatibility_diagnostics);
+			diagnosticsButton.setContentDescription(getString(R.string.srceng_compatibility_diagnostics));
+			diagnosticsButton.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View view) {
+					showCompatibilityDiagnostics();
+				}
+			});
+			advancedPanel.addView(diagnosticsButton, new LinearLayout.LayoutParams(-1, -2));
 			advancedPanel.setVisibility(View.GONE);
 		}
 		if (advancedToggle != null) advancedToggle.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { if (advancedPanel == null) return; boolean show = advancedPanel.getVisibility() != View.VISIBLE; advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE); advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced); } });
@@ -643,6 +653,96 @@ public class LauncherActivity extends Activity {
 		catch (RuntimeException e) { launchInProgress = false; if (launchButton != null) { launchButton.setEnabled(true); launchButton.setText(R.string.srceng_launcher_launch); } if (launcherProgress != null) launcherProgress.setVisibility(View.GONE); Log.e("SRCAPK", "Unable to start SDL activity", e); showStartupError(getString(R.string.srceng_launcher_error_start_failed, e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage())); }
 
 
+	}
+
+
+	/**
+	 * Reports device/runtime facts that can be inspected without launching a game.
+	 * This is diagnostic evidence, not a benchmark or a guarantee of game compatibility.
+	 */
+	private void showCompatibilityDiagnostics() {
+		StringBuilder report = new StringBuilder();
+		android.content.pm.PackageManager pm = getPackageManager();
+		android.content.pm.FeatureInfo[] features = pm.getSystemAvailableFeatures();
+		int glesVersion = 0;
+		if (features != null) {
+			for (int i = 0; i < features.length; i++) {
+				if (features[i] != null && "android.hardware.opengles.aep".equals(features[i].name)) {
+					// AEP is optional and does not represent the actual GLES version.
+				}
+				if (features[i] != null && features[i].reqGlEsVersion > glesVersion)
+					glesVersion = features[i].reqGlEsVersion;
+			}
+		}
+		android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+		android.view.WindowManager wm = (android.view.WindowManager) getSystemService(WINDOW_SERVICE);
+		if (wm != null && wm.getDefaultDisplay() != null) wm.getDefaultDisplay().getMetrics(metrics);
+		android.app.ActivityManager.MemoryInfo memory = new android.app.ActivityManager.MemoryInfo();
+		android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		if (am != null) am.getMemoryInfo(memory);
+		String abi = Build.CPU_ABI == null ? "unknown" : Build.CPU_ABI;
+		if (Build.VERSION.SDK_INT >= 21) abi = Api21.getSupportedAbis();
+		File nativeDir = new File(getApplicationInfo().nativeLibraryDir);
+		String[] required = new String[] {"libtierhook.so", "libmain.so", "libRegal.so", "libclient.so", "libserver.so"};
+		StringBuilder missing = new StringBuilder();
+		for (int i = 0; i < required.length; i++) {
+			if (!new File(nativeDir, required[i]).isFile()) {
+				if (missing.length() > 0) missing.append(", ");
+				missing.append(required[i]);
+			}
+		}
+		report.append(getString(R.string.srceng_compatibility_device, Build.MANUFACTURER, Build.MODEL));
+		report.append("\\n").append(getString(R.string.srceng_compatibility_android, Build.VERSION.RELEASE, Build.VERSION.SDK_INT));
+		report.append("\\n").append(getString(R.string.srceng_compatibility_abi, abi));
+		report.append("\\n").append(getString(R.string.srceng_compatibility_display, metrics.widthPixels, metrics.heightPixels, metrics.densityDpi));
+		if (wm != null && wm.getDefaultDisplay() != null)
+			report.append("\\n").append(getString(R.string.srceng_compatibility_refresh, wm.getDefaultDisplay().getRefreshRate()));
+		if (glesVersion == 0) {
+			report.append("\\n").append(getString(R.string.srceng_compatibility_gles_unknown));
+		} else {
+			report.append("\\n").append(getString(R.string.srceng_compatibility_gles, (glesVersion >> 16) & 0xffff, glesVersion & 0xffff));
+		}
+		report.append("\\n").append(getString(R.string.srceng_compatibility_memory, memory.availMem / (1024L * 1024L), memory.lowMemory ? getString(R.string.srceng_compatibility_memory_low) : getString(R.string.srceng_compatibility_memory_ok)));
+		if (Build.VERSION.SDK_INT >= 23) {
+			int outputs = Api23.getAudioOutputCount(this);
+			report.append("\\n").append(getString(R.string.srceng_compatibility_audio_outputs, outputs));
+		} else {
+			report.append("\\n").append(getString(R.string.srceng_compatibility_audio_unknown));
+		}
+		if (missing.length() > 0)
+			report.append("\\n\\n").append(getString(R.string.srceng_compatibility_native_missing, missing.toString()));
+		else
+			report.append("\\n\\n").append(getString(R.string.srceng_compatibility_native_ok));
+		report.append("\\n\\n").append(getString(R.string.srceng_compatibility_limits));
+		styleGlassDialog(new AlertDialog.Builder(this)
+				.setTitle(R.string.srceng_compatibility_title)
+				.setMessage(report.toString())
+				.setPositiveButton(R.string.srceng_launcher_ok, null).show());
+	}
+
+
+	private static final class Api21 {
+		private static String getSupportedAbis() {
+			if (Build.SUPPORTED_ABIS == null || Build.SUPPORTED_ABIS.length == 0)
+				return Build.CPU_ABI == null ? "unknown" : Build.CPU_ABI;
+			return joinValues(Build.SUPPORTED_ABIS);
+		}
+	}
+
+	private static final class Api23 {
+		private static int getAudioOutputCount(Activity activity) {
+			android.media.AudioManager audio = (android.media.AudioManager) activity.getSystemService("audio");
+			return audio == null ? 0 : audio.getDevices(android.media.AudioManager.GET_DEVICES_OUTPUTS).length;
+		}
+	}
+
+	private static String joinValues(String[] values) {
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < values.length; i++) {
+			if (i > 0) result.append(", ");
+			result.append(values[i]);
+		}
+		return result.toString();
 	}
 
 	private void showStartupError(String message) {
