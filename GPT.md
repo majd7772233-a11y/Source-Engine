@@ -251,7 +251,7 @@ Use this section for new observations that do not yet fit another heading. Date 
 - No device or real multiplayer testing was performed. The GitHub Actions commit-run connector only exposes PR-triggered runs, so no distinct post-merge push run was independently inspected.
 
 
-### 2026-10-18 — Stage 10 reliability/security implementation candidate
+### 2026-10-18 — Stage 10 reliability/security (merged and CI-verified)
 
 - Branch: `stage10-reliability-security`, based on `android-fixes`.
 - Treat Stage 10 as a whole stage: audit/fix permission results, path/argument/environment validation, filesystem write correctness, component exposure, updater safety, user-path logging, and resource cleanup; run every existing verifier plus the native/Java/Ant/APK pipeline; fix all CI failures before merge.
