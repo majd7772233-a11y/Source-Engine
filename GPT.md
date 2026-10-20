@@ -277,3 +277,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Expanded `scripts/verify-stage5.sh` with a regression assertion that the registry/path writes are guarded by a null scan-error state.
 - Follow-up branch: `stage5-scan-error-recovery`; scope is limited to the launcher scan error path, Stage 5 regression coverage, and this hand-off documentation. Hardware/device acceptance remains unverified.
 
+
+### Stage 5 follow-up verification record — 2026-10-20
+
+- PR [#15](https://github.com/majd7772233-a11y/Source-Engine/pull/15) was squash-merged into `android-fixes` as `418eb63cca6da8dd21a3549b99c7a2b91132008b`.
+- PR workflow [39473018430](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39473018430) passed the Stage 5 regression verifier (17 launcher UX assertions), all other wired source verifiers, locked dependency fetch, native compilation, Java/Ant packaging, APK identity/ABI/dependency checks, and artifact upload. The post-merge canonical push workflow [39473351826](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39473351826) also completed successfully.
+- Canonical APK: 56,572,263 bytes; SHA-256 `9000c986fb4ff55249ba793614c8d5be8cda0809f8abd3f5d13a5ff82f019b91`; [artifact 12287199143](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39473351826/artifacts/12287199143), expires 2026-11-03.
+- Files changed in the follow-up: `src/me/nillerusr/LauncherActivity.java`, `scripts/verify-stage5.sh`, `ROADMAP.md`, `README.md`, and `GPT.md`.
+- This is CI/build acceptance only. Real-device scan failure injection, library retention, first-run navigation, storage behavior, and actual game launch remain unverified on physical Android hardware.
