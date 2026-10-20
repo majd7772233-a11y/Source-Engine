@@ -93,7 +93,16 @@ jobs:
             build-reports/SHA256SUMS
           if-no-files-found: error
           retention-days: 14
-      - name: Build and sign non-debuggable release APK
+      - name: Build non-debuggable release APK
+        if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.sign_release) }}
+        env:
+          ANDROID_HOME: ${{ github.workspace }}/android-sdk
+          ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+        run: |
+          set -euo pipefail
+          ant -Dsdk.dir="$ANDROID_HOME" clean release
+          test -s bin/srceng-release-unsigned.apk || { echo 'ERROR: Ant did not produce bin/srceng-release-unsigned.apk.' >&2; exit 1; }
+      - name: Sign and verify release APK using repository secrets
         if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.sign_release) }}
         env:
           ANDROID_HOME: ${{ github.workspace }}/android-sdk
@@ -126,8 +135,6 @@ jobs:
           printf '%s' "$MY_KEYSTORE_JKS" | base64 --decode > "$keystore"
           chmod 600 "$keystore"
           test -s "$keystore" || { echo 'ERROR: MY_KEYSTORE_JKS did not decode to a non-empty keystore.' >&2; exit 2; }
-          ant -Dsdk.dir="$ANDROID_HOME" clean release
-          test -s "$unsigned_apk" || { echo 'ERROR: Ant did not produce bin/srceng-release-unsigned.apk.' >&2; exit 1; }
           zipalign="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name zipalign -print 2>/dev/null | sort -V | tail -n 1)"
           apksigner="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name apksigner -print 2>/dev/null | sort -V | tail -n 1)"
           aapt="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name aapt -print 2>/dev/null | sort -V | tail -n 1)"
