@@ -4,7 +4,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 bash -n scripts/verify-stage5.sh
 python3 - "$ROOT_DIR" <<'PY'
-import pathlib, sys
+import pathlib, re, sys
 import xml.etree.ElementTree as ET
 root = pathlib.Path(sys.argv[1])
 launcher = (root / "src/me/nillerusr/LauncherActivity.java").read_text(encoding="utf-8")
@@ -23,6 +23,9 @@ checks = {
     "not-ready entries cannot launch": "play.setEnabled(entry.launchable)" in launcher and "selectedEntry == null || !selectedEntry.launchable" in launcher,
     "launch progress feedback": "srceng_library_launching" in launcher and "launcherProgress.setVisibility(View.VISIBLE)" in launcher,
     "scan progress feedback": "srceng_library_scanning" in launcher and "scanProgress.setVisibility(View.VISIBLE)" in launcher and "scanProgress.setVisibility(View.GONE)" in launcher,
+    "scan failure does not commit partial library state": bool(re.search(
+        r"if \(scanFailure\[0\] == null\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);\s*\}",
+        launcher, re.S)),
     "touch targets meet 48dp baseline": "b.setMinHeight(dp(48))" in launcher and 'android:minHeight="48dp"' in (root / "res/layout/activity_launcher.xml").read_text(encoding="utf-8"),
     "long names and paths do not overflow": "name.setMaxLines(2)" in launcher and "path.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE)" in launcher,
     "card has accessibility description": "setContentDescription(getString(R.string.srceng_library_open_details" in launcher,

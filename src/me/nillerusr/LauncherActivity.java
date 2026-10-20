@@ -307,9 +307,13 @@ public class LauncherActivity extends Activity {
 					@Override public void run() {
 						scanInProgress = false;
 						if (scanProgress != null) scanProgress.setVisibility(View.GONE);
-						mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(validRoots))
-								.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
-						GameDiscovery.savePaths(LauncherActivity.this, discovered);
+						// Commit the registry only after a complete scan. A runtime failure may
+						// leave "discovered" partially filled; keep the last successful snapshot.
+						if (scanFailure[0] == null) {
+							mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(validRoots))
+									.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
+							GameDiscovery.savePaths(LauncherActivity.this, discovered);
+						}
 						renderGameLibrary();
 						if (scanFailure[0] != null) librarySummary.setText(getString(R.string.srceng_library_scan_failed, scanFailure[0]));
 						else if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);

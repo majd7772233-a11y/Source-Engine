@@ -269,3 +269,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Updated `.github/workflows/build.yml` to keep the debug artifact separate, optionally build the non-debuggable Ant `release` variant, align and sign with `apksigner` using the exact repository-secret names, verify package/version/signature, produce SHA-256 and certificate reports, and upload a versioned release artifact. Release signing is opt-in via a `v*` tag or a manual dispatch with `sign_release=true` and a version.
 - `MY_KEYSTORE_JKS` is defined as the Base64-encoded bytes of the user's keystore file. Decoded key material is restricted to a temporary file and removed by a shell trap; password values are provided to `apksigner` using `env:` references and shell tracing is disabled. Never check the keystore into the repository.
 - **Not yet verified:** this branch's PR workflow has not run yet; real GitHub secret values cannot be inspected with the repository connector; the tag/manual signing path must run before claiming the secrets are configured correctly or that a signed APK exists. Stage 12 overall remains open, and no device installation was performed.
+
+### Stage 5 follow-up — failed-scan state preservation (2026-10-20)
+
+- Audited the already-merged Stage 5 launcher implementation against its user-visible error/recovery requirements. Found that `scanLibrary()` caught a runtime scan exception but still wrote the partially discovered list and pruned the registered roots/hidden paths, potentially replacing the last successful library state with incomplete results.
+- Changed the UI-thread completion path to commit registered roots, hidden entries, and discovered paths only when the scan completed without an exception. Progress is always cleared and the existing recoverable error message remains visible; successful scans retain the prior behavior.
+- Expanded `scripts/verify-stage5.sh` with a regression assertion that the registry/path writes are guarded by a null scan-error state.
+- Follow-up branch: `stage5-scan-error-recovery`; scope is limited to the launcher scan error path, Stage 5 regression coverage, and this hand-off documentation. Hardware/device acceptance remains unverified.
+
