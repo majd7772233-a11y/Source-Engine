@@ -41,6 +41,19 @@ bash scripts/workflow.sh
 
 This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrapper libraries before invoking Ant. Each required native output is deleted before rebuilding so stale files cannot mask a failure. GitHub Actions records exact dependency revisions and uses the pinned Source SDK commit; the exact revisions are locked in `scripts/dependencies.lock` and fetched by `scripts/fetch-build-deps.sh`; nested Source SDK submodules are pinned by the parent commit's gitlinks.
 
+## Release signing (opt-in)
+
+Normal branch and pull-request builds upload the separate `source-engine-android-debug` artifact. A signed release is produced only by pushing a semantic-version tag such as `v1.12.3`, or by manually running **Actions → Android build** with `sign_release=true` and `release_version=1.12.3`. The version must be `MAJOR.MINOR.PATCH`; minor and patch components must each be below 1000. The release workflow derives Android `versionCode` as `major × 1,000,000 + minor × 1,000 + patch`, builds the Ant `release` variant (not the debug variant), aligns and signs it, verifies the signature/package/version, and uploads a separate `source-engine-android-release-VERSION` artifact with SHA-256 and signing-certificate reports. It does not publish a GitHub Release automatically.
+
+Configure these exact GitHub Actions repository secrets before starting a signed build:
+
+- `MY_KEYSTORE_JKS`: **Base64-encoded bytes** of your own release keystore file. On Windows PowerShell, generate the value with `[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\path\release-key.jks"))`. On Linux, use `base64 -w0 release-key.jks`. Paste the resulting Base64 text into the secret; do not upload or commit the keystore file.
+- `KEYSTORE_PASSWORD`: the keystore password.
+- `KEY_ALIAS`: the key alias inside the keystore.
+- `KEY_PASSWORD`: the private key password.
+
+The workflow passes passwords to `apksigner` through environment-variable references, turns off shell tracing for the signing step, writes the decoded keystore only to a permission-restricted temporary file, and removes that file on exit. Secret values are not printed by the workflow. If a required secret is missing or invalid, the signed-release step fails rather than claiming a signed artifact exists.
+
 ## Repository map
 
 - `src/` — Java launcher, bounded game discovery/library, SAF-aware storage picker/path bridge, configurable per-game `TouchControlsOverlay`, update classes, Valve startup glue, and SDL Android integration.

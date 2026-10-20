@@ -135,8 +135,9 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [ ] Acceptance: the full defined test suite runs reproducibly and failures are visible; test coverage is not represented as device validation.
 
 ### Stage 12 — Release packaging, documentation, and final acceptance
-- [ ] Establish release versioning, release notes, signing through repository secrets, artifact checksums, and a clear distinction between debug and release APKs.
-- [ ] Never commit signing keys/passwords or use the committed debug keystore as a release key. Verify signing configuration and secret names before enabling release publication.
+- [x] Configure explicit semantic-version releases (`vMAJOR.MINOR.PATCH` tags or opt-in manual dispatch), deterministic Android version codes, release notes in `CHANGELOG.md`, a separate non-debuggable Ant release build, repository-secret signing, SHA-256 checksums, and distinct debug/release artifacts. The signed build is implemented in the workflow; a successful run against the real configured secrets is still required before claiming a signed artifact has been produced.
+- [x] Keep signing material out of source control, never use a debug keystore as a release key, and wire the exact secrets `MY_KEYSTORE_JKS`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`. The JKS secret is expected to be Base64-encoded file bytes; the workflow uses a temporary permission-restricted file, disables shell tracing for signing, verifies the produced signature and package metadata, and removes the temporary file.
+- [ ] **Live signing validation pending:** run the tag/manual release path with the actual configured secrets; inspect the certificate report and checksum, install the release APK, and confirm its signature/version behavior. The connector cannot read secret values, and no actual secret-backed signing run has been executed as part of this change yet.
 - [ ] Write user-facing setup/troubleshooting documentation for lawful game-content setup, storage permissions, supported games/ABIs, known limitations, and crash diagnostics.
 - [ ] Review license/attribution notices for the launcher, SDL, native wrappers, external source checkouts, and any redistributed binaries.
 - [ ] Run the complete acceptance matrix on the final canonical branch and verify release artifact contents and installation.
