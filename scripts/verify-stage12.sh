@@ -32,7 +32,7 @@ checks = {
     "private-key password secret name is used": "secrets.KEY_PASSWORD" in workflow and "--key-pass env:KEY_PASSWORD" in workflow,
     "base64 keystore is decoded without printing secret": "base64 --decode" in workflow and "set +x" in workflow,
     "temporary keystore is private and removed": 'chmod 600 "$keystore"' in workflow and 'rm -f "$keystore"' in workflow,
-    "signature is verified after signing": "apksigner verify --verbose --print-certs" in workflow,
+    "signature is verified after signing": "verify --verbose --print-certs" in workflow and workflow.index("sign --ks") < workflow.index("verify --verbose --print-certs"),
     "release package/version identity is verified": "package: name='com.magd.source.engine'" in workflow and "versionName='$RELEASE_VERSION'" in workflow,
     "debug APK artifact remains separate": "source-engine-android-debug" in workflow and "source-engine-android-release-" in workflow,
     "debug artifact is preserved before release clean": workflow.index("Upload verified debug APK") < workflow.index("Build non-debuggable release APK") < workflow.index("Sign and verify release APK using repository secrets") < workflow.index("Upload signed release APK"),
