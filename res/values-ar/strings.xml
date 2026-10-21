@@ -28,8 +28,8 @@
     <string name="srceng_library_details_action">التفاصيل</string>
     <string name="srceng_library_open_details">فتح تفاصيل %1$s</string>
     <string name="srceng_library_path">المسار: %1$s</string>
-    <string name="srceng_library_last_never">آخر تشغيل: لم تُشغّل</string>
-    <string name="srceng_library_last">آخر تشغيل: %1$s</string>
+    <string name="srceng_library_last_never">آخر محاولة تشغيل: لم تحدث بعد</string>
+    <string name="srceng_library_last">آخر محاولة تشغيل: %1$s</string>
     <string name="srceng_library_selected">اللعبة المحددة: %1$s</string>
     <string name="srceng_library_removed">أُزيلت اللعبة من المكتبة. أعد فحص المجلد لاكتشافها مجددًا.</string>
     <string name="srceng_library_compatibility">حالة «جاهزة للتجربة» لا تضمن توافق اللعبة أو التعديل.</string>
@@ -147,4 +147,5 @@
     <string name="srceng_storage_game_folder_selected">اخترت مجلد اللعبة نفسه (يحتوي على gameinfo.txt). اختر المجلد الأب بدلًا منه حتى يشمل نطاق الإذن مجلد اللعبة.</string>
     <string name="srceng_storage_invalid_selection">أعاد Android اختيار مجلد غير صالح. افتح المنتقي مجددًا واختر مجلدًا محليًا عاديًا.</string>
     <string name="srceng_storage_scope_mismatch">مسار اللعبة خارج المجلد الذي منحت التطبيق صلاحية الوصول إليه. اختر المجلد الأب الذي يحتوي على مجلد اللعبة، ثم حدد اللعبة من المكتبة.</string>
+    <string name="srceng_library_scan_incomplete">الفحص غير مكتمل: تعذرت قراءة %1$d مجلدات، ووصل الفحص إلى حد العمق في %2$d جذور، وإلى حد عدد المجلدات في %3$d مواضع. احتُفظ بنسخة المكتبة السابقة. تحقق من صلاحية التخزين أو اختر مجلدًا أضيق ثم أعد الفحص.</string>
 </resources>
