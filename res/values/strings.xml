@@ -74,10 +74,10 @@
     <string name="srceng_library_count">Ready to try: %1$d of %2$d candidates</string>
     <string name="srceng_storage_picker_explanation">Choose the folder that contains your Source game files.</string>
     <string name="srceng_storage_choose_folder">Choose folder…</string>
-    <string name="srceng_storage_saf_info">Android will ask you to grant folder access. This build can launch only from storage providers that expose a readable real filesystem path to the native engine. Generic cloud/document providers are not supported as game paths. The app does not bypass Android storage restrictions.</string>
+    <string name="srceng_storage_saf_info">Android will ask you to grant folder access. This build needs a real local filesystem path for the native engine. Choose a folder under Internal storage or a mounted SD/USB volume; cloud or virtual document providers may not work. Choose the parent folder that contains the game folder, not the folder containing gameinfo.txt itself. The app does not bypass Android storage restrictions.</string>
     <string name="srceng_storage_error_title">Storage access problem</string>
     <string name="srceng_storage_picker_unavailable">Android could not open the system folder picker. Check your device software and try again.</string>
-    <string name="srceng_storage_unsupported_provider">This provider cannot be used by the native engine. Choose a local shared-storage folder on internal storage or a mounted SD/USB volume, and make sure it is readable.</string>
+    <string name="srceng_storage_unsupported_provider">This location does not expose a local filesystem path that the native engine can use. Choose a normal folder under Internal storage or a mounted SD/USB volume. Cloud and virtual document providers may not work.</string>
     <string name="srceng_storage_unavailable">The selected folder is missing, unreadable, read-only in an unsupported way, or its removable volume is disconnected. Reconnect the volume or select the folder again.</string>
     <string name="srceng_storage_revoked">Saved storage access is no longer valid. The storage may have been disconnected or Android may have revoked the folder grant. Select the folder again.</string>
     <string name="srceng_storage_selection_cancelled">Folder selection cancelled.</string>
@@ -140,4 +140,17 @@
     <string name="srceng_online_network_disconnected">Network state: Android does not report an active connected network.</string>
     <string name="srceng_online_server_browser_unavailable">In-app server browser: unavailable. The current launcher has no verified native server discovery/list/join bridge. A native library by itself would not prove that server browsing works.</string>
     <string name="srceng_online_multiplayer_note">Multiplayer depends on the selected game or mod and its compatible servers. This app does not host a game server or provide a multiplayer backend. Internet access alone does not guarantee online play.</string>
+    <string name="srceng_storage_unsupported_android">Folder selection is not supported by this Android version. Use the legacy shared-storage browser if available.</string>
+    <string name="srceng_storage_invalid_document_id">Android returned a folder identifier that cannot be mapped safely to the selected volume. Choose a normal folder under Internal storage or a mounted SD card.</string>
+    <string name="srceng_storage_volume_unavailable">The selected storage volume is not mounted or is not currently accessible. Reconnect the SD/USB storage and choose the folder again.</string>
+    <string name="srceng_storage_not_directory">The selected path is not an available folder. Choose an existing folder and try again.</string>
+    <string name="srceng_storage_path_scope">The selected path cannot be mapped safely inside its storage volume. Choose a normal folder directly from the mounted volume.</string>
+    <string name="srceng_storage_no_read_grant">Android did not grant read access to this folder. Reopen the picker and confirm the folder selection.</string>
+    <string name="srceng_storage_grant_failed">Android could not retain access to this folder. Reopen the picker and choose a normal local-storage folder.</string>
+    <string name="srceng_storage_not_readable">The folder exists, but Android does not let the native engine read it. Choose a readable folder under shared Internal storage or a mounted volume.</string>
+    <string name="srceng_storage_not_writable">The folder is readable but not writable. The engine may need to write configuration and cache data, so choose a writable local folder or writable SD/USB volume.</string>
+    <string name="srceng_storage_game_folder_selected">You selected the game folder itself (it contains gameinfo.txt). Choose its parent folder instead, so the granted folder scope contains the game directory.</string>
+    <string name="srceng_storage_invalid_selection">Android returned an invalid folder selection. Reopen the picker and select a normal local folder.</string>
+    <string name="srceng_storage_scope_mismatch">The game path is outside the folder you granted to the app. Choose the parent folder that contains the game folder, then select the game from the library.</string>
+    <string name="srceng_library_last_launch">Last attempt</string>
 </resources>
