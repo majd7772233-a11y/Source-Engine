@@ -166,3 +166,19 @@ Stage 11’s 73 JVM assertions and successful static/build workflow are useful s
 6. Physical-device acceptance, docs, license/attribution, privacy review and signed-release verification.
 
 All remediations belong to the final **Stage 12.x**. This audit sets no delivery date and does not claim the fixes are implemented.
+
+
+## 6. Stage 12 remediation update — 2026-10-22 (CI/device acceptance pending)
+
+Implementation has started in the `stage12-storage-fixes` branch. The following source changes have been made, but this is not a claim that they have passed the integrated workflow or been validated on a real Android device:
+
+- Replaced one generic SAF failure with specific results for unsupported provider, malformed document ID, disconnected/unmounted volume, missing read grant, failure to persist the grant, unreadable/unwritable path and scope mismatch. The UI explains that the parent containing game folders must be selected; selecting the game folder itself is rejected before widening access to its parent.
+- Added canonical grant-root containment on selection and launch. A sibling with a shared textual prefix is not accepted as a descendant.
+- Added detailed scan results that flag unreadable folders and depth/directory limits. The UI now preserves the last successful library snapshot and explains incomplete scans rather than presenting them as an empty definitive scan.
+- Changed history text to “Last attempt” until a runtime-ready signal exists.
+- Startup storage permission is no longer bundled with microphone permission; later optional SDL permission results are returned to native code.
+- Environment override strings are validated as a whole before applying entries, and invalid/reserved settings return a user-facing message instead of being silently skipped.
+- All 147 default resource keys now have Arabic translations; the verifier checks key parity and format-placeholder parity. Touch-control settings explain the current fixed keyboard/mouse mappings and their limitation. The directory picker now uses shared visual styling.
+- Added `docs/USER-SETUP-TROUBLESHOOTING.md`.
+
+**Still open:** branch CI/full APK verification, provider behavior on the affected physical device, Android-version/removable-volume matrix, launch/gameplay/input/audio/visual/performance acceptance, license/privacy review, and secret-backed signed-release/upgrade acceptance. No completion date is announced; all work remains in final Stage 12, with no Stage 13.
