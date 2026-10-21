@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
+import com.magd.source.engine.R;
+
 import java.io.File;
 import java.util.Locale;
 import java.util.regex.Pattern;
