@@ -80,6 +80,25 @@ arabic_names = {node.get("name") for node in arabic_strings_root if node.tag == 
 if not arabic_names.issubset(default_strings):
     raise SystemExit("Arabic strings contain keys absent from the default locale: " +
                      ", ".join(sorted(arabic_names - default_strings)))
+missing_arabic = default_strings - arabic_names
+if missing_arabic:
+    raise SystemExit("User-facing strings missing Arabic translations: " +
+                     ", ".join(sorted(missing_arabic)))
+
+default_string_values = {
+    node.get("name"): "".join(node.itertext())
+    for node in default_strings_root if node.tag == "string"
+}
+arabic_string_values = {
+    node.get("name"): "".join(node.itertext())
+    for node in arabic_strings_root if node.tag == "string"
+}
+placeholder_pattern = re.compile(r"%(?:[0-9]+\\$)?[sdif]")
+for key in sorted(default_strings):
+    default_placeholders = sorted(placeholder_pattern.findall(default_string_values.get(key, "")))
+    arabic_placeholders = sorted(placeholder_pattern.findall(arabic_string_values.get(key, "")))
+    if default_placeholders != arabic_placeholders:
+        raise SystemExit("Format-placeholder mismatch between default and Arabic strings for " + key)
 
 string_references = set()
 java_sources = list((root / "src").rglob("*.java"))
@@ -137,6 +156,11 @@ for required in ("scripts/verify-stage11.sh", "scripts/test-java.sh",
                  "scripts/validate-workflow.py", "actionlint", "shellcheck"):
     if required not in workflow:
         raise SystemExit("Missing Stage 11 CI integration: " + required)
+
+if "LauncherLogic.isPathWithinRoot" not in "\\n".join(source_texts):
+    raise SystemExit("Strict storage-grant path containment is missing from production code.")
+if "selectTree(Context context, Uri uri, int resultFlags)" not in read("src/me/nillerusr/StorageAccess.java"):
+    raise SystemExit("Detailed SAF selection validation is missing.")
 
 test_source = read("tests/java/me/nillerusr/Stage11TestSuite.java")
 for marker in ("LauncherLogic.normalizePath", "LauncherLogic.buildGameArguments",
