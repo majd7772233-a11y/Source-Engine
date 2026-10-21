@@ -93,7 +93,7 @@ arabic_string_values = {
     node.get("name"): "".join(node.itertext())
     for node in arabic_strings_root if node.tag == "string"
 }
-placeholder_pattern = re.compile(r"%(?:[0-9]+\\$)?[sdif]")
+placeholder_pattern = re.compile(r"%(?:[0-9]+\$)?[sdif]")
 for key in sorted(default_strings):
     default_placeholders = sorted(placeholder_pattern.findall(default_string_values.get(key, "")))
     arabic_placeholders = sorted(placeholder_pattern.findall(arabic_string_values.get(key, "")))
