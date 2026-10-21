@@ -27,6 +27,7 @@ updater = source("src/me/nillerusr/UpdateSystem.java")
 service = source("src/me/nillerusr/UpdateService.java")
 discovery = source("src/me/nillerusr/GameDiscovery.java")
 workflow = source(".github/workflows/build.yml")
+environment_method = valve[valve.index("private static String applyUserEnvironment"):valve.index("public static String initNatives")]
 
 components = {c.get(ns + "name"): c for c in list(application.findall("activity")) + list(application.findall("service"))}
 checks = {
@@ -54,6 +55,12 @@ checks = {
     "updater has finite network timeouts and bounded response": "setConnectTimeout(8000)" in updater and "setReadTimeout(8000)" in updater and "value.length() + line.length() > 128" in updater,
     "updater rejects redirects and validates version as a commit hash": "setInstanceFollowRedirects(false)" in updater and "COMMIT_SHA.matcher(remote).matches()" in updater,
     "legacy updater cannot launch an arbitrary URL or install an APK": "Legacy update notification ignored" in service and "Uri.parse" not in service and "startActivity" not in service,
+    "launcher startup asks only for required shared-storage permission": 'applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );' in launcher and 'Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO' not in launcher,
+    "SDL native initialization is not blocked by optional microphone access": 'applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );' in sdl and '&& checkSelfPermission(Manifest.permission.RECORD_AUDIO)' not in sdl,
+    "optional SDL permission results are returned to native code": "nativePermissionResult(requestCode, granted)" in sdl,
+    "environment overrides are validated before any process mutation": environment_method.index("String[] values = new String[entries.length]") < environment_method.index("setRequiredEnvironment(names[i], values[i])"),
+    "invalid/reserved environment entries fail instead of being silently skipped": "srceng_environment_invalid" in environment_method and "Ignoring malformed environment override" not in environment_method and "Ignoring reserved environment override" not in environment_method,
+    "environment validation errors have localized resources": 'R.string.srceng_environment_apply_failed' in valve and 'R.string.srceng_environment_invalid' in valve,
     "game discovery handles unreadable directory listings": "listFiles()" in discovery and "children == null" in discovery,
     "CI runs Stage 10 reliability/security assertions": "bash scripts/verify-stage10.sh" in workflow,
 }
