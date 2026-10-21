@@ -154,11 +154,11 @@ public final class ValveActivity2 {
      */
     private static String applyUserEnvironment(Context context, String rawEnvironment) {
         if (rawEnvironment == null || rawEnvironment.trim().isEmpty()) return null;
-        if (rawEnvironment.length() > 8192 || rawEnvironment.indexOf('\\0') >= 0) {
+        if (rawEnvironment.length() > 8192 || rawEnvironment.indexOf('\0') >= 0) {
             return context.getString(R.string.srceng_environment_invalid);
         }
 
-        String[] entries = rawEnvironment.split("[\\\\r\\\\n;]+");
+        String[] entries = rawEnvironment.split("[\\r\\n;]+");
         if (entries.length > 64) return context.getString(R.string.srceng_environment_invalid);
 
         String[] names = new String[entries.length];
