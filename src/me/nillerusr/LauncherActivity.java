@@ -93,6 +93,10 @@ public class LauncherActivity extends Activity {
 			return;
 		}
 		String normalized = canonicalPath(selectedPath);
+		if (normalized.length() == 0) {
+			showStartupError(getString(R.string.srceng_storage_unavailable));
+			return;
+		}
 		if (GamePath != null) GamePath.setText(normalized);
 		SharedPreferences.Editor editor = mPref.edit().putString("gamepath", normalized);
 		if (selectedGameDir != null && selectedGameDir.trim().length() > 0) editor.putString("gamedir", selectedGameDir);
@@ -255,8 +259,7 @@ public class LauncherActivity extends Activity {
 	}
 
 	private String canonicalPath(String path) {
-		try { return new File(path).getCanonicalPath(); }
-		catch (IOException e) { return new File(path).getAbsolutePath(); }
+		return LauncherLogic.normalizePath(path);
 	}
 
 	private void scanLibrary(boolean includeCurrentRoot, boolean unhideCurrentRoot) {
@@ -506,6 +509,7 @@ public class LauncherActivity extends Activity {
 			super.setTheme(0x01030005);
 
 		mPref = getSharedPreferences("mod", 0);
+		LauncherPreferences.migrate(mPref, getDefaultDir() + "/srceng");
 
 		setContentView(R.layout.activity_launcher);
 
@@ -634,6 +638,10 @@ public class LauncherActivity extends Activity {
 		String gamepath = GamePath == null ? "" : GamePath.getText().toString().trim();
 		if (gamepath.length() == 0) { showStartupError(getString(R.string.srceng_launcher_error_empty_path)); return; }
 		gamepath = canonicalPath(gamepath);
+		if (gamepath.length() == 0) {
+			showStartupError(getString(R.string.srceng_launcher_error_empty_path));
+			return;
+		}
 		if (Build.VERSION.SDK_INT >= 21) {
 			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
 			boolean relatedToSavedTree = expectedTree != null && (gamepath.equals(expectedTree)

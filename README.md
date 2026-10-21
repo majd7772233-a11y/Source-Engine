@@ -79,6 +79,11 @@ The workflow passes passwords to `apksigner` through environment-variable refere
 - `.github/workflows/build.yml` — CI build and debug APK artifact upload.
 - `ROADMAP.md` — staged implementation plan and acceptance criteria.
 - `GPT.md` — persistent engineering notes and execution rules.
+- scripts/test-java.sh — reproducible host-JVM tests against selected production Java classes, with Android API test doubles.
+- scripts/verify-stage11.sh — XML/resource/package/dependency and Stage 11 CI wiring checks.
+- scripts/validate-workflow.py — YAML structure, canonical triggers, pinned actions, and artifact/quality-gate checks.
+- docs/DEVICE-SMOKE-TEST.md — physical-device test plan; not a claim of tests already performed.
+- Stage 11 adds a standalone JVM suite and CI quality gates for the production path-normalization/argument helpers, additive preference migration, game discovery/readiness/persistence, Android XML/resource/package integrity, dependency locks, shell lint and workflow validation. From a checkout with Java and PyYAML, run bash scripts/test-java.sh, bash scripts/verify-stage11.sh, and python3 scripts/validate-workflow.py. The full Actions workflow also runs ShellCheck and actionlint before native dependency fetching; physical-device results are not inferred from these checks.
 
 ## Known limitations and next work
 

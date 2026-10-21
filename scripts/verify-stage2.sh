@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 root = pathlib.Path(sys.argv[1])
 launcher = (root / "src/me/nillerusr/LauncherActivity.java").read_text(encoding="utf-8")
 valve = (root / "src/com/valvesoftware/ValveActivity2.java").read_text(encoding="utf-8")
+logic = (root / "src/me/nillerusr/LauncherLogic.java").read_text(encoding="utf-8")
 assets = (root / "src/me/nillerusr/ExtractAssets.java").read_text(encoding="utf-8")
 sdl = (root / "src/org/libsdl/app/SDLActivity.java").read_text(encoding="utf-8")
 manifest = ET.parse(root / "AndroidManifest.xml").getroot()
@@ -25,7 +26,7 @@ checks = {
     "null-safe directory listing": "File[] children = directory.listFiles();" in valve and "if (children == null)" in valve,
     "native activity-result bridge preserved": "nativeOnActivityResult(Activity activity, int requestCode, int resultCode, Intent data)" in valve,
     "legacy discovery helpers preserved": "public static boolean findGameinfo(String path)" in valve and "public static boolean isModGameinfoExists(String path)" in valve,
-    "game directory traversal rejected": '"..".equals(name)' in valve and 'name.contains("/")' in valve and 'name.contains(' in valve,
+    "game directory traversal rejected": 'LauncherLogic.normalizeGameDirectory(name, "hl2")' in valve and '"..".equals(name)' in logic and "name.indexOf('/')" in logic,
     "native init errors stop startup": "nativeInitError=ValveActivity2.initNatives(this,intent)" in sdl and "if(nativeInitError!=null)" in sdl,
     "VPK extraction returns success": "public static boolean extractVPK(Context context, boolean force)" in assets,
     "VPK output synced before version": "output.getFD().sync()" in assets and "pakversion" in assets,

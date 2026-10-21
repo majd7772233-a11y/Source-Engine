@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 LIBMAIN='libs/armeabi-v7a/libmain.so'
 #sed -e s/gl_supportMapBuffer/gl_supportAssBuffer/ -i $LIBMAIN
 sed -e 's/gl_separatedepthstencil/nosrgb                 /' -i $LIBMAIN

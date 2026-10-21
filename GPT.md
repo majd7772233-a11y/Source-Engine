@@ -285,3 +285,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Canonical APK: 56,572,263 bytes; SHA-256 `9000c986fb4ff55249ba793614c8d5be8cda0809f8abd3f5d13a5ff82f019b91`; [artifact 12287199143](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39473351826/artifacts/12287199143), expires 2026-11-03.
 - Files changed in the follow-up: `src/me/nillerusr/LauncherActivity.java`, `scripts/verify-stage5.sh`, `ROADMAP.md`, `README.md`, and `GPT.md`.
 - This is CI/build acceptance only. Real-device scan failure injection, library retention, first-run navigation, storage behavior, and actual game launch remain unverified on physical Android hardware.
+
+### Stage 11 engineering ledger — automated tests and quality gates
+
+- Working branch: stage11-automated-quality-gates, based on canonical commit 24ed5061c80d317322489420cbddd28f3823b81a.
+- Added pure Java LauncherLogic and wired the production launcher/native bridge to the same helpers for canonical path normalization, single-component game-directory validation, and native -game argument construction.
+- Added LauncherPreferences.migrate: a one-time additive schema migration that seeds defaults only for absent keys, preserves existing argv, gamepath, env, gamedir, and unrelated preferences, and avoids overwriting values from a newer schema.
+- Added a standalone JVM test harness with small Android API test doubles to compile and exercise the real GameDiscovery, LauncherLogic, and LauncherPreferences production classes using temporary fixtures. Coverage includes invalid/normalized paths, arguments and traversal rejection, legacy preference preservation/idempotence, bounded discovery, title/metadata parsing, assets/native payload/ABI readiness, launch timestamps, and defensive shared-preference snapshots.
+- Added scripts/verify-stage11.sh for XML and resource reference integrity, Arabic/default string key consistency, canonical package/API invariants, immutable dependency pin validation, test coverage and CI wiring. Added scripts/validate-workflow.py, ShellCheck error-level lint and pinned-version actionlint to run before downloading/building the native SDK dependencies.
+- Added docs/DEVICE-SMOKE-TEST.md. It is a checklist, not a record of tests already run; all physical-device/gameplay results remain pending.
+- Do not mark CI/build or JVM outcomes as physical-device acceptance. Record exact PR and post-merge action IDs and APK checksum after successful CI; fix any failure before merging.

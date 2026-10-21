@@ -41,6 +41,7 @@ jobs:
           bash scripts/verify-stage8.sh
           bash scripts/verify-stage9.sh
           bash scripts/verify-stage10.sh
+          bash scripts/verify-stage11.sh
           bash scripts/verify-stage12.sh
       - name: Set up Java 8 for the legacy Ant/NDK build
         uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
@@ -50,7 +51,15 @@ jobs:
       - name: Install build utilities
         run: |
           sudo apt-get update
-          sudo apt-get install -y make ant ant-contrib python3 unzip binutils coreutils lib32z1 lib32stdc++6 lib32ncurses6
+          sudo apt-get install -y make ant ant-contrib python3 python3-yaml unzip binutils coreutils shellcheck golang-go lib32z1 lib32stdc++6 lib32ncurses6
+      - name: Run JVM tests and lint workflow
+        run: |
+          set -euo pipefail
+          bash scripts/test-java.sh
+          shellcheck --severity=error build.sh scripts/*.sh
+          python3 scripts/validate-workflow.py
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          "$(go env GOPATH)/bin/actionlint" .github/workflows/build.yml
       - name: Fetch native build dependencies at locked revisions
         run: bash scripts/fetch-build-deps.sh
       - name: Prepare release version
