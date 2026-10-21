@@ -295,3 +295,14 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Added scripts/verify-stage11.sh for XML and resource reference integrity, Arabic/default string key consistency, canonical package/API invariants, immutable dependency pin validation, test coverage and CI wiring. Added scripts/validate-workflow.py, ShellCheck error-level lint and pinned-version actionlint to run before downloading/building the native SDK dependencies.
 - Added docs/DEVICE-SMOKE-TEST.md. It is a checklist, not a record of tests already run; all physical-device/gameplay results remain pending.
 - Do not mark CI/build or JVM outcomes as physical-device acceptance. Record exact PR and post-merge action IDs and APK checksum after successful CI; fix any failure before merging.
+
+
+### Stage 11 completion record — 2026-10-21
+
+- PR [#16](https://github.com/majd7772233-a11y/Source-Engine/pull/16) merged into the canonical branch as dec2b5f6b01c83cdfc58f8897578685680670b96.
+- PR workflow [39552539276](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552539276) and canonical push workflow [39552785558](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552785558) both completed successfully.
+- JVM suite result: 73 assertions passed against production LauncherLogic, LauncherPreferences and GameDiscovery classes using temporary filesystem fixtures and minimal Android test doubles. Coverage includes canonical path handling, invalid input and traversal rejection, quoted game arguments, additive/idempotent preference migration, discovery title and metadata validation, readiness failures for missing assets/native libraries/unsupported ABI, bounded scans, last-launch persistence and defensive library snapshots.
+- Static verifier result: 13 Android XML files, 109 R.string references and 16 production Java files checked. All Stage 0–12 verifiers passed. ShellCheck (error severity), YAML structural checks, full-SHA action pin checks and actionlint passed before the expensive native dependency fetch.
+- Full native dependency fetch/build, Java/Ant packaging, APK identity/ABI/35 ELF native-library verification, SHA-256 recording and success-gated artifact upload passed on the canonical commit. APK: 56,573,086 bytes; SHA-256 f25673a0132c7a4b6b0e73ed0a48d27e32f914431521817cfd31a37a94271083; artifact 12323743499 expires 2026-11-04.
+- The physical-device checklist is docs/DEVICE-SMOKE-TEST.md. No real-device, storage-provider, gameplay, audio, performance, thermal or crash-free runtime test is claimed; that acceptance remains open.
+
