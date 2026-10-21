@@ -209,22 +209,22 @@ Initial remediation in the working branch now includes specific folder-picker er
 
 The historical implementation-stage checklists above record work performed and CI evidence. The active, evidence-based defects and missing product capabilities below are tracked to the **final Stage 12** and must not be considered closed by older stage checks. Full rationale and source evidence: [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md).
 
-| ID | Priority | Area | Audit finding | Stage 12 workstream |
-|---|---|---|---|---|
-| PQ-01 | Critical | Storage | User-observed SAF provider rejection; strict provider/path assumptions, read/write mismatch and generic diagnostics | 12.1 |
-| PQ-02 | High | Permissions | Current app does not provide an OS-aware all-files-access flow; storage and microphone permissions are requested/handled together | 12.1, 12.7 |
-| PQ-03 | High | Scope | Selecting a game directory may derive its parent path, wider than the tree grant | 12.1 |
-| PQ-04 | High | Discovery | Scan limits and inaccessible child listings can appear as definitive empty results | 12.2 |
-| PQ-05 | High | Readiness | “Ready to try” is a filesystem/ABI heuristic, not proof the game runs | 12.2, 12.7 |
-| PQ-06 | High | Launch history | Last-launch timestamp is recorded before SDL/native launch has succeeded | 12.2 |
-| PQ-07 | High | Localization | 34 of 132 default strings lack Arabic translations | 12.6 |
-| PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls; runtime acceptance is pending | 12.3 |
-| PQ-09 | High | Visual UX | Picker/dialogs are visually inconsistent; current gradients/tinted panels do not evidence the full Liquid Glass target | 12.4 |
-| PQ-10 | Medium | Feature truth | Update checker only logs a version marker and legacy update service is disabled; no functioning in-app updater | 12.5 |
-| PQ-11 | Medium | Online | In-app server browser/join flow is not implemented; current connectivity report is correctly disclosed but capabilities remain absent | 12.5 |
-| PQ-12 | Medium | Input validation | Invalid environment entries can be skipped while other entries continue without clear, actionable user feedback | 12.5 |
-| PQ-13 | High | Test coverage | Static pattern checks and 73 JVM assertions do not exercise Android storage providers, UI events, native gameplay, audio or performance | 12.8 |
-| PQ-14 | High | Privacy/legal/release | Audio capture and permission choices need review; attribution/license review and signed-release verification remain open | 12.7, 12.9 |
+| ID | Priority | Area | Audit finding | Stage 12 workstream | Current state (branch implementation; acceptance pending) |
+|---|---|---|---|---|---|
+| PQ-01 | Critical | Storage | User-observed SAF provider rejection; strict provider/path assumptions, read/write mismatch and generic diagnostics | 12.1 | Distinct selection error codes/messages and root-scope checks added; must test with the provider/device that failed |
+| PQ-02 | High | Permissions | No OS-aware all-files-access route; storage and microphone previously requested together | 12.1, 12.7 | Microphone removed from startup permission bundle; all-files-access strategy remains an explicit compatibility/policy decision |
+| PQ-03 | High | Scope | Game-folder selection could derive a parent path wider than the tree grant | 12.1 | Selecting a game folder itself is rejected; canonical granted-root containment is checked on return and launch |
+| PQ-04 | High | Discovery | Scan limits and inaccessible child listings could look like definitive empty results | 12.2 | Detailed scan result tracks inaccessible paths and limits; incomplete scans preserve prior snapshot and show an explanation |
+| PQ-05 | High | Readiness | “Ready to try” is a filesystem/ABI heuristic, not proof the game runs | 12.2, 12.7 | Remains a preflight heuristic; explicit runtime compatibility evidence still missing |
+| PQ-06 | High | Launch history | Last-launch timestamp was recorded before SDL/native launch success | 12.2 | UI says “Last attempt”; an actual native-ready success signal remains unimplemented/unverified |
+| PQ-07 | High | Localization | Initial audit found 34 default strings without Arabic translations | 12.6 | Branch now has 147 keys in each locale and CI enforces key/placeholder parity; integrated CI pending |
+| PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls | 12.3 | Settings disclose current mapping and limits; real-game controls/remapping validation remains open |
+| PQ-09 | High | Visual UX | Picker/dialogs were visually inconsistent with the stated Liquid Glass goal | 12.4 | Shared visual styling applied to the picker; screenshots, accessibility and device performance remain unverified |
+| PQ-10 | Medium | Feature truth | Update checker only logs a version marker; legacy update service is disabled | 12.5 | “Newer marker” text is now explicit that in-app update is unavailable; a verified updater is still absent |
+| PQ-11 | Medium | Online | In-app server browser/join flow is not implemented | 12.5 | Remains explicitly unavailable; do not count connectivity as server discovery |
+| PQ-12 | High | Input validation | Invalid environment entries could be skipped while other entries applied | 12.5 | Entire list is validated before setenv and invalid/reserved entries return actionable localized errors; CI pending |
+| PQ-13 | High | Test coverage | Static checks/JVM assertions do not exercise Android providers, gameplay, audio or performance | 12.8 | Added regression assertions; physical-device and gameplay coverage remains open |
+| PQ-14 | High | Privacy/legal/release | Audio capture/permission decisions, license review and signed release validation remain open | 12.7, 12.9 | Startup permission coupling improved; privacy/legal/signing acceptance remains open |
 
 ### Stage 12 execution ledger — product-quality audit (2026-10-21)
 
