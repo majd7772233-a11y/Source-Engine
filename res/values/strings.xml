@@ -153,4 +153,6 @@
     <string name="srceng_storage_invalid_selection">Android returned an invalid folder selection. Reopen the picker and select a normal local folder.</string>
     <string name="srceng_storage_scope_mismatch">The game path is outside the folder you granted to the app. Choose the parent folder that contains the game folder, then select the game from the library.</string>
     <string name="srceng_library_scan_incomplete">Scan incomplete: %1$d inaccessible folders, %2$d depth-limited roots, %3$d directory-limit stops. Your previous library snapshot was kept. Check storage access or choose a narrower folder, then rescan.</string>
+    <string name="srceng_environment_invalid">Environment overrides contain an invalid or reserved entry. Use NAME=VALUE, one entry per line or semicolon, with at most 64 entries and 2048 characters per entry. Remove the invalid entry and retry.</string>
+    <string name="srceng_environment_apply_failed">The native runtime could not apply environment variable %1$s. Remove it or use a supported value, then retry.</string>
 </resources>
