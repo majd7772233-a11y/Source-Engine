@@ -49,6 +49,11 @@ for path, xml_root in parsed.items():
     else:
         resource_names.add((folder.split("-", 1)[0], path.stem))
 
+for path in (root / "res").rglob("*"):
+    if not path.is_file() or path.suffix == ".xml" or path.parent.name.startswith("values"):
+        continue
+    resource_names.add((path.parent.name.split("-", 1)[0], path.stem))
+
 xml_reference_pattern = re.compile(r"@(?:(android):)?(\+)?([A-Za-z_][A-Za-z0-9_]*)/([A-Za-z_][A-Za-z0-9_.]*)")
 id_definitions = set()
 for path in xml_paths:
