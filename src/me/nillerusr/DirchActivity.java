@@ -44,7 +44,8 @@ public class DirchActivity extends Activity implements View.OnClickListener {
             info.setText(R.string.srceng_storage_saf_info);
             info.setTextColor(0xFFFFFFFF);
             info.setTextSize(15);
-            info.setPadding(16, 16, 16, 16);
+            LiquidGlassTheme.styleDirectoryEntry(info);
+            info.setLineSpacing(dp(3), 1.0f);
             body.addView(info, new LinearLayout.LayoutParams(-1, -2));
             chooseFolder();
         } else {
@@ -56,6 +57,10 @@ public class DirchActivity extends Activity implements View.OnClickListener {
         LauncherActivity.changeButtonsStyle((ViewGroup) getWindow().getDecorView());
         LiquidGlassTheme.apply(this, findViewById(android.R.id.content),
                 preferences.getBoolean("liquid_motion", true));
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
     private void chooseFolder() {
