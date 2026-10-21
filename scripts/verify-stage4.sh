@@ -35,7 +35,7 @@ checks = {
     "persisted access checked before launch": "StorageAccess.getValidatedSelectedPath(this)" in launcher and "srceng_storage_revoked" in launcher and "LauncherLogic.isPathWithinRoot" in launcher,
     "SAF is documented as native filesystem bridge": "real local filesystem path" in strings_root.find("./string[@name='srceng_storage_saf_info']").text,
     "selection reports actionable provider and permission errors": all(code in storage for code in ("ERROR_UNSUPPORTED_PROVIDER", "ERROR_READ_PERMISSION_MISSING", "ERROR_GRANT_PERSIST_FAILED", "ERROR_NOT_READABLE", "ERROR_NOT_WRITABLE", "ERROR_VOLUME_UNAVAILABLE")),
-    "folder grant is not widened to a game-folder parent": "ERROR_GAME_DIRECTORY_SELECTED" in storage and "new File(mapped.path, \"gameinfo.txt\").isFile()" in storage,
+    "folder grant is not widened to a game-folder parent": "ERROR_GAME_DIRECTORY_SELECTED" in storage and "containsGameInfo(new File(mapped.path))" in storage,
     "selected game path must stay within persisted grant": "LauncherLogic.isPathWithinRoot(grantedRoot, gamepath)" in launcher and "isPathWithinRoot(String rootPath, String candidatePath)" in logic,
     "storage grants are saved only after read/write validation": storage.indexOf("int accessError = accessError(selected);") < storage.indexOf('putString(TREE_URI_KEY, uri.toString())'),
     "all new storage error messages are declared": all(name in {item.attrib.get("name") for item in strings_root} for name in ("srceng_storage_not_writable", "srceng_storage_game_folder_selected", "srceng_storage_scope_mismatch", "srceng_storage_no_read_grant")),
