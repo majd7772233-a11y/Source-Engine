@@ -215,9 +215,16 @@ public final class Stage11TestSuite {
         }
         createGame(nested, "too-deep-game", "gameinfo.txt",
                 "\"GameInfo\"\n{\n \"game\" \"Too Deep\"\n}\n", true);
-        List<GameDiscovery.GameEntry> found = GameDiscovery.scan(context, root.getAbsolutePath());
-        check(find(found, new File(nested, "too-deep-game").getCanonicalPath()) == null,
+        GameDiscovery.ScanResult deepResult = GameDiscovery.scanDetailed(context, root.getAbsolutePath());
+        check(find(deepResult.entries, new File(nested, "too-deep-game").getCanonicalPath()) == null,
                 "scanner does not descend beyond maximum depth");
+        check(deepResult.depthLimitReached && !deepResult.isComplete(),
+                "scanner exposes depth-limited results as incomplete rather than a complete empty scan");
+
+        GameDiscovery.ScanResult missingRoot = GameDiscovery.scanDetailed(context,
+                new File(tempRoot, "does-not-exist").getPath());
+        check(!missingRoot.rootAccessible && !missingRoot.isComplete(),
+                "missing scan root is distinguishable from a complete scan with no games");
     }
 
     private static File createGame(File root, String directoryName, String infoName,
