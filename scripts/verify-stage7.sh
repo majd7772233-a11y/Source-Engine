@@ -21,6 +21,8 @@ checks = {
     "multi-pointer buttons tracked independently": "pointerKeys" in overlay and "ACTION_POINTER_DOWN" in overlay and "ACTION_POINTER_UP" in overlay,
     "cancel/pause releases held keys": "ACTION_CANCEL" in overlay and "releaseAll()" in activity and "mTouchControls.releaseAll()" in activity,
     "per-game profile storage": "getSharedPreferences(PREFS" in overlay and 'prefix + "preset"' in overlay and 'prefix + "x" + i' in overlay,
+    "fixed keyboard/mouse mappings are disclosed in settings": "srceng_controls_mapping_note" in overlay and "setMessage(R.string.srceng_controls_mapping_note)" in overlay,
+    "mapping disclosure exists in both locales": "srceng_controls_mapping_note" in en_names and "srceng_controls_mapping_note" in ar_names,
     "size control is configurable": "srceng_controls_size" in overlay and "size = actual / 100.0f" in overlay,
     "opacity control is configurable": "srceng_controls_opacity" in overlay and "opacity = actual / 100.0f" in overlay,
     "joystick sensitivity is configurable": "srceng_controls_sensitivity" in overlay and "sensitivity" in overlay and "updateJoystick()" in overlay,
