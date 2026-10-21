@@ -182,3 +182,15 @@ Implementation has started in the `stage12-storage-fixes` branch. The following 
 - Added `docs/USER-SETUP-TROUBLESHOOTING.md`.
 
 **Still open:** branch CI/full APK verification, provider behavior on the affected physical device, Android-version/removable-volume matrix, launch/gameplay/input/audio/visual/performance acceptance, license/privacy review, and secret-backed signed-release/upgrade acceptance. No completion date is announced; all work remains in final Stage 12, with no Stage 13.
+
+
+## 7. Candidate CI evidence — 2026-10-22 (runtime acceptance still pending)
+
+The Stage 12 initial-remediation branch completed candidate workflow [39679419842](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842) successfully at commit `59f03a4c2013fe36f42ab9d417ebfb07e261d10d`. The run passed the Stage 0–12 verifiers, 80 JVM assertions, Arabic locale-key and placeholder parity (151 keys in each locale), YAML/workflow checks, ShellCheck/actionlint, locked native dependency fetch/build, Java/Ant packaging, APK identity/ABI/native dependency checks (35 ARMv7 ELF libraries), checksum recording and artifact upload.
+
+- APK package: `com.magd.source.engine`; ABI: `armeabi-v7a`; APK size: 56,589,391 bytes.
+- APK SHA-256: `aae99b750b88030a0ff0cc5d7bf293b260c369c942e0b61439fa77af2707e295`.
+- Debug artifact: [12383626531](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842/artifacts/12383626531); ZIP digest `a1c770735469be9b585caaa22286ec3c9c7c75437129efb572869434850bdb5e`; expires 2026-11-04.
+- Release build/signing was not executed in this candidate workflow. No physical-device storage-provider, gameplay, input, audio, accessibility, performance/thermal or signed-release validation is inferred from these results.
+
+The code changes are still a remediation tranche, not a declaration that all defects are fixed. PR #18 must pass merge and post-merge CI. The user must test the downloaded APK against the exact storage provider/device that originally failed. Stage 12 stays open-ended until all product and release acceptance criteria are evidenced.
