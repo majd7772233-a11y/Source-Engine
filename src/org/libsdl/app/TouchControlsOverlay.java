@@ -420,6 +420,7 @@ final class TouchControlsOverlay extends View {
         };
         new AlertDialog.Builder(getContext())
             .setTitle(R.string.srceng_controls_title)
+            .setMessage(R.string.srceng_controls_mapping_note)
             .setItems(items, new DialogInterface.OnClickListener() {
                 @Override public void onClick(DialogInterface dialog, int which) {
                     if (which == 0) choosePreset();
