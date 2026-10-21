@@ -44,6 +44,7 @@ checks = {
     "release notes exist": changelog.is_file() and "## Unreleased" in changelog.read_text(encoding="utf-8"),
     "source manifest retains canonical app ID": 'package="com.magd.source.engine"' in manifest.read_text(encoding="utf-8"),
     "source manifest does not force debug mode": 'android:debuggable="true"' not in manifest.read_text(encoding="utf-8"),
+    "user setup and troubleshooting guide documents storage selection and scope limits": (root / "docs/USER-SETUP-TROUBLESHOOTING.md").is_file() and all(term in (root / "docs/USER-SETUP-TROUBLESHOOTING.md").read_text(encoding="utf-8") for term in ("gameinfo.txt", "filesystem path", "ARM", "logcat", "all files access")),
     "launcher retains user-visible readiness disclosure": "srceng_library_compatibility" in strings,
 }
 missing = [name for name, ok in checks.items() if not ok]
