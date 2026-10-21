@@ -193,4 +193,12 @@ The Stage 12 initial-remediation branch completed candidate workflow [3967941984
 - Debug artifact: [12383626531](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842/artifacts/12383626531); ZIP digest `a1c770735469be9b585caaa22286ec3c9c7c75437129efb572869434850bdb5e`; expires 2026-11-04.
 - Release build/signing was not executed in this candidate workflow. No physical-device storage-provider, gameplay, input, audio, accessibility, performance/thermal or signed-release validation is inferred from these results.
 
-The code changes are still a remediation tranche, not a declaration that all defects are fixed. PR #18 must pass merge and post-merge CI. The user must test the downloaded APK against the exact storage provider/device that originally failed. Stage 12 stays open-ended until all product and release acceptance criteria are evidenced.
+The code changes are still a remediation tranche, not a declaration that all defects are fixed. PR #18 merged as `f530574869f51091b5dccf0365d12f582c737ce2`; canonical post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed. The user must still test the downloaded APK against the exact storage provider/device that originally failed. Stage 12 stays open-ended until all product and release acceptance criteria are evidenced.
+
+## 8. Canonical post-merge CI — 2026-10-22 (runtime acceptance pending)
+
+PR [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) was merged into `android-fixes` as `f530574869f51091b5dccf0365d12f582c737ce2`. Canonical workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) completed successfully, passing all source-stage verifiers, 80 JVM regression assertions, workflow/lint checks, pinned native dependency retrieval/build, Java/Ant packaging, and APK integrity verification (35 ARMv7 ELF libraries).
+
+- Canonical debug APK: 56,589,387 bytes; SHA-256 `d8d2721257bd129a4cd43aed2f740c8e5dd76bad1b350b30b54b9f750de826ef`.
+- [Artifact 12383377856](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677/artifacts/12383377856); ZIP digest `ba388bc3b1c9fe70ebe983c9259f4758f49bd761e87e636c6530a85375faab5d`; expires 2026-11-04.
+- Release signing was not run. The actual user's SAF provider/volume behavior, compatible-game startup/gameplay, input/audio/accessibility/performance, legal/privacy review and signed release/upgrade remain unverified. A green CI build is not a device acceptance test.
