@@ -54,9 +54,10 @@ for step in steps:
     if not re.search(r"@[0-9a-fA-F]{40}$", str(uses)):
         fail("third-party action is not pinned to a full commit SHA: " + str(uses))
 
-if "if: success()" not in str(steps):
+if not any(isinstance(step, dict) and step.get("if") == "success()" for step in steps):
     fail("debug artifact upload must be gated on successful build")
-if "if-no-files-found: error" not in str(steps):
+if not any(isinstance(step, dict) and isinstance(step.get("with"), dict)
+           and step["with"].get("if-no-files-found") == "error" for step in steps):
     fail("artifact upload must fail when expected outputs are absent")
 
 names = [str(step.get("name", "")) for step in steps]
