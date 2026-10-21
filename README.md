@@ -1,5 +1,9 @@
 # Source Engine for Android
 
+> **Stage 12 implementation is in progress.** This branch adds storage-provider diagnostics/path-scope protection, incomplete-scan reporting, complete Arabic resource parity, optional-microphone permission handling, stricter environment validation and picker/control UX disclosures. These changes are awaiting CI review and physical-device testing; the application is not release-ready.
+
+See the [product-quality audit](docs/PRODUCT-QUALITY-AUDIT.md), the [terminal Stage 12 roadmap](ROADMAP.md), and the new [setup and troubleshooting guide](docs/USER-SETUP-TROUBLESHOOTING.md).
+
 > **Product status (2026-10-21): NOT release-ready.** The green build proves that the APK can be packaged and its native payload checked; it does not prove the app works correctly on a device. A product-level audit has recorded the reported storage-provider failure plus logical/UX and missing-feature issues in [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md). [Stage 12](ROADMAP.md) is now the final, open-ended remediation and release gate; there is no ETA, no Stage 13, and this audit has not yet changed app behavior.
 
 
