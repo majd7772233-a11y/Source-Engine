@@ -54,6 +54,8 @@ public class DirchActivity extends Activity implements View.OnClickListener {
             listDirectory(currentDirectory);
         }
         LauncherActivity.changeButtonsStyle((ViewGroup) getWindow().getDecorView());
+        LiquidGlassTheme.apply(this, findViewById(android.R.id.content),
+                preferences.getBoolean("liquid_motion", true));
     }
 
     private void chooseFolder() {
@@ -184,8 +186,10 @@ public class DirchActivity extends Activity implements View.OnClickListener {
 
     private void addDirectoryEntry(String label, final String path) {
         TextView item = new TextView(this);
-        item.setText(label); item.setTextColor(0xFFFFFFFF); item.setTextSize(16);
-        item.setPadding(14, 12, 14, 12);
+        item.setText(label);
+        item.setSingleLine(true);
+        item.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        LiquidGlassTheme.styleDirectoryEntry(item);
         item.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { listDirectory(path); }
         });
