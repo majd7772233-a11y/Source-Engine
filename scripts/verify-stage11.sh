@@ -80,6 +80,25 @@ arabic_names = {node.get("name") for node in arabic_strings_root if node.tag == 
 if not arabic_names.issubset(default_strings):
     raise SystemExit("Arabic strings contain keys absent from the default locale: " +
                      ", ".join(sorted(arabic_names - default_strings)))
+missing_arabic = default_strings - arabic_names
+if missing_arabic:
+    raise SystemExit("User-facing strings missing Arabic translations: " +
+                     ", ".join(sorted(missing_arabic)))
+
+default_string_values = {
+    node.get("name"): "".join(node.itertext())
+    for node in default_strings_root if node.tag == "string"
+}
+arabic_string_values = {
+    node.get("name"): "".join(node.itertext())
+    for node in arabic_strings_root if node.tag == "string"
+}
+placeholder_pattern = re.compile(r"%(?:[0-9]+\$)?[sdif]")
+for key in sorted(default_strings):
+    default_placeholders = sorted(placeholder_pattern.findall(default_string_values.get(key, "")))
+    arabic_placeholders = sorted(placeholder_pattern.findall(arabic_string_values.get(key, "")))
+    if default_placeholders != arabic_placeholders:
+        raise SystemExit("Format-placeholder mismatch between default and Arabic strings for " + key)
 
 string_references = set()
 java_sources = list((root / "src").rglob("*.java"))
@@ -138,15 +157,41 @@ for required in ("scripts/verify-stage11.sh", "scripts/test-java.sh",
     if required not in workflow:
         raise SystemExit("Missing Stage 11 CI integration: " + required)
 
+if "LauncherLogic.isPathWithinRoot" not in "\\n".join(source_texts):
+    raise SystemExit("Strict storage-grant path containment is missing from production code.")
+if "selectTree(Context context, Uri uri, int resultFlags)" not in read("src/me/nillerusr/StorageAccess.java"):
+    raise SystemExit("Detailed SAF selection validation is missing.")
+
+discovery = read("src/me/nillerusr/GameDiscovery.java")
+launcher = read("src/me/nillerusr/LauncherActivity.java")
+english_values = ET.parse(default_strings_path).getroot()
+arabic_values = ET.parse(arabic_strings_path).getroot()
+checks = {
+    "bounded game discovery reports incomplete traversal": all(token in discovery for token in
+        ("class ScanResult", "scanDetailed(Context context, String rootPath)",
+         "depthLimitReached", "directoryLimitReached", "inaccessibleDirectories", "isComplete()")),
+    "launcher never commits a partial discovery snapshot": "GameDiscovery.scanDetailed(LauncherActivity.this, root)" in launcher
+        and "boolean completed = scanFailure[0] == null && !scanIncomplete[0]" in launcher
+        and "if (completed)" in launcher
+        and "srceng_library_scan_incomplete" in launcher,
+    "launch history is explicitly labelled as an attempt": "Last attempt: %1$s" in default_string_values.get("srceng_library_last", "")
+        and "آخر محاولة تشغيل" in arabic_string_values.get("srceng_library_last", ""),
+    "picker uses shared visual system": "LiquidGlassTheme.styleDirectoryEntry(item)" in read("src/me/nillerusr/DirchActivity.java")
+        and "id == com.magd.source.engine.R.id.header_ch" in read("src/me/nillerusr/LiquidGlassTheme.java"),
+}
+failed_product_checks = [name for name, ok in checks.items() if not ok]
+if failed_product_checks:
+    raise SystemExit("Stage 12 regression assertions failed: " + ", ".join(failed_product_checks))
+
 test_source = read("tests/java/me/nillerusr/Stage11TestSuite.java")
 for marker in ("LauncherLogic.normalizePath", "LauncherLogic.buildGameArguments",
                "LauncherPreferences.migrate", "GameDiscovery.scan",
-               "GameDiscovery.inspectPath", "GameDiscovery.recordLaunch",
+               "GameDiscovery.inspectPath", "GameDiscovery.scanDetailed", "GameDiscovery.recordLaunch",
                "GameDiscovery.savePaths", "MAX_DEPTH"):
     if marker not in test_source:
         raise SystemExit("JVM regression suite is missing coverage marker: " + marker)
 
-print("Stage 11 static checks passed: XML/resource integrity, Android package/API contract, dependency pinning, CI wiring, and JVM coverage.")
+print("Stage 11/12 static checks passed: XML/resource integrity, Arabic locale parity, storage scope, truthful scan state, Android package/API contract, dependency pinning, CI wiring, and JVM coverage.")
 print("Validated " + str(len(xml_paths)) + " Android XML files, " +
       str(len(string_references)) + " R.string references, and " +
       str(len(java_sources)) + " production Java files.")

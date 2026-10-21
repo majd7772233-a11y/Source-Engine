@@ -44,7 +44,8 @@ public class DirchActivity extends Activity implements View.OnClickListener {
             info.setText(R.string.srceng_storage_saf_info);
             info.setTextColor(0xFFFFFFFF);
             info.setTextSize(15);
-            info.setPadding(16, 16, 16, 16);
+            LiquidGlassTheme.styleDirectoryEntry(info);
+            info.setLineSpacing(dp(3), 1.0f);
             body.addView(info, new LinearLayout.LayoutParams(-1, -2));
             chooseFolder();
         } else {
@@ -54,6 +55,12 @@ public class DirchActivity extends Activity implements View.OnClickListener {
             listDirectory(currentDirectory);
         }
         LauncherActivity.changeButtonsStyle((ViewGroup) getWindow().getDecorView());
+        LiquidGlassTheme.apply(this, findViewById(android.R.id.content),
+                preferences.getBoolean("liquid_motion", true));
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
     }
 
     private void chooseFolder() {
@@ -74,32 +81,52 @@ public class DirchActivity extends Activity implements View.OnClickListener {
             return;
         }
         Uri uri = data.getData();
-        String path = StorageAccess.resolveFilesystemPath(this, uri);
-        if (path == null || !StorageAccess.persistSelection(this, uri, data.getFlags())) {
+        StorageAccess.SelectionResult selection = StorageAccess.selectTree(this, uri, data.getFlags());
+        if (!selection.isSuccess()) {
             new AlertDialog.Builder(this).setTitle(R.string.srceng_storage_error_title)
-                    .setMessage(R.string.srceng_storage_unsupported_provider)
+                    .setMessage(storageErrorMessage(selection.error))
                     .setPositiveButton(R.string.srceng_launcher_ok, null).show();
             return;
         }
-        File selected = new File(path);
-        if (!selected.isDirectory() || !selected.canRead()) {
-            new AlertDialog.Builder(this).setTitle(R.string.srceng_storage_error_title)
-                    .setMessage(R.string.srceng_storage_unavailable)
-                    .setPositiveButton(R.string.srceng_launcher_ok, null).show();
-            return;
-        }
-        String gamePath = path;
+
+        String gamePath = selection.path;
         String gameDir = preferences.getString("gamedir", "hl2");
-        if (new File(selected, "gameinfo.txt").isFile()) {
-            File parent = selected.getParentFile();
-            if (parent != null) { gamePath = parent.getAbsolutePath(); gameDir = selected.getName(); }
-        }
-        preferences.edit().putString("gamepath", normalizePath(gamePath)).putString("gamedir", gameDir).apply();
+        preferences.edit().putString("gamepath", normalizePath(gamePath))
+                .putString("gamedir", gameDir).apply();
         Intent result = new Intent();
         result.putExtra("selected_path", normalizePath(gamePath));
         result.putExtra("selected_gamedir", gameDir);
         setResult(RESULT_OK, result);
         finish();
+    }
+
+    private int storageErrorMessage(int error) {
+        switch (error) {
+            case StorageAccess.ERROR_UNSUPPORTED_ANDROID:
+                return R.string.srceng_storage_unsupported_android;
+            case StorageAccess.ERROR_UNSUPPORTED_PROVIDER:
+                return R.string.srceng_storage_unsupported_provider;
+            case StorageAccess.ERROR_INVALID_DOCUMENT_ID:
+                return R.string.srceng_storage_invalid_document_id;
+            case StorageAccess.ERROR_VOLUME_UNAVAILABLE:
+                return R.string.srceng_storage_volume_unavailable;
+            case StorageAccess.ERROR_NOT_DIRECTORY:
+                return R.string.srceng_storage_not_directory;
+            case StorageAccess.ERROR_PATH_OUTSIDE_VOLUME:
+                return R.string.srceng_storage_path_scope;
+            case StorageAccess.ERROR_READ_PERMISSION_MISSING:
+                return R.string.srceng_storage_no_read_grant;
+            case StorageAccess.ERROR_GRANT_PERSIST_FAILED:
+                return R.string.srceng_storage_grant_failed;
+            case StorageAccess.ERROR_NOT_READABLE:
+                return R.string.srceng_storage_not_readable;
+            case StorageAccess.ERROR_NOT_WRITABLE:
+                return R.string.srceng_storage_not_writable;
+            case StorageAccess.ERROR_GAME_DIRECTORY_SELECTED:
+                return R.string.srceng_storage_game_folder_selected;
+            default:
+                return R.string.srceng_storage_invalid_selection;
+        }
     }
 
     private String normalizePath(String path) {
@@ -118,10 +145,20 @@ public class DirchActivity extends Activity implements View.OnClickListener {
             Toast.makeText(this, R.string.srceng_storage_unavailable, Toast.LENGTH_LONG).show();
             return;
         }
-        preferences.edit().putString("gamepath", normalizePath(currentDirectory)).apply();
+        String gamePath = currentDirectory;
+        String gameDir = preferences.getString("gamedir", "hl2");
+        if (new File(chosen, "gameinfo.txt").isFile()) {
+            File parent = chosen.getParentFile();
+            if (parent != null) {
+                gamePath = parent.getAbsolutePath();
+                gameDir = chosen.getName();
+            }
+        }
+        preferences.edit().putString("gamepath", normalizePath(gamePath))
+                .putString("gamedir", gameDir).apply();
         Intent result = new Intent();
-        result.putExtra("selected_path", normalizePath(currentDirectory));
-        result.putExtra("selected_gamedir", preferences.getString("gamedir", "hl2"));
+        result.putExtra("selected_path", normalizePath(gamePath));
+        result.putExtra("selected_gamedir", gameDir);
         setResult(RESULT_OK, result);
         finish();
     }
@@ -154,8 +191,10 @@ public class DirchActivity extends Activity implements View.OnClickListener {
 
     private void addDirectoryEntry(String label, final String path) {
         TextView item = new TextView(this);
-        item.setText(label); item.setTextColor(0xFFFFFFFF); item.setTextSize(16);
-        item.setPadding(14, 12, 14, 12);
+        item.setText(label);
+        item.setSingleLine(true);
+        item.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+        LiquidGlassTheme.styleDirectoryEntry(item);
         item.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { listDirectory(path); }
         });

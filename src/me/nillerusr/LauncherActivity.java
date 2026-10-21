@@ -97,6 +97,13 @@ public class LauncherActivity extends Activity {
 			showStartupError(getString(R.string.srceng_storage_unavailable));
 			return;
 		}
+		if (Build.VERSION.SDK_INT >= 21) {
+			String grantedRoot = StorageAccess.getValidatedSelectedPath(this);
+			if (grantedRoot == null || !LauncherLogic.isPathWithinRoot(grantedRoot, normalized)) {
+				showStartupError(getString(R.string.srceng_storage_scope_mismatch));
+				return;
+			}
+		}
 		if (GamePath != null) GamePath.setText(normalized);
 		SharedPreferences.Editor editor = mPref.edit().putString("gamepath", normalized);
 		if (selectedGameDir != null && selectedGameDir.trim().length() > 0) editor.putString("gamedir", selectedGameDir);
@@ -115,13 +122,13 @@ public class LauncherActivity extends Activity {
 				}
 			}
 			if (!granted) {
-				Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show();
 				launchInProgress = false;
 				if (launchButton != null) {
 					launchButton.setEnabled(true);
 					launchButton.setText(R.string.srceng_launcher_launch);
 				}
 				if (launcherProgress != null) launcherProgress.setVisibility(View.GONE);
+				showStoragePermissionHelp();
 			}
 		}
 	}
@@ -293,13 +300,25 @@ public class LauncherActivity extends Activity {
 				final Set<String> discovered = new HashSet<String>();
 				final Set<String> validRoots = new HashSet<String>();
 				final String[] scanFailure = new String[1];
+				final boolean[] scanIncomplete = new boolean[1];
+				// inaccessible roots/children, depth-limited roots, directory-limit hits
+				final int[] incompleteCounts = new int[3];
 				try {
 					for (String root : roots) {
-						File directory = new File(root);
-						if (!directory.isDirectory() || !directory.canRead()) continue;
+						GameDiscovery.ScanResult result = GameDiscovery.scanDetailed(LauncherActivity.this, root);
+						if (!result.rootAccessible) {
+							scanIncomplete[0] = true;
+							incompleteCounts[0] += Math.max(1, result.inaccessibleDirectories);
+							continue;
+						}
 						validRoots.add(root);
-						List<GameDiscovery.GameEntry> entries = GameDiscovery.scan(LauncherActivity.this, root);
-						for (GameDiscovery.GameEntry entry : entries) {
+						if (!result.isComplete()) {
+							scanIncomplete[0] = true;
+							incompleteCounts[0] += result.inaccessibleDirectories;
+							if (result.depthLimitReached) incompleteCounts[1]++;
+							if (result.directoryLimitReached) incompleteCounts[2]++;
+						}
+						for (GameDiscovery.GameEntry entry : result.entries) {
 							if (entry != null && !hidden.contains(entry.path) && new File(entry.path).isDirectory()) discovered.add(entry.path);
 						}
 					}
@@ -310,17 +329,24 @@ public class LauncherActivity extends Activity {
 					@Override public void run() {
 						scanInProgress = false;
 						if (scanProgress != null) scanProgress.setVisibility(View.GONE);
-						// Commit the registry only after a complete scan. A runtime failure may
-						// leave "discovered" partially filled; keep the last successful snapshot.
-						if (scanFailure[0] == null) {
+						boolean completed = scanFailure[0] == null && !scanIncomplete[0];
+						// An incomplete traversal must not replace the last known-good library snapshot.
+						if (completed) {
 							mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(validRoots))
 									.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
 							GameDiscovery.savePaths(LauncherActivity.this, discovered);
 						}
 						renderGameLibrary();
-						if (scanFailure[0] != null) librarySummary.setText(getString(R.string.srceng_library_scan_failed, scanFailure[0]));
-						else if (discovered.isEmpty()) librarySummary.setText(R.string.srceng_library_no_candidates);
-						else librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
+						if (scanFailure[0] != null) {
+							librarySummary.setText(getString(R.string.srceng_library_scan_failed, scanFailure[0]));
+						} else if (scanIncomplete[0]) {
+							librarySummary.setText(getString(R.string.srceng_library_scan_incomplete,
+									incompleteCounts[0], incompleteCounts[1], incompleteCounts[2]));
+						} else if (discovered.isEmpty()) {
+							librarySummary.setText(R.string.srceng_library_no_candidates);
+						} else {
+							librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
+						}
 					}
 				});
 			}
@@ -615,7 +641,7 @@ public class LauncherActivity extends Activity {
 
 		// permissions check
 		if( sdk >= 23 )
-			applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO }, REQUEST_PERMISSIONS );
+			applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );
 
 	}
 
@@ -644,12 +670,16 @@ public class LauncherActivity extends Activity {
 		}
 		if (Build.VERSION.SDK_INT >= 21) {
 			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
-			boolean relatedToSavedTree = expectedTree != null && (gamepath.equals(expectedTree)
-					|| gamepath.startsWith(expectedTree + File.separator)
-					|| expectedTree.startsWith(gamepath + File.separator));
-			if (relatedToSavedTree && StorageAccess.getValidatedSelectedPath(this) == null) {
-				showStartupError(getString(R.string.srceng_storage_revoked));
-				return;
+			if (expectedTree != null) {
+				String grantedRoot = StorageAccess.getValidatedSelectedPath(this);
+				if (grantedRoot == null) {
+					showStartupError(getString(R.string.srceng_storage_revoked));
+					return;
+				}
+				if (!LauncherLogic.isPathWithinRoot(grantedRoot, gamepath)) {
+					showStartupError(getString(R.string.srceng_storage_scope_mismatch));
+					return;
+				}
 			}
 		}
 		if (GamePath != null) GamePath.setText(gamepath);
@@ -801,6 +831,26 @@ public class LauncherActivity extends Activity {
 			result.append(values[i]);
 		}
 		return result.toString();
+	}
+
+	private void showStoragePermissionHelp() {
+		AlertDialog dialog = new AlertDialog.Builder(this)
+				.setTitle(R.string.srceng_storage_error_title)
+				.setMessage(R.string.srceng_storage_permission_required)
+				.setNegativeButton(R.string.srceng_launcher_ok, null)
+				.setPositiveButton(R.string.srceng_storage_open_settings, new DialogInterface.OnClickListener() {
+					@Override public void onClick(DialogInterface dialog, int which) {
+						try {
+							Intent settings = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+							settings.setData(Uri.parse("package:" + getPackageName()));
+							startActivity(settings);
+						} catch (RuntimeException e) {
+							Toast.makeText(LauncherActivity.this, R.string.srceng_storage_settings_unavailable,
+									Toast.LENGTH_LONG).show();
+						}
+					}
+				}).show();
+		styleGlassDialog(dialog);
 	}
 
 	private void showStartupError(String message) {

@@ -60,10 +60,18 @@ public final class LiquidGlassTheme {
     private static void styleTree(View view, boolean motionEnabled) {
         if (view == null) return;
         int id = view.getId();
-        if (id == com.magd.source.engine.R.id.header || id == com.magd.source.engine.R.id.footer) {
+        if (id == com.magd.source.engine.R.id.header || id == com.magd.source.engine.R.id.footer
+                || id == com.magd.source.engine.R.id.header_ch || id == com.magd.source.engine.R.id.footer2) {
             view.setBackgroundDrawable(panel(0xAA162939, 0x665DE6DF, 22));
-        } else if ("advanced_settings".equals(view.getTag())) {
+        } else if ("advanced_settings".equals(view.getTag()) || id == com.magd.source.engine.R.id.bodych) {
             view.setBackgroundDrawable(panel(GLASS, 0x665DE6DF, 18));
+        } else if (id == com.magd.source.engine.R.id.header_txt) {
+            if (view instanceof android.widget.TextView) {
+                android.widget.TextView title = (android.widget.TextView) view;
+                title.setTextColor(TEXT);
+                title.setTextSize(15.0f);
+                title.setPadding(dp(title, 14), dp(title, 12), dp(title, 14), dp(title, 12));
+            }
         } else if ("liquid_glass_card".equals(view.getTag())) {
             styleLibraryCard(view, motionEnabled);
         } else if (view instanceof Button) {
@@ -96,6 +104,19 @@ public final class LiquidGlassTheme {
         d.setCornerRadius(radiusDp * android.content.res.Resources.getSystem().getDisplayMetrics().density);
         d.setStroke(1, edge);
         return d;
+    }
+
+    /** Applies the launcher's surface language to a dynamically-created picker row. */
+    public static void styleDirectoryEntry(View entry) {
+        if (entry == null) return;
+        entry.setBackgroundDrawable(panel(0xB91A2B3B, 0x775DE6DF, 14));
+        entry.setPadding(dp(entry, 16), dp(entry, 13), dp(entry, 16), dp(entry, 13));
+        entry.setMinimumHeight(dp(entry, 48));
+        if (entry instanceof android.widget.TextView) {
+            android.widget.TextView text = (android.widget.TextView) entry;
+            text.setTextColor(TEXT);
+            text.setTextSize(16.0f);
+        }
     }
 
     private static StateListDrawable buttonStates() {

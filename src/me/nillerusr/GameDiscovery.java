@@ -60,24 +60,73 @@ public final class GameDiscovery {
         }
     }
 
-    public static List<GameEntry> scan(Context context, String rootPath) {
-        List<GameEntry> results = new ArrayList<GameEntry>();
-        if (context == null || rootPath == null || rootPath.trim().length() == 0) {
-            return results;
+    /** Result type that makes bounded/inaccessible scans explicit instead of pretending they are empty. */
+    public static final class ScanResult {
+        public final List<GameEntry> entries;
+        public final int visitedDirectories;
+        public final int inaccessibleDirectories;
+        public final boolean rootAccessible;
+        public final boolean depthLimitReached;
+        public final boolean directoryLimitReached;
+
+        private ScanResult(List<GameEntry> entries, int visitedDirectories,
+                           int inaccessibleDirectories, boolean rootAccessible,
+                           boolean depthLimitReached, boolean directoryLimitReached) {
+            this.entries = Collections.unmodifiableList(new ArrayList<GameEntry>(entries));
+            this.visitedDirectories = visitedDirectories;
+            this.inaccessibleDirectories = inaccessibleDirectories;
+            this.rootAccessible = rootAccessible;
+            this.depthLimitReached = depthLimitReached;
+            this.directoryLimitReached = directoryLimitReached;
         }
+
+        public boolean isComplete() {
+            return rootAccessible && inaccessibleDirectories == 0
+                    && !depthLimitReached && !directoryLimitReached;
+        }
+    }
+
+    private static final class ScanState {
+        int visitedDirectories;
+        int inaccessibleDirectories;
+        boolean rootAccessible = true;
+        boolean depthLimitReached;
+        boolean directoryLimitReached;
+    }
+
+    /** Legacy list API retained for existing callers; use scanDetailed for user-visible status. */
+    public static List<GameEntry> scan(Context context, String rootPath) {
+        return scanDetailed(context, rootPath).entries;
+    }
+
+    public static ScanResult scanDetailed(Context context, String rootPath) {
+        List<GameEntry> results = new ArrayList<GameEntry>();
+        ScanState state = new ScanState();
+        if (context == null || rootPath == null || rootPath.trim().length() == 0) {
+            state.rootAccessible = false;
+            return new ScanResult(results, 0, 1, false, false, false);
+        }
+
         File root = new File(rootPath.trim());
         try {
-            if (!root.isDirectory() || !root.canRead()) return results;
+            if (!root.isDirectory() || !root.canRead()) {
+                state.rootAccessible = false;
+                state.inaccessibleDirectories++;
+                return new ScanResult(results, 0, state.inaccessibleDirectories,
+                        false, false, false);
+            }
         } catch (SecurityException e) {
-            return results;
+            state.rootAccessible = false;
+            state.inaccessibleDirectories++;
+            return new ScanResult(results, 0, state.inaccessibleDirectories,
+                    false, false, false);
         }
 
         Set<String> visited = new HashSet<String>();
-        int[] count = new int[] { 0 };
         try {
-            scanDirectory(context, root, 0, visited, count, results);
+            scanDirectory(context, root, 0, visited, state, results);
         } catch (SecurityException e) {
-            // Preserve entries discovered before Android denied a later path.
+            state.inaccessibleDirectories++;
         }
 
         Collections.sort(results, new Comparator<GameEntry>() {
@@ -87,44 +136,92 @@ public final class GameDiscovery {
                 return left.displayName.compareToIgnoreCase(right.displayName);
             }
         });
-        return results;
+        return new ScanResult(results, state.visitedDirectories, state.inaccessibleDirectories,
+                state.rootAccessible, state.depthLimitReached, state.directoryLimitReached);
     }
 
     private static void scanDirectory(Context context, File directory, int depth,
-                                      Set<String> visited, int[] count,
+                                      Set<String> visited, ScanState state,
                                       List<GameEntry> results) {
-        if (directory == null || depth > MAX_DEPTH || count[0] >= MAX_DIRECTORIES
-                || !directory.isDirectory() || !directory.canRead()) return;
+        if (directory == null) return;
+        if (depth > MAX_DEPTH) {
+            state.depthLimitReached = true;
+            return;
+        }
+        if (state.visitedDirectories >= MAX_DIRECTORIES) {
+            state.directoryLimitReached = true;
+            return;
+        }
+
+        try {
+            if (!directory.isDirectory() || !directory.canRead()) {
+                state.inaccessibleDirectories++;
+                return;
+            }
+        } catch (SecurityException e) {
+            state.inaccessibleDirectories++;
+            return;
+        }
+
         final String canonical;
         try {
             canonical = directory.getCanonicalPath();
         } catch (IOException e) {
+            state.inaccessibleDirectories++;
             return;
         }
         if (!visited.add(canonical)) return;
-        count[0]++;
+        state.visitedDirectories++;
 
-        File[] children = directory.listFiles();
-        if (children == null) return;
+        File[] children;
+        try {
+            children = directory.listFiles();
+        } catch (SecurityException e) {
+            children = null;
+        }
+        if (children == null) {
+            state.inaccessibleDirectories++;
+            return;
+        }
 
         boolean hasInfo = findChildIgnoreCase(children, "gameinfo.txt") != null;
         boolean hasContent = hasContentMarkers(directory, children);
         if (hasInfo || hasContent) {
             GameEntry entry = inspect(context, directory, children, hasInfo, hasContent);
             if (entry != null) results.add(entry);
-            // A game/mod directory is a leaf for discovery; its asset folders should not
-            // be recursively listed as separate games.
+            // A game/mod directory is a leaf for discovery; its asset folders are not games.
             if (hasInfo) return;
         }
 
         for (File child : children) {
-            if (child == null || !child.isDirectory() || !child.canRead()) continue;
+            if (child == null) continue;
+            final boolean childDirectory;
+            try {
+                childDirectory = child.isDirectory();
+                if (childDirectory && !child.canRead()) {
+                    state.inaccessibleDirectories++;
+                    continue;
+                }
+            } catch (SecurityException e) {
+                state.inaccessibleDirectories++;
+                continue;
+            }
+            if (!childDirectory) continue;
+
             String name = child.getName();
             if (name.startsWith(".") || "Android".equalsIgnoreCase(name)
                     || "cache".equalsIgnoreCase(name) || "obb".equalsIgnoreCase(name)
                     || "downloads".equalsIgnoreCase(name)) continue;
-            if (count[0] >= MAX_DIRECTORIES) break;
-            scanDirectory(context, child, depth + 1, visited, count, results);
+
+            if (depth >= MAX_DEPTH) {
+                state.depthLimitReached = true;
+                continue;
+            }
+            if (state.visitedDirectories >= MAX_DIRECTORIES) {
+                state.directoryLimitReached = true;
+                break;
+            }
+            scanDirectory(context, child, depth + 1, visited, state, results);
         }
     }
 

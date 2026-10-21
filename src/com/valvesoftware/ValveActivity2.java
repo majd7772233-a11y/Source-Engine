@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
+import com.magd.source.engine.R;
+
 import java.io.File;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -147,54 +149,52 @@ public final class ValveActivity2 {
         return result == 0;
     }
 
-    private static boolean applyUserEnvironment(String rawEnvironment) {
-        if (rawEnvironment == null || rawEnvironment.trim().isEmpty()) {
-            return true;
-        }
+    /**
+     * Validates the entire override list before mutating the process environment. Invalid
+     * or reserved entries fail startup visibly instead of being silently ignored after
+     * earlier entries have already been applied.
+     */
+    private static String applyUserEnvironment(Context context, String rawEnvironment) {
+        if (rawEnvironment == null || rawEnvironment.trim().isEmpty()) return null;
         if (rawEnvironment.length() > 8192 || rawEnvironment.indexOf('\0') >= 0) {
-            Log.w(TAG, "Environment overrides are invalid or exceed the size limit.");
-            return false;
+            return context.getString(R.string.srceng_environment_invalid);
         }
 
         String[] entries = rawEnvironment.split("[\\r\\n;]+");
-        if (entries.length > 64) {
-            Log.w(TAG, "Too many environment overrides were supplied.");
-            return false;
-        }
-        for (String item : entries) {
-            if (item.length() > 2048) {
-                Log.w(TAG, "An environment override exceeds the size limit.");
-                return false;
-            }
-            String entry = item.trim();
-            if (entry.isEmpty()) {
-                continue;
-            }
-            int separator = entry.indexOf('=');
-            if (separator <= 0) {
-                Log.w(TAG, "Ignoring malformed environment override; expected NAME=VALUE");
-                continue;
-            }
+        if (entries.length > 64) return context.getString(R.string.srceng_environment_invalid);
 
+        String[] names = new String[entries.length];
+        String[] values = new String[entries.length];
+        for (int i = 0; i < entries.length; i++) {
+            String item = entries[i];
+            if (item.length() > 2048) return context.getString(R.string.srceng_environment_invalid);
+            String entry = item.trim();
+            if (entry.isEmpty()) continue;
+
+            int separator = entry.indexOf('=');
+            if (separator <= 0) return context.getString(R.string.srceng_environment_invalid);
             String name = entry.substring(0, separator).trim();
             String value = entry.substring(separator + 1).trim();
             if (!ENV_NAME.matcher(name).matches()) {
-                Log.w(TAG, "Ignoring invalid environment name: " + name);
-                continue;
+                return context.getString(R.string.srceng_environment_invalid);
             }
 
-            // Keep engine-critical paths controlled by startup initialization.
+            // Engine-critical paths are controlled by startup initialization.
             if ("VALVE_GAME_PATH".equals(name) || "APP_DATA_PATH".equals(name)
                     || "APP_LIB_PATH".equals(name) || "EXTRAS_VPK_PATH".equals(name)
                     || "LANG".equals(name)) {
-                Log.w(TAG, "Ignoring reserved environment override " + name);
-                continue;
+                return context.getString(R.string.srceng_environment_invalid);
             }
-            if (!setRequiredEnvironment(name, value)) {
-                return false;
+            names[i] = name;
+            values[i] = value;
+        }
+
+        for (int i = 0; i < names.length; i++) {
+            if (names[i] != null && !setRequiredEnvironment(names[i], values[i])) {
+                return context.getString(R.string.srceng_environment_apply_failed, names[i]);
             }
         }
-        return true;
+        return null;
     }
 
     public static String initNatives(Context context, Intent intent) {
@@ -239,9 +239,8 @@ public final class ValveActivity2 {
         }
 
         String environment = intent == null ? mPref.getString("env", "") : intent.getStringExtra("env");
-        if (!applyUserEnvironment(environment)) {
-            return "An environment override could not be applied. Check overrides and Android logs (tag SRCAPK).";
-        }
+        String environmentError = applyUserEnvironment(context, environment);
+        if (environmentError != null) return environmentError;
 
         String vpkPaths = bundledVpk.getAbsolutePath();
         if (customVpk != null && !customVpk.trim().isEmpty()) {
