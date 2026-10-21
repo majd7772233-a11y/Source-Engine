@@ -178,7 +178,7 @@ Implementation has started in the `stage12-storage-fixes` branch. The following 
 - Changed history text to “Last attempt” until a runtime-ready signal exists.
 - Startup storage permission is no longer bundled with microphone permission; later optional SDL permission results are returned to native code.
 - Environment override strings are validated as a whole before applying entries, and invalid/reserved settings return a user-facing message instead of being silently skipped.
-- All 147 default resource keys now have Arabic translations; the verifier checks key parity and format-placeholder parity. Touch-control settings explain the current fixed keyboard/mouse mappings and their limitation. The directory picker now uses shared visual styling.
+- All 151 default resource keys now have Arabic translations; the verifier checks key parity and format-placeholder parity. Touch-control settings explain the current fixed keyboard/mouse mappings and their limitation. The directory picker now uses shared visual styling.
 - Added `docs/USER-SETUP-TROUBLESHOOTING.md`.
 
 **Still open:** branch CI/full APK verification, provider behavior on the affected physical device, Android-version/removable-volume matrix, launch/gameplay/input/audio/visual/performance acceptance, license/privacy review, and secret-backed signed-release/upgrade acceptance. No completion date is announced; all work remains in final Stage 12, with no Stage 13.
