@@ -26,7 +26,7 @@ public final class Stage11TestSuite {
             testGameDiscoveryAndReadiness();
             testLibraryPreferenceSnapshots();
             testDepthBoundAndEmptyInputs();
-            System.out.println("Stage 11 JVM tests passed: " + assertions + " assertions.");
+            System.out.println("JVM regression tests passed: " + assertions + " assertions.");
         } finally {
             deleteRecursively(tempRoot);
         }
@@ -48,6 +48,18 @@ public final class Stage11TestSuite {
         equal(new File(parent, "new folder").getCanonicalPath(),
                 LauncherLogic.normalizePath(new File(parent, "new folder").getPath()),
                 "nonexistent destination with spaces is normalized without being created");
+
+        check(LauncherLogic.isPathWithinRoot(parent.getPath(), target.getPath()),
+                "selected tree includes a descendant game folder");
+        check(LauncherLogic.isPathWithinRoot(parent.getPath(), parent.getPath()),
+                "selected tree includes its exact root");
+        check(!LauncherLogic.isPathWithinRoot(parent.getPath(), tempRoot.getPath()),
+                "selected tree rejects an ancestor outside the grant");
+        check(!LauncherLogic.isPathWithinRoot(parent.getPath(),
+                new File(tempRoot, "path with spaces sibling").getPath()),
+                "selected tree rejects sibling paths sharing a textual prefix");
+        check(!LauncherLogic.isPathWithinRoot("", target.getPath()),
+                "empty selected root cannot authorize a path");
     }
 
     private static void testArgumentConstruction() {
