@@ -226,20 +226,30 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
 	@Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode != REQUEST_PERMISSIONS) return;
-		if (grantResults == null || grantResults.length == 0) {
-			showStartupError(getString(R.string.srceng_launcher_error_permission_result));
-			finish();
-			return;
+		boolean granted = grantResults != null && grantResults.length > 0;
+		if (granted) {
+			for (int result : grantResults) {
+				if (result != PackageManager.PERMISSION_GRANTED) {
+					granted = false;
+					break;
+				}
+			}
 		}
-		for (int result : grantResults) {
-			if (result != PackageManager.PERMISSION_GRANTED) {
-				showStartupError(getString(R.string.srceng_launcher_error_no_permission));
+		if (requestCode == REQUEST_PERMISSIONS) {
+			if (!granted) {
+				String message = grantResults == null || grantResults.length == 0
+						? getString(R.string.srceng_launcher_error_permission_result)
+						: getString(R.string.srceng_launcher_error_no_permission);
+				showStartupError(message);
 				finish();
 				return;
 			}
+			init();
+			return;
 		}
-		init();
+		// SDL/native code can request optional permissions (for example microphone input)
+		// only when a feature needs them. Their denial must not terminate the whole game.
+		nativePermissionResult(requestCode, granted);
 	}
 	private void showStartupError(String message) {
 		if (isFinishing()) return;
@@ -394,13 +404,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mIsInitCalled = false;
 
         if( Build.VERSION.SDK_INT >= 23 )
-            applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO }, REQUEST_PERMISSIONS );
+            applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );
 
         if (Build.VERSION.SDK_INT < 23) {
             // Before Android 6.0 manifest permissions are granted at install time.
             init();
-        } else if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+        } else if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             init();
         }
     }
