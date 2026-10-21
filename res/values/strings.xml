@@ -33,7 +33,7 @@
     <string name="srceng_game_portal">Portal</string> <!--- Not available -->
 
     <string name="srceng_dir_choice_btn">Set current directory</string>
-    <string name="srceng_update">Update avalible!</string>
+    <string name="srceng_update">A newer deployment marker was found; no in-app update is available.</string>
     <string name="srceng_launcher_error_empty_path">The game folder path is empty. Select the folder containing your game files.</string>
     <string name="srceng_launcher_error_invalid_path">The selected game folder does not exist or cannot be read:\n%1$s\nSelect the folder containing your game files.</string>
     <string name="srceng_launcher_error_start_failed">The game activity could not be started:\n%1$s\nCheck Android logs if the problem persists.</string>
@@ -48,8 +48,8 @@
     <string name="srceng_library_play">Launch</string>
     <string name="srceng_library_remove">Remove</string>
     <string name="srceng_library_path">Path: %1$s</string>
-    <string name="srceng_library_last_never">Last launched: Never</string>
-    <string name="srceng_library_last">Last launched: %1$s</string>
+    <string name="srceng_library_last_never">Last attempt: Never</string>
+    <string name="srceng_library_last">Last attempt: %1$s</string>
     <string name="srceng_library_selected">Selected game: %1$s</string>
     <string name="srceng_library_removed">Game removed from the library. Scan the folder again to rediscover it.</string>
     <string name="srceng_library_no_candidates">No candidate game folders found. A candidate needs gameinfo.txt or recognizable Source game assets.</string>
@@ -152,5 +152,4 @@
     <string name="srceng_storage_game_folder_selected">You selected the game folder itself (it contains gameinfo.txt). Choose its parent folder instead, so the granted folder scope contains the game directory.</string>
     <string name="srceng_storage_invalid_selection">Android returned an invalid folder selection. Reopen the picker and select a normal local folder.</string>
     <string name="srceng_storage_scope_mismatch">The game path is outside the folder you granted to the app. Choose the parent folder that contains the game folder, then select the game from the library.</string>
-    <string name="srceng_library_last_launch">Last attempt</string>
 </resources>
