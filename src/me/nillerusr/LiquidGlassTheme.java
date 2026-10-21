@@ -60,7 +60,8 @@ public final class LiquidGlassTheme {
     private static void styleTree(View view, boolean motionEnabled) {
         if (view == null) return;
         int id = view.getId();
-        if (id == com.magd.source.engine.R.id.header || id == com.magd.source.engine.R.id.footer\n                || id == com.magd.source.engine.R.id.header_ch || id == com.magd.source.engine.R.id.footer2) {
+        if (id == com.magd.source.engine.R.id.header || id == com.magd.source.engine.R.id.footer
+                || id == com.magd.source.engine.R.id.header_ch || id == com.magd.source.engine.R.id.footer2) {
             view.setBackgroundDrawable(panel(0xAA162939, 0x665DE6DF, 22));
         } else if ("advanced_settings".equals(view.getTag()) || id == com.magd.source.engine.R.id.bodych) {
             view.setBackgroundDrawable(panel(GLASS, 0x665DE6DF, 18));
