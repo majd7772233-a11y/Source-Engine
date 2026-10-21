@@ -46,6 +46,19 @@ public final class LauncherLogic {
         return name;
     }
 
+    /**
+     * Returns true only when candidate resolves to the root itself or a descendant.
+     * Canonical paths prevent sibling-prefix mistakes and traversal-based scope escapes.
+     */
+    public static boolean isPathWithinRoot(String rootPath, String candidatePath) {
+        String root = normalizePath(rootPath);
+        String candidate = normalizePath(candidatePath);
+        if (root.length() == 0 || candidate.length() == 0) return false;
+        if (root.equals(candidate)) return true;
+        String prefix = root.endsWith(File.separator) ? root : root + File.separator;
+        return candidate.startsWith(prefix);
+    }
+
     /** Constructs the exact command string passed to the native Source runtime. */
     public static String buildGameArguments(String gameDirectory, String rawArguments) {
         String directory = normalizeGameDirectory(gameDirectory, "");
