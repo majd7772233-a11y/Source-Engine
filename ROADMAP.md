@@ -136,9 +136,21 @@ This repository is **not itself the complete Source SDK/game-content distributio
 
 ### Stage 12 — Product correctness, user experience, runtime validation and release gate (FINAL / OPEN-ENDED)
 
-**Status: re-scoped after product audit; remediation has not started. No completion date or release ETA is set.** This is the final stage of the roadmap. There is deliberately no Stage 13: any newly discovered requirement or defect is added as Stage 12.x until the product-wide acceptance gate genuinely passes. Passing CI alone is not a Stage 12 completion condition.
+**Status: implementation in progress on `stage12-storage-fixes`; CI and physical-device acceptance are pending. No completion date or release ETA is set.** This is the final stage of the roadmap. There is deliberately no Stage 13: any newly discovered requirement or defect is added as Stage 12.x until the product-wide acceptance gate genuinely passes. Passing CI alone is not a Stage 12 completion condition.
 
 The authoritative initial findings are in [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md). The user-reported Android storage-provider failure is a known product failure. The tasks below are not marked complete merely because earlier implementation stages or their static checks passed.
+
+Initial remediation in the working branch now includes specific folder-picker error states and scope validation, incomplete-scan reporting that preserves the prior snapshot, full Arabic key/placeholder parity checks, separation of optional microphone permission from startup storage permission, pre-validation of environment overrides, explicit launch-attempt labels, touch-mapping disclosure, and consistent styling of the directory picker. These are code changes, not yet a green-CI or physical-device acceptance claim.
+
+#### Stage 12 implementation ledger — 2026-10-22 (working branch; not yet accepted)
+
+- Working branch: `stage12-storage-fixes`; based on the canonical branch including the product-audit/roadmap reset. App fixes are still in review; none of the physical-device tests below are claimed done.
+- Storage: the picker returns distinct provider, malformed-ID, volume, read-grant, persisted-grant, unreadable, unwritable and scope errors. Selecting the game folder that contains `gameinfo.txt` itself is rejected; users are told to select its parent. Launch paths must be the granted root or its descendant, using canonical path-boundary checks (so a sibling whose name shares a prefix is not accepted).
+- Permissions: startup asks for shared-storage permission only, rather than coupling it to microphone permission. SDL can return later optional permission results to native code without exiting the game automatically. No root/unrestricted-private-directory claim is made; introducing Android 11+ all-files access still needs a deliberate target-SDK, policy and compatibility decision.
+- Discovery: added `GameDiscovery.ScanResult`/`scanDetailed` with inaccessible-directory, depth-limit and directory-limit state. The launcher keeps the last successful snapshot and displays an incomplete-scan message rather than saying no games were found after a partial walk.
+- Truthful UX: timestamps are labelled as launch **attempts** until a runtime-ready success signal exists. Malformed/reserved environment overrides are rejected before applying entries and produce user-facing messages. The touch-controls settings disclose the fixed keyboard/mouse mapping and lack of analogue-axis support. The directory picker uses the shared visual theme and bounded path text.
+- Localization/tests: Arabic resources now match all 147 default strings; the updated verifier enforces key parity and format-placeholder parity. Stage 4/7/10/11 verifiers and JVM regression tests now include storage scope, picker visual consistency, optional permission flow, scan incompleteness and mapping disclosure.
+- Pending: green full CI for this branch, runtime check with the exact APK on Android devices (including the user's failing provider), deeper UI/accessibility review, game-launch/input/audio/performance tests, license/attribution review and secret-backed signed-release verification. Stage 12 remains open-ended.
 
 #### 12.1 — Storage, permission model and folder-selection recovery
 - [ ] Reproduce and instrument each path through the tree picker, persisted grants and filesystem-path resolver; give specific, actionable messages for unsupported provider, missing grant, malformed document ID, unavailable/unmounted volume, unreadable path and read-only path.
@@ -187,7 +199,7 @@ The authoritative initial findings are in [`docs/PRODUCT-QUALITY-AUDIT.md`](docs
 - [ ] Re-run all source/static tests, JVM tests, workflow validation, native build, Ant packaging, APK identity/ABI/dependency verification, and artifact/checksum checks after fixes. CI is necessary but not sufficient.
 
 #### 12.9 — User documentation, license review and release gate
-- [ ] Publish user-facing setup and troubleshooting documentation: lawful game-content layout, exact folder-selection expectations, permissions and OS limits, supported ABI/API, known limitations, crash logs and recovery.
+- [x] Draft user-facing setup and troubleshooting documentation at [`docs/USER-SETUP-TROUBLESHOOTING.md`](docs/USER-SETUP-TROUBLESHOOTING.md), covering lawful content, parent-folder expectations, storage/provider errors, permission/OS limits, supported ABI/API, known limitations and log capture. CI/accuracy review still pending.
 - [ ] Review license/attribution obligations for launcher code, SDL, native wrappers, external source checkouts and redistributed binaries; preserve required notices and resolve any incompatibility before release.
 - [ ] Run and inspect the secret-backed release-signing workflow; verify certificate identity, version/package metadata, checksum, installation/upgrade behavior and that debug/release artifacts are not confused. Signing secrets must never be committed or exposed.
 - [ ] Run the final acceptance matrix and publish release notes only for behaviors supported by source evidence and actual verification.
