@@ -641,7 +641,7 @@ public class LauncherActivity extends Activity {
 
 		// permissions check
 		if( sdk >= 23 )
-			applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO }, REQUEST_PERMISSIONS );
+			applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );
 
 	}
 
