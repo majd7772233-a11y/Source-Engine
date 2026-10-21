@@ -10,6 +10,7 @@ root = pathlib.Path(sys.argv[1])
 storage = (root / "src/me/nillerusr/StorageAccess.java").read_text(encoding="utf-8")
 picker = (root / "src/me/nillerusr/DirchActivity.java").read_text(encoding="utf-8")
 launcher = (root / "src/me/nillerusr/LauncherActivity.java").read_text(encoding="utf-8")
+logic = (root / "src/me/nillerusr/LauncherLogic.java").read_text(encoding="utf-8")
 manifest = ET.parse(root / "AndroidManifest.xml").getroot()
 strings_root = ET.parse(root / "res/values/strings.xml").getroot()
 workflow = (root / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -27,7 +28,7 @@ checks = {
     "legacy fallback stays within primary shared storage": "Environment.getExternalStorageDirectory().getAbsolutePath()" in picker and "insidePrimary" in picker,
     "legacy picker rejects non-writable folders": "chosen.canRead() || !chosen.canWrite()" in picker,
     "picker returns selected folder to launcher": "setResult(RESULT_OK, result)" in picker and 'getStringExtra("selected_path")' in launcher,
-    "path normalization before launch": "gamepath = canonicalPath(gamepath);" in launcher and "getCanonicalPath()" in launcher,
+    "path normalization before launch": "gamepath = canonicalPath(gamepath);" in launcher and "return LauncherLogic.normalizePath(path);" in launcher and "getCanonicalPath()" in logic,
     "path spaces and Unicode passed without shell concatenation": 'putExtra("gamepath", gamepath)' in launcher,
     "scan after folder selection": "scanLibrary(true, true);" in launcher,
     "launch rejects unavailable root": "!root.isDirectory() || !root.canRead()" in launcher,
