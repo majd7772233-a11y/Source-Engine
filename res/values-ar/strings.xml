@@ -151,4 +151,7 @@
     <string name="srceng_environment_invalid">تحتوي إعدادات متغيرات البيئة على قيمة غير صالحة أو محجوزة. استخدم NAME=VALUE، عنصرًا في كل سطر أو افصل بينها بفاصلة منقوطة، وبحد أقصى 64 عنصرًا و2048 حرفًا لكل عنصر. احذف العنصر غير الصالح ثم أعد المحاولة.</string>
     <string name="srceng_environment_apply_failed">تعذّر على المحرك الأصلي تطبيق متغير البيئة %1$s. احذفه أو استخدم قيمة مدعومة ثم أعد المحاولة.</string>
     <string name="srceng_controls_mapping_note">تحاكي هذه الأدوات لوحة المفاتيح والفأرة: الحركة WASD، والقفز Space، والاستخدام E، وإعادة التلقيم R، والإطلاق بزر الفأرة الأول. هذه ليست عصا تحكم تناظرية، وقد لا تناسب كل لعبة أو تعديل.</string>
+    <string name="srceng_storage_permission_required">رُفض إذن التخزين المشترك. قد لا يتمكن المشغّل من قراءة ملفات اللعبة المحلية عبر مسارات الملفات التي يستخدمها المحرك الأصلي. يمكنك منح الإذن من إعدادات التطبيق في Android ثم العودة إلى المشغّل.</string>
+    <string name="srceng_storage_open_settings">فتح إعدادات التطبيق</string>
+    <string name="srceng_storage_settings_unavailable">تعذّر فتح إعدادات التطبيق تلقائيًا. افتح الإعدادات ← التطبيقات ← Source Engine ← الأذونات يدويًا.</string>
 </resources>
