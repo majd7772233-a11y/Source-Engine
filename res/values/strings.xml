@@ -156,4 +156,7 @@
     <string name="srceng_environment_invalid">Environment overrides contain an invalid or reserved entry. Use NAME=VALUE, one entry per line or semicolon, with at most 64 entries and 2048 characters per entry. Remove the invalid entry and retry.</string>
     <string name="srceng_environment_apply_failed">The native runtime could not apply environment variable %1$s. Remove it or use a supported value, then retry.</string>
     <string name="srceng_controls_mapping_note">These controls simulate keyboard/mouse input: movement = WASD, jump = Space, use = E, reload = R, fire = mouse button 1. They are not an analogue gamepad and may not match every game/mod.</string>
+    <string name="srceng_storage_permission_required">Shared-storage permission was denied. The launcher may not be able to read local game files through native filesystem paths. You can grant the permission in Android App settings and return to the launcher.</string>
+    <string name="srceng_storage_open_settings">Open app settings</string>
+    <string name="srceng_storage_settings_unavailable">Android could not open this app's settings. Open Settings → Apps → Source Engine → Permissions manually.</string>
 </resources>
