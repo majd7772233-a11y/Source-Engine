@@ -97,7 +97,7 @@ public final class StorageAccess {
 
         // The engine launches using a parent root + game-directory name. Selecting the
         // game directory itself would make the engine path wider than this SAF tree grant.
-        if (new File(mapped.path, "gameinfo.txt").isFile()) {
+        if (containsGameInfo(new File(mapped.path))) {
             return new SelectionResult(ERROR_GAME_DIRECTORY_SELECTED, mapped.path);
         }
 
@@ -160,6 +160,21 @@ public final class StorageAccess {
             } catch (RuntimeException ignored) { }
         }
         preferences.edit().remove(TREE_URI_KEY).remove(TREE_PATH_KEY).apply();
+    }
+
+    private static boolean containsGameInfo(File directory) {
+        File[] children;
+        try {
+            children = directory.listFiles();
+        } catch (SecurityException e) {
+            return false;
+        }
+        if (children == null) return false;
+        for (File child : children) {
+            if (child != null && child.isFile()
+                    && "gameinfo.txt".equalsIgnoreCase(child.getName())) return true;
+        }
+        return false;
     }
 
     private static int accessError(File directory) {
