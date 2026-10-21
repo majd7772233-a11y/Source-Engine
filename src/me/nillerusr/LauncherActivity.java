@@ -122,13 +122,13 @@ public class LauncherActivity extends Activity {
 				}
 			}
 			if (!granted) {
-				Toast.makeText(this, R.string.srceng_launcher_error_no_permission, Toast.LENGTH_LONG).show();
 				launchInProgress = false;
 				if (launchButton != null) {
 					launchButton.setEnabled(true);
 					launchButton.setText(R.string.srceng_launcher_launch);
 				}
 				if (launcherProgress != null) launcherProgress.setVisibility(View.GONE);
+				showStoragePermissionHelp();
 			}
 		}
 	}
@@ -831,6 +831,26 @@ public class LauncherActivity extends Activity {
 			result.append(values[i]);
 		}
 		return result.toString();
+	}
+
+	private void showStoragePermissionHelp() {
+		AlertDialog dialog = new AlertDialog.Builder(this)
+				.setTitle(R.string.srceng_storage_error_title)
+				.setMessage(R.string.srceng_storage_permission_required)
+				.setNegativeButton(R.string.srceng_launcher_ok, null)
+				.setPositiveButton(R.string.srceng_storage_open_settings, new DialogInterface.OnClickListener() {
+					@Override public void onClick(DialogInterface dialog, int which) {
+						try {
+							Intent settings = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+							settings.setData(Uri.parse("package:" + getPackageName()));
+							startActivity(settings);
+						} catch (RuntimeException e) {
+							Toast.makeText(LauncherActivity.this, R.string.srceng_storage_settings_unavailable,
+									Toast.LENGTH_LONG).show();
+						}
+					}
+				}).show();
+		styleGlassDialog(dialog);
 	}
 
 	private void showStartupError(String message) {
