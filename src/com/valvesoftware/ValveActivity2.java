@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import me.nillerusr.ExtractAssets;
 import me.nillerusr.LauncherActivity;
+import me.nillerusr.LauncherLogic;
 
 /**
  * Java bridge between the Android launcher and the native Source runtime.
@@ -38,11 +39,10 @@ public final class ValveActivity2 {
 
     private static String getGamePath(Context context, Intent intent) {
         String extra = intent == null ? null : intent.getStringExtra("gamepath");
-        if (extra != null && !extra.trim().isEmpty()) {
-            return extra.trim();
-        }
-        return clean(context.getSharedPreferences("mod", 0).getString(
-                "gamepath", LauncherActivity.getDefaultDir() + "/srceng"));
+        String selected = extra != null && !extra.trim().isEmpty()
+                ? extra : context.getSharedPreferences("mod", 0).getString(
+                        "gamepath", LauncherActivity.getDefaultDir() + "/srceng");
+        return LauncherLogic.normalizePath(selected);
     }
 
     private static String getGameDirectory(Intent intent, SharedPreferences preferences) {
@@ -50,17 +50,7 @@ public final class ValveActivity2 {
         if (name == null || name.trim().isEmpty()) {
             name = preferences.getString("gamedir", "hl2");
         }
-        name = clean(name);
-        if (name.isEmpty()) {
-            name = "hl2";
-        }
-
-        // A game directory must be a single child name, never a path traversal expression.
-        if (".".equals(name) || "..".equals(name) || name.contains("/")
-                || name.contains("\\") || name.indexOf('\0') >= 0) {
-            return "";
-        }
-        return name;
+        return LauncherLogic.normalizeGameDirectory(name, "hl2");
     }
 
     private static boolean hasGameInfo(File directory) {
@@ -279,13 +269,13 @@ public final class ValveActivity2 {
             return "The native runtime rejected a required startup setting. Check Android logs (tag SRCAPK).";
         }
 
-        String gameArgument = gameDirectory;
-        if (gameDirectory.matches(".*\\s+.*")) {
-            gameArgument = "\"" + gameDirectory.replace("\\", "\\\\")
-                    .replace("\"", "\\\"") + "\"";
+        final String finalArguments;
+        try {
+            finalArguments = LauncherLogic.buildGameArguments(gameDirectory, arguments);
+        } catch (IllegalArgumentException invalidArguments) {
+            return "Launch arguments or game directory are invalid. Correct the advanced settings and retry.";
         }
-        String finalArguments = "-game " + gameArgument
-                + (arguments.isEmpty() ? "" : " " + arguments);
+
         Log.i(TAG, "Preparing native launch for game '" + gameDirectory
                 + "' (argument length " + finalArguments.length() + ")");
         setArgs(finalArguments);
