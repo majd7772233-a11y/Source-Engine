@@ -63,6 +63,7 @@ checks = {
     "environment overrides are validated before any process mutation": environment_method.index("String[] values = new String[entries.length]") < environment_method.index("setRequiredEnvironment(names[i], values[i])"),
     "invalid/reserved environment entries fail instead of being silently skipped": "srceng_environment_invalid" in environment_method and "Ignoring malformed environment override" not in environment_method and "Ignoring reserved environment override" not in environment_method,
     "environment validation errors have localized resources": 'R.string.srceng_environment_apply_failed' in valve and 'R.string.srceng_environment_invalid' in valve,
+    "ValveActivity2 imports canonical app resources": "import com.magd.source.engine.R;" in valve,
     "game discovery handles unreadable directory listings": "listFiles()" in discovery and "children == null" in discovery,
     "CI runs Stage 10 reliability/security assertions": "bash scripts/verify-stage10.sh" in workflow,
 }
