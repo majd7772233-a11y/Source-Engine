@@ -97,6 +97,13 @@ public class LauncherActivity extends Activity {
 			showStartupError(getString(R.string.srceng_storage_unavailable));
 			return;
 		}
+		if (Build.VERSION.SDK_INT >= 21) {
+			String grantedRoot = StorageAccess.getValidatedSelectedPath(this);
+			if (grantedRoot == null || !LauncherLogic.isPathWithinRoot(grantedRoot, normalized)) {
+				showStartupError(getString(R.string.srceng_storage_scope_mismatch));
+				return;
+			}
+		}
 		if (GamePath != null) GamePath.setText(normalized);
 		SharedPreferences.Editor editor = mPref.edit().putString("gamepath", normalized);
 		if (selectedGameDir != null && selectedGameDir.trim().length() > 0) editor.putString("gamedir", selectedGameDir);
@@ -644,12 +651,16 @@ public class LauncherActivity extends Activity {
 		}
 		if (Build.VERSION.SDK_INT >= 21) {
 			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
-			boolean relatedToSavedTree = expectedTree != null && (gamepath.equals(expectedTree)
-					|| gamepath.startsWith(expectedTree + File.separator)
-					|| expectedTree.startsWith(gamepath + File.separator));
-			if (relatedToSavedTree && StorageAccess.getValidatedSelectedPath(this) == null) {
-				showStartupError(getString(R.string.srceng_storage_revoked));
-				return;
+			if (expectedTree != null) {
+				String grantedRoot = StorageAccess.getValidatedSelectedPath(this);
+				if (grantedRoot == null) {
+					showStartupError(getString(R.string.srceng_storage_revoked));
+					return;
+				}
+				if (!LauncherLogic.isPathWithinRoot(grantedRoot, gamepath)) {
+					showStartupError(getString(R.string.srceng_storage_scope_mismatch));
+					return;
+				}
 			}
 		}
 		if (GamePath != null) GamePath.setText(gamepath);
