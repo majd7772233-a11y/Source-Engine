@@ -72,7 +72,7 @@
     <string name="srceng_library_optional_found">Optional content: detected</string>
     <string name="srceng_library_optional_none">Optional content: none detected</string>
     <string name="srceng_library_count">Ready to try: %1$d of %2$d candidates</string>
-    <string name="srceng_storage_picker_explanation">Choose the folder that contains your Source game files.</string>
+    <string name="srceng_storage_picker_explanation">Choose the parent folder that contains your Source game folder.</string>
     <string name="srceng_storage_choose_folder">Choose folder…</string>
     <string name="srceng_storage_saf_info">Android will ask you to grant folder access. This build needs a real local filesystem path for the native engine. Choose a folder under Internal storage or a mounted SD/USB volume; cloud or virtual document providers may not work. Choose the parent folder that contains the game folder, not the folder containing gameinfo.txt itself. The app does not bypass Android storage restrictions.</string>
     <string name="srceng_storage_error_title">Storage access problem</string>
@@ -152,4 +152,5 @@
     <string name="srceng_storage_game_folder_selected">You selected the game folder itself (it contains gameinfo.txt). Choose its parent folder instead, so the granted folder scope contains the game directory.</string>
     <string name="srceng_storage_invalid_selection">Android returned an invalid folder selection. Reopen the picker and select a normal local folder.</string>
     <string name="srceng_storage_scope_mismatch">The game path is outside the folder you granted to the app. Choose the parent folder that contains the game folder, then select the game from the library.</string>
+    <string name="srceng_library_scan_incomplete">Scan incomplete: %1$d inaccessible folders, %2$d depth-limited roots, %3$d directory-limit stops. Your previous library snapshot was kept. Check storage access or choose a narrower folder, then rescan.</string>
 </resources>
