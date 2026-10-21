@@ -39,6 +39,8 @@ checks = {
     "selected game path must stay within persisted grant": "LauncherLogic.isPathWithinRoot(grantedRoot, gamepath)" in launcher and "isPathWithinRoot(String rootPath, String candidatePath)" in logic,
     "storage grants are saved only after read/write validation": storage.indexOf("int accessError = accessError(selected);") < storage.indexOf('putString(TREE_URI_KEY, uri.toString())'),
     "all new storage error messages are declared": all(name in {item.attrib.get("name") for item in strings_root} for name in ("srceng_storage_not_writable", "srceng_storage_game_folder_selected", "srceng_storage_scope_mismatch", "srceng_storage_no_read_grant")),
+    "legacy picker applies the unified visual theme": "LiquidGlassTheme.apply(this" in picker and "LiquidGlassTheme.styleDirectoryEntry(item)" in picker,
+    "picker path labels remain readable and bounded": "setSingleLine(true)" in picker and "TruncateAt.MIDDLE" in picker,
     "workflow runs Stage 4 verifier": "bash scripts/verify-stage4.sh" in workflow,
 }
 missing = [name for name, ok in checks.items() if not ok]
