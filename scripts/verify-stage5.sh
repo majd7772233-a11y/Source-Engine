@@ -23,9 +23,9 @@ checks = {
     "not-ready entries cannot launch": "play.setEnabled(entry.launchable)" in launcher and "selectedEntry == null || !selectedEntry.launchable" in launcher,
     "launch progress feedback": "srceng_library_launching" in launcher and "launcherProgress.setVisibility(View.VISIBLE)" in launcher,
     "scan progress feedback": "srceng_library_scanning" in launcher and "scanProgress.setVisibility(View.VISIBLE)" in launcher and "scanProgress.setVisibility(View.GONE)" in launcher,
-    "scan failure does not commit partial library state": bool(re.search(
-        r"if \(scanFailure\[0\] == null\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);\s*\}",
-        launcher, re.S)),
+    "incomplete scans never commit a partial library snapshot": bool(re.search(
+        r"boolean completed = scanFailure\[0\] == null && !scanIncomplete\[0\];.*?if \(completed\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);\s*\}",
+        launcher, re.S)) and "srceng_library_scan_incomplete" in launcher,
     "touch targets meet 48dp baseline": "b.setMinHeight(dp(48))" in launcher and 'android:minHeight="48dp"' in (root / "res/layout/activity_launcher.xml").read_text(encoding="utf-8"),
     "long names and paths do not overflow": "name.setMaxLines(2)" in launcher and "path.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE)" in launcher,
     "card has accessibility description": "setContentDescription(getString(R.string.srceng_library_open_details" in launcher,
