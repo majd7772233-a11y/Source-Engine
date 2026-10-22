@@ -51,9 +51,13 @@ bash scripts/workflow.sh
 
 This builds the tierhook, engine, GL4ES/Regal, client-wrapper, and server-wrapper libraries before invoking Ant. Each required native output is deleted before rebuilding so stale files cannot mask a failure. GitHub Actions records exact dependency revisions and uses the pinned Source SDK commit; the exact revisions are locked in `scripts/dependencies.lock` and fetched by `scripts/fetch-build-deps.sh`; nested Source SDK submodules are pinned by the parent commit's gitlinks.
 
-## Release signing (opt-in)
+## Release signing (opt-in; currently blocked)
 
-Normal branch and pull-request builds upload the separate `source-engine-android-debug` artifact. A signed release is produced only by pushing a semantic-version tag such as `v1.12.3`, or by manually running **Actions → Android build** with `sign_release=true` and `release_version=1.12.3`. The version must be `MAJOR.MINOR.PATCH`; minor and patch components must each be below 1000. The release workflow derives Android `versionCode` as `major × 1,000,000 + minor × 1,000 + patch`, builds the Ant `release` variant (not the debug variant), aligns and signs it, verifies the signature/package/version, and uploads a separate `source-engine-android-release-VERSION` artifact with SHA-256 and signing-certificate reports. It does not publish a GitHub Release automatically.
+**The signed-release path is intentionally fail-closed right now.** The preliminary [third-party license and source-provenance audit](docs/THIRD-PARTY-LICENSE-AUDIT.md) is marked `BLOCKED`: the repository has no project-wide license/notice inventory, the pinned Source SDK fork's governing terms have not been established, and 30 checked-in native libraries lack a verified per-binary source/license manifest. Do not distribute a release on the strength of a successful build.
+
+After an accountable reviewer has actually resolved these issues and recorded the clearance, reviewer, date, reviewed commit, and evidence URL in that audit, a signed release can be triggered by pushing a semantic-version tag such as `v1.12.3`, or by manually running **Actions → Android build** with `sign_release=true` and `release_version=1.12.3`. Until then, the workflow will stop before fetching/building release dependencies. The gate validates review-record fields; it does not itself make a legal determination.
+
+Normal branch and pull-request builds upload the separate `source-engine-android-debug` artifact. The version must be `MAJOR.MINOR.PATCH`; minor and patch components must each be below 1000. The release workflow derives Android `versionCode` as `major × 1,000,000 + minor × 1,000 + patch`, builds the Ant `release` variant (not the debug variant), aligns and signs it, verifies the signature/package/version, and uploads a separate `source-engine-android-release-VERSION` artifact with SHA-256 and signing-certificate reports. It does not publish a GitHub Release automatically.
 
 Configure these exact GitHub Actions repository secrets before starting a signed build:
 

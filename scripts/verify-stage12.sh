@@ -46,6 +46,9 @@ checks = {
     "source manifest does not force debug mode": 'android:debuggable="true"' not in manifest.read_text(encoding="utf-8"),
     "user setup and troubleshooting guide documents storage selection and scope limits": (root / "docs/USER-SETUP-TROUBLESHOOTING.md").is_file() and all(term in (root / "docs/USER-SETUP-TROUBLESHOOTING.md").read_text(encoding="utf-8") for term in ("gameinfo.txt", "filesystem path", "ARM", "logcat", "all files access")),
     "launcher retains user-visible readiness disclosure": "srceng_library_compatibility" in strings,
+    "license audit is included and explicitly blocked": (root / "docs/THIRD-PARTY-LICENSE-AUDIT.md").is_file() and "Release clearance: BLOCKED" in (root / "docs/THIRD-PARTY-LICENSE-AUDIT.md").read_text(encoding="utf-8"),
+    "release guard exists and executes before dependency fetching": (root / "scripts/verify-release-license-gate.py").is_file() and "Enforce release license clearance" in workflow and workflow.index("Enforce release license clearance") < workflow.index("Fetch native build dependencies at locked revisions"),
+    "release guard applies to tag or explicit manual signing only": "refs/tags/v" in workflow and "inputs.sign_release" in workflow,
 }
 missing = [name for name, ok in checks.items() if not ok]
 if missing:
@@ -77,5 +80,28 @@ with tempfile.TemporaryDirectory(prefix="source-engine-version-test-") as temp:
         if result.returncode == 0 or invalid_manifest.read_text(encoding="utf-8") != before:
             raise SystemExit("Release version helper did not safely reject " + bad_version)
 
-print("Stage 12 checks passed: " + str(len(checks)) + " release/signing assertions plus valid/invalid version tests.")
+gate_script = root / "scripts/verify-release-license-gate.py"
+audit_report = root / "docs/THIRD-PARTY-LICENSE-AUDIT.md"
+blocked = subprocess.run([sys.executable, str(gate_script), str(audit_report)], text=True, capture_output=True)
+if blocked.returncode == 0 or "RELEASE BLOCKED" not in blocked.stdout:
+    raise SystemExit("Release license gate must reject the current blocked audit state")
+
+with tempfile.TemporaryDirectory(prefix="source-engine-license-gate-") as temp:
+    clear_report = pathlib.Path(temp) / "clear-audit.md"
+    clear_report.write_text("\n".join([
+        "Release clearance: CLEARED",
+        "Review completed by: Named Responsible Reviewer",
+        "Review date: 2026-10-22",
+        "Review commit: 0123456789abcdef0123456789abcdef01234567",
+        "Evidence URL: https://example.invalid/review-record",
+    ]) + "\n", encoding="utf-8")
+    allowed = subprocess.run([sys.executable, str(gate_script), str(clear_report)], text=True, capture_output=True)
+    if allowed.returncode != 0:
+        raise SystemExit("Release license gate rejected a complete synthetic review record: " + allowed.stdout + allowed.stderr)
+    clear_report.write_text("Release clearance: CLEARED\nReview completed by: Pending\n", encoding="utf-8")
+    incomplete = subprocess.run([sys.executable, str(gate_script), str(clear_report)], text=True, capture_output=True)
+    if incomplete.returncode == 0:
+        raise SystemExit("Release license gate accepted an incomplete clearance record")
+
+print("Stage 12 checks passed: " + str(len(checks)) + " release/signing assertions plus version and release-gate behavior tests.")
 PY

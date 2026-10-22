@@ -60,6 +60,9 @@ jobs:
           python3 scripts/validate-workflow.py
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
           "$(go env GOPATH)/bin/actionlint" .github/workflows/build.yml
+      - name: Enforce release license clearance
+        if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.sign_release) }}
+        run: python3 scripts/verify-release-license-gate.py
       - name: Fetch native build dependencies at locked revisions
         run: bash scripts/fetch-build-deps.sh
       - name: Prepare release version
