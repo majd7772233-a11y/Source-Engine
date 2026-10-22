@@ -180,6 +180,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 - [x] Harden tree document IDs against both volume escape and in-volume sibling traversal (for example, `Games/../Sibling`). Retain canonical separator-aware volume containment and reject selecting the game folder itself as the grant root.
 - [x] Add JVM regression coverage for missing read/write grants, provider rejection, persisted-grant failure/revocation, unmounted/read-only storage, stale state, game-folder selection, traversal, Unicode/space paths and incomplete stored URI/path pairs; add Stage 13 static assertions to canonical CI.
 - [x] Close a launch-time fail-open gap: the launcher now validates saved storage state if either the persisted URI or mapped path exists, so a partial/corrupt pair cannot bypass SAF grant and tree-scope checks. Reselecting the currently saved URI also avoids needlessly re-taking or revoking an existing grant on a failed repeat selection.
+- [x] Keep launch-time error messages aligned with picker errors for unsupported providers, malformed document IDs, and unsupported Android versions rather than collapsing these stored-selection failures into an unrelated generic message.
 - [x] Prevent persisted URI-grant accumulation when switching folders: release superseded external-storage tree grants only after a new selection has been validated and stored, retain all grants on a failed replacement, and prune orphaned storage-tree grants after stale selection cleanup. File/document grants from other providers are untouched. Added JVM coverage and static assertions.
 - [x] Document the practical provider/API matrix: constrained local-path browser for API 17–20; SAF local external-storage mapping from API 21; no promise for generic cloud/virtual providers or arbitrary app-private paths. Android 11+ all-files access remains intentionally unrequested pending policy, privacy and target-SDK review.
 - [ ] Physical acceptance: reproduce or explicitly mark blocked the original error on the affected device/provider; test internal storage and removable SD/USB where available. Record logs and exact APK checksum if an approved candidate exists.
@@ -348,3 +349,10 @@ Update this ledger at the end of every numbered implementation milestone with co
 - The replacement path stores the new validated selection before pruning obsolete local external-storage tree grants. On invalid/stale selection cleanup it prunes the same scoped tree-grant category; it deliberately leaves grants from other providers and file/document URIs untouched.
 - Added JVM regression checks for failed replacement preserving the old and orphaned grants, and successful replacement retaining only the active tree grant. CI includes source-order and provider/path-scope assertions.
 - Physical picker/provider acceptance is still blocked pending an approved candidate APK and the user's device/provider evidence; source/JVM coverage does not reproduce OEM behavior.
+
+
+### 2026-10-23 — Stage 13 launch error-message parity
+
+- Final source review found that the picker surfaced unsupported providers and malformed document IDs specifically, but the launch-time revalidation mapper sent those same categories to a generic invalid-selection message if the saved URI later became malformed or unsupported.
+- Added explicit launch-time mappings to the existing localized resource strings and extended the Stage 13 static verifier to prevent the mismatch returning.
+- Device/provider acceptance remains pending; this improves source-level diagnosability but does not reproduce the user's original provider failure.

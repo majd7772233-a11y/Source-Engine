@@ -660,6 +660,9 @@ public class LauncherActivity extends Activity {
 
 	private int storageValidationMessage(int error) {
 		switch (error) {
+			case StorageAccess.ERROR_UNSUPPORTED_PROVIDER: return R.string.srceng_storage_unsupported_provider;
+			case StorageAccess.ERROR_INVALID_DOCUMENT_ID: return R.string.srceng_storage_invalid_document_id;
+			case StorageAccess.ERROR_UNSUPPORTED_ANDROID: return R.string.srceng_storage_unsupported_android;
 			case StorageAccess.ERROR_WRITE_PERMISSION_MISSING: return R.string.srceng_storage_no_write_grant;
 			case StorageAccess.ERROR_READ_PERMISSION_MISSING: return R.string.srceng_storage_no_read_grant;
 			case StorageAccess.ERROR_GRANT_PERSIST_FAILED: return R.string.srceng_storage_grant_failed;
