@@ -380,3 +380,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Found a defense-in-depth gap: canonicalizing `primary:Games/../Sibling` keeps the result inside the storage volume but can move it outside the exact selected tree. The next correction explicitly rejects dot and dot-dot document-ID path segments and adds a regression test.
 - Traced writable-storage assumptions against the pinned Source SDK revision. SDK source includes game-state file writes and replay-output directory creation (optional/build-dependent); do not remove the writable-root requirement without a deliberate, tested write-location redesign.
 - The Stage 13 CI run passed APK build verification, but distribution clearance blocked all artifact uploads. Physical-device/provider acceptance remains open.
+
+
+### 2026-10-23 — Stage 13 launch-state hardening follow-up
+
+- On the live canonical head `5c2cff3bcea0e61dd9ce56b71a5e45bee509a774`, re-review found a launch-time fail-open edge: `LauncherActivity.startSource()` gated storage validation on `TREE_PATH_KEY` alone. If the URI existed but its mapped-path key was absent, the grant/scope check was skipped.
+- Stage 13 follow-up changes validation to run whenever either half of the stored tree-selection record exists; host-JVM coverage exercises empty, URI-only and path-only preference state, and the Stage 13 verifier checks that launch code uses the shared predicate.
+- Hardened repeat selection so an existing full persisted grant succeeds without relying on duplicate-take behavior, and a failed attempt to reselect the currently active URI does not unnecessarily release that grant.
+- Device acceptance is still open; the current fail-closed release gate has no uploaded APK artifact, so do not infer or claim physical-device success from the CI build.

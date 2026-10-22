@@ -88,6 +88,10 @@ public final class StorageAccess {
         if (context == null || uri == null) return new SelectionResult(ERROR_INVALID_SELECTION, null);
         if (Build.VERSION.SDK_INT < 21) return new SelectionResult(ERROR_UNSUPPORTED_ANDROID, null);
 
+        String priorUri = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getString(TREE_URI_KEY, null);
+        boolean reselectingCurrentTree = uri.toString().equals(priorUri);
+
         int grants = resultFlags & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         if ((grants & Intent.FLAG_GRANT_READ_URI_PERMISSION) == 0) {
@@ -108,14 +112,18 @@ public final class StorageAccess {
 
         if (!Api19.persistGrant(context, uri, grants)
                 || !Api19.hasPersistedReadWriteGrant(context, uri)) {
-            Api19.releaseGrant(context, uri, Api19.persistedGrantFlags(context, uri));
+            // Do not revoke a previously active selection merely because reselecting it failed.
+            if (!reselectingCurrentTree) {
+                Api19.releaseGrant(context, uri, Api19.persistedGrantFlags(context, uri));
+            }
             return new SelectionResult(ERROR_GRANT_PERSIST_FAILED, null);
         }
 
         File selected = new File(mapped.path);
         int accessError = accessError(selected);
         if (accessError != ERROR_NONE) {
-            Api19.releaseGrant(context, uri, grants);
+            // Preserve an existing active grant if the user reselected the same folder.
+            if (!reselectingCurrentTree) Api19.releaseGrant(context, uri, grants);
             return new SelectionResult(accessError, mapped.path);
         }
 
@@ -134,6 +142,17 @@ public final class StorageAccess {
     public static String getValidatedSelectedPath(Context context) {
         SelectionResult result = validateSelectedTree(context);
         return result.isSuccess() ? result.path : null;
+    }
+
+    /**
+     * True if either half of the persisted selection record exists. Callers must validate
+     * partial records too; checking only the path key can accidentally skip grant validation.
+     */
+    public static boolean hasStoredTreeSelection(Context context) {
+        if (context == null) return false;
+        SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        return preferences.getString(TREE_URI_KEY, null) != null
+                || preferences.getString(TREE_PATH_KEY, null) != null;
     }
 
     /** Revalidate grants, volume state and canonical path before every native launch. */
@@ -282,6 +301,9 @@ public final class StorageAccess {
     /** API 19+ URI permission calls; kept out of the outer class for API 17-18. */
     private static final class Api19 {
         static boolean persistGrant(Context context, Uri uri, int flags) {
+            // An already-persisted grant is valid; avoid depending on provider behavior for
+            // taking the exact same permission a second time.
+            if ((persistedGrantFlags(context, uri) & flags) == flags) return true;
             try {
                 context.getContentResolver().takePersistableUriPermission(uri, flags);
                 return (persistedGrantFlags(context, uri) & flags) == flags;

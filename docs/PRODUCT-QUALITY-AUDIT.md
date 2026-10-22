@@ -232,3 +232,8 @@ An additional audit found that canonical containment inside the volume root alon
 The pinned SDK source also contains native filesystem write call sites for game state and replay output, so the writable-root requirement is retained pending proof of a working, appropriately scoped alternate write directory. These files are evidence of SDK behavior, not proof that every target build enables those optional features.
 
 **Acceptance limitation:** these JVM tests use host-side Android API fakes. They cannot prove a particular OEM's document picker/provider behavior or reproduce the user's original error. The physical-device test remains open until run with the affected provider/device and a candidate APK that is permitted by the existing distribution gate.
+
+
+### Stage 13 follow-up finding — partial persisted tree-selection state
+
+A source review after the initial Stage 13 CI pass found that `LauncherActivity.startSource()` entered SAF grant/scope validation only when the saved mapped-path key existed. A stale/corrupt record containing only the URI could therefore bypass that launch-time check. The follow-up makes the validation predicate treat either URI or mapped-path key as evidence of an existing selection and adds JVM/static regression coverage. The implementation is now source-checked, but device/provider acceptance remains pending.

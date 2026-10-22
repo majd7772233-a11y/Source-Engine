@@ -20,7 +20,8 @@ checks={
  "diagnostics do not print full URI":"uri.toString()" not in s[s.index("public static String diagnosticSummary"):s.index("private static boolean hasFlag")],
  "picker logs privacy-safe diagnostics":"SRCAPK_STORAGE" in p and "StorageAccess.diagnosticSummary" in p,
  "launch validation maps concrete failure reasons":"StorageAccess.validateSelectedTree(this)" in l and "storageValidationMessage(validation.error)" in l,
- "JVM suite compiles bridge and runs Stage 13 tests":"src/me/nillerusr/StorageAccess.java" in t and "Stage13StorageAccessTestSuite" in t,
+ "launch validation cannot be skipped by a partial URI/path preference pair":"StorageAccess.hasStoredTreeSelection(this)" in l and "public static boolean hasStoredTreeSelection(Context context)" in s and "TREE_URI_KEY" in s and "TREE_PATH_KEY" in s,
+ "JVM suite compiles bridge and runs Stage 13 tests":"src/me/nillerusr/StorageAccess.java" in t and "Stage13StorageAccessTestSuite" in t and "selectionState()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
  "workflow invokes Stage 13 verifier":"bash scripts/verify-stage13.sh" in w,
  "new missing-write message is localized in English and Arabic":all("srceng_storage_no_write_grant" in v for v in strings.values())}
 bad=[k for k,v in checks.items() if not v]

@@ -684,8 +684,7 @@ public class LauncherActivity extends Activity {
 			return;
 		}
 		if (Build.VERSION.SDK_INT >= 21) {
-			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
-			if (expectedTree != null) {
+			if (StorageAccess.hasStoredTreeSelection(this)) {
 				StorageAccess.SelectionResult validation = StorageAccess.validateSelectedTree(this);
 				String grantedRoot = validation.isSuccess() ? validation.path : null;
 				if (grantedRoot == null) {
