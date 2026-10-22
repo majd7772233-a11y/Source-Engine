@@ -154,7 +154,7 @@ The report surfaces device/build properties, advertised GLES level, display metr
 - Visual quality of the currently installed APK, including actual blur/performance on this device.
 - Successful secret-backed release signing, legal clearance, or release upgrade behavior.
 
-Stage 11’s 73 JVM assertions and successful static/build workflow are useful signals, but they do not cover the missing Android/provider/native-runtime behaviors above.
+The historical Stage 11 run had 73 JVM assertions; the later canonical regression suite reached 80 assertions. Both are useful signals, but neither covers the missing Android/provider/native-runtime behaviors above.
 
 ## 5. Remediation order
 
@@ -170,7 +170,7 @@ Newly observed bugs first enter the continuous **Stage 12 feedback lane**. Curre
 
 ## 6. Historical Stage 12 remediation snapshot — 2026-10-22 (reclassified under the corrected roadmap)
 
-Implementation has started in the `stage12-storage-fixes` branch. The following source changes have been made, but this is not a claim that they have passed the integrated workflow or been validated on a real Android device:
+This section captures the initial candidate-branch snapshot before PR #18 was merged. The changes listed below were subsequently covered by the candidate and canonical CI runs in Sections 7–9; those results still do not constitute physical-device validation:
 
 - Replaced one generic SAF failure with specific results for unsupported provider, malformed document ID, disconnected/unmounted volume, missing read grant, failure to persist the grant, unreadable/unwritable path and scope mismatch. The UI explains that the parent containing game folders must be selected; selecting the game folder itself is rejected before widening access to its parent.
 - Added canonical grant-root containment on selection and launch. A sibling with a shared textual prefix is not accepted as a descendant.

@@ -8,7 +8,7 @@ Turn this repository into a maintainable Android launcher and runtime integratio
 
 This repository is **not itself the complete Source SDK/game-content distribution**. The current CI script clones external repositories (notably `nillerusr/srcsdk`) and builds native components from them. Source game data such as `gameinfo.txt`, VPKs, and proprietary assets must be supplied lawfully by the user; the app must detect missing content and explain what is missing instead of implying that installing the APK installs a full game.
 
-## 2. Current repository facts (rechecked 2026-10-21)
+## 2. Current repository facts (rechecked 2026-10-22)
 
 - Canonical branch: `android-fixes`; the audit baseline commit `8b204a102437a20f621e42381c8f38b7b10119dc` is historical and is not the current head.
 - Android application ID: `com.magd.source.engine`; legacy Ant/ADT build, checked-in project target API 29, manifest minimum API 17 and target API 24. Native payload is verified by CI for ARMv7/`armeabi-v7a` (35 ELF libraries); this does not establish that a device/game combination works.
@@ -134,6 +134,25 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] **CI acceptance:** PR [#16](https://github.com/majd7772233-a11y/Source-Engine/pull/16) merged as `dec2b5f6b01c83cdfc58f8897578685680670b96`. PR workflow [39552539276](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552539276) passed 73 JVM assertions, all Stage 0–12 verifiers, YAML/workflow validation, ShellCheck, actionlint, pinned dependency fetch, native compilation, Java/Ant packaging, APK verification and artifact upload. Canonical push workflow [39552785558](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552785558) also passed. Canonical APK: 56,573,086 bytes; SHA-256 `f25673a0132c7a4b6b0e73ed0a48d27e32f914431521817cfd31a37a94271083`; artifact [12323743499](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552785558/artifacts/12323743499), expires 2026-11-04.
 - [ ] Device acceptance remains separate: run the physical-device checklist with a lawful compatible game on at least two representative devices where available. CI/JVM tests do not establish real Android SAF/provider behavior, successful game launch, gameplay input, sound routing, rendering performance, thermal stability or crash-free sessions.
 
+### Status reconciliation for Stages 0–11 (implementation evidence vs. product acceptance)
+
+The numbered sequence below remains as historical implementation milestones; this table prevents “code merged / CI green” from being confused with “everything accepted on a device.” Completed implementation items remain completed history. Open device/runtime/product gaps are reassigned to the relevant Stage 13–19 milestone rather than being hidden by the old stage number.
+
+| Historical stage | Implementation / CI status | Acceptance still open and current destination |
+|---|---|---|
+| 0 — Branch integration and project normalization | Canonical branch and build/package checks were established and CI passed. | No end-to-end physical-device game session is implied; broader runtime checks are Stage 18. |
+| 1 — Reproducible build and native integrity | Dependency pins, build diagnostics and APK/ABI verification have CI evidence. | Native build success does not prove a game launches; runtime matrix is Stage 18. |
+| 2 — Startup and lifecycle | Source fixes and CI checks are recorded. | Launch, pause/resume, cold/warm restart and failure recovery on-device remain Stage 14/18. |
+| 3 — Game discovery and content validation | Discovery/library implementation and source checks are recorded. | Real game/mod layout coverage and confirmed compatibility remain Stage 14/18. |
+| 4 — Storage and SAF | SAF, persisted-grant and path checks were implemented and CI-tested. | The reported provider failure and real OS/provider/removable-volume behavior remain the focus of Stage 13. |
+| 5 — Core launcher UX | Library-first flows and user-facing states have implementation evidence. | Real-screen navigation and accessibility review are Stage 16. |
+| 6 — Liquid Glass visual system | Visual theme and motion implementation exist. | Actual blur/depth/readability, fallback and performance acceptance are Stage 16/18. |
+| 7 — Touch controls and input | Touch overlay, settings and static/regression checks exist. | Real-game multitouch, key bindings, controller and lifecycle tests are Stage 15. |
+| 8 — Graphics/audio/performance diagnostics | Diagnostic implementation and guarded API paths exist. | Real rendering/audio, frame pacing, heat and power measurements are Stage 18. |
+| 9 — Network/optional online features | The UI discloses that server browsing is unavailable rather than faking it. | Any real server browser or updater work is Stage 17; no absent capability is marked complete. |
+| 10 — Reliability/security | Defensive source changes and CI checks are recorded. | User-observed settings/feature behavior and platform validation continue in Stages 13, 17–19 as applicable. |
+| 11 — Automated tests and CI | Static/workflow checks and the current 80-assertion JVM suite have CI evidence. | Automated checks cannot replace the device matrix and gameplay acceptance in Stage 18. |
+
 ### Stage 12 — Continuous QA, user feedback, defect intake and corrective changes (ONGOING LANE)
 
 **Purpose:** Stage 12 is a permanent lane across the whole project lifecycle. It is not the final stage, is not a numbered implementation milestone that must be “completed”, and is not the release gate. Findings from user APK checks, device smoke tests, CI failures, code reviews and new requirements are recorded and triaged here.
@@ -250,12 +269,12 @@ The implementation-stage checklists above record history and CI evidence. Active
 | PQ-04 | High | Discovery | Scan limits and inaccessible child listings could look like definitive empty results | 14 | Detailed scan result tracks inaccessible paths and limits; incomplete scans preserve prior snapshot and show an explanation |
 | PQ-05 | High | Readiness | “Ready to try” is a filesystem/ABI heuristic, not proof the game runs | 14, 18 | Remains a preflight heuristic; explicit runtime compatibility evidence still missing |
 | PQ-06 | High | Launch history | Last-launch timestamp was recorded before SDL/native launch success | 14 | UI says “Last attempt”; an actual native-ready success signal remains unimplemented/unverified |
-| PQ-07 | High | Localization | Initial audit found 34 default strings without Arabic translations | 16 | Branch now has 151 keys in each locale and CI enforces key/placeholder parity; integrated CI pending |
+| PQ-07 | High | Localization | Initial audit found 34 default strings without Arabic translations | 16 | Branch has 151 keys in each locale; key/placeholder parity passed in canonical workflow 39832326942; on-device RTL review remains open |
 | PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls | 15 | Settings disclose current mapping and limits; real-game controls/remapping validation remains open |
 | PQ-09 | High | Visual UX | Picker/dialogs were visually inconsistent with the stated Liquid Glass goal | 16 | Shared visual styling applied to the picker; screenshots, accessibility and device performance remain unverified |
 | PQ-10 | Medium | Feature truth | Update checker only logs a version marker; legacy update service is disabled | 17 | “Newer marker” text is now explicit that in-app update is unavailable; a verified updater is still absent |
 | PQ-11 | Medium | Online | In-app server browser/join flow is not implemented | 17 | Remains explicitly unavailable; do not count connectivity as server discovery |
-| PQ-12 | High | Input validation | Invalid environment entries could be skipped while other entries applied | 17 | Entire list is validated before setenv and invalid/reserved entries return actionable localized errors; CI pending |
+| PQ-12 | High | Input validation | Invalid environment entries could be skipped while other entries applied | 17 | Entire list is validated before setenv and invalid/reserved entries return actionable localized errors; canonical source/CI checks passed; runtime behavior remains unverified on-device |
 | PQ-13 | High | Test coverage | Static checks/JVM assertions do not exercise Android providers, gameplay, audio or performance | 18 | Added regression assertions; physical-device and gameplay coverage remains open |
 | PQ-14 | High | Privacy/legal/release | Audio capture/permission decisions, license review and signed release validation remain open | 17, 19 | Startup permission coupling improved; privacy/legal/signing acceptance remains open |
 
