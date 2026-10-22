@@ -1,5 +1,7 @@
 # Product-Quality Audit — Source Engine for Android
 
+> **Roadmap model correction (2026-10-22):** Earlier sections were written when Stage 12 was mistakenly treated as the terminal remediation gate. The current model makes Stage 12 the permanent QA/feedback/defect-intake lane, maps larger work to Stages 13–19, and uses an unnumbered **Final Acceptance** gate. Older stage-12 references below are historical audit/CI records, not the current stage plan.
+
 **Audit date:** 2026-10-21  
 **Repository:** `majd7772233-a11y/Source-Engine`  
 **Baseline:** `android-fixes` at `8b204a102437a20f621e42381c8f38b7b10119dc`  
@@ -9,7 +11,7 @@
 
 **The APK build/CI passing is not a release-readiness signal.** The repository contains useful implementation and static/JVM quality gates, but source inspection reveals consequential user-facing gaps. The user's reported folder-picker failure is treated as a real failure observed on their device. This source audit does not claim to have reproduced it independently, because the exact selected provider and device logs are not available.
 
-No application behavior was changed as part of this initial audit. Findings are recorded so remediation can be done as a coherent final Stage 12, not scattered across already-labelled “complete” implementation stages. Stage 12 is the final, open-ended stage; no ETA is set.
+No application behavior was changed as part of this initial audit. Findings were originally collected under what was then called the final Stage 12; that interpretation has been superseded. Use Stage 12 for ongoing feedback/triage and route implementation work to the numbered milestones in ROADMAP.md. No ETA is set.
 
 ### How to read severity
 
@@ -163,10 +165,10 @@ Stage 11’s 73 JVM assertions and successful static/build workflow are useful s
 5. User-visible validation for settings and truthful update/server/diagnostic feature labels (PQ-10–13).
 6. Physical-device acceptance, docs, license/attribution, privacy review and signed-release verification.
 
-All remediations belong to the final **Stage 12.x**. This audit sets no delivery date and does not claim the fixes are implemented.
+Newly observed bugs first enter the continuous **Stage 12 feedback lane**. Current mapping: PQ-01–03 → Stage 13; PQ-04–06 → Stage 14; PQ-08 → Stage 15; PQ-07/PQ-09 → Stage 16; PQ-10–12 → Stage 17; runtime/compatibility coverage → Stage 18; provenance/privacy/release → Stage 19. This audit sets no delivery date and does not claim all remaining acceptance is complete.
 
 
-## 6. Stage 12 remediation update — 2026-10-22 (CI/device acceptance pending)
+## 6. Historical Stage 12 remediation snapshot — 2026-10-22 (reclassified under the corrected roadmap)
 
 Implementation has started in the `stage12-storage-fixes` branch. The following source changes have been made, but this is not a claim that they have passed the integrated workflow or been validated on a real Android device:
 
@@ -179,7 +181,7 @@ Implementation has started in the `stage12-storage-fixes` branch. The following 
 - All 151 default resource keys now have Arabic translations; the verifier checks key parity and format-placeholder parity. Touch-control settings explain the current fixed keyboard/mouse mappings and their limitation. The directory picker now uses shared visual styling.
 - Added `docs/USER-SETUP-TROUBLESHOOTING.md`.
 
-**Still open:** branch CI/full APK verification, provider behavior on the affected physical device, Android-version/removable-volume matrix, launch/gameplay/input/audio/visual/performance acceptance, license/privacy review, and secret-backed signed-release/upgrade acceptance. No completion date is announced; all work remains in final Stage 12, with no Stage 13.
+**Still open at that snapshot:** provider behavior on the affected physical device, Android-version/removable-volume matrix, launch/gameplay/input/audio/visual/performance acceptance, license/privacy review, and secret-backed signed-release/upgrade acceptance. Canonical CI evidence was subsequently updated. Under the corrected roadmap these items are assigned to Stages 13–19; new findings continue to enter Stage 12.
 
 
 ## 7. Candidate CI evidence — 2026-10-22 (runtime acceptance still pending)
@@ -191,7 +193,7 @@ The Stage 12 initial-remediation branch completed candidate workflow [3967941984
 - Debug artifact: [12383626531](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842/artifacts/12383626531); ZIP digest `a1c770735469be9b585caaa22286ec3c9c7c75437129efb572869434850bdb5e`; expires 2026-11-04.
 - Release build/signing was not executed in this candidate workflow. No physical-device storage-provider, gameplay, input, audio, accessibility, performance/thermal or signed-release validation is inferred from these results.
 
-The code changes are still a remediation tranche, not a declaration that all defects are fixed. PR #18 merged as `f530574869f51091b5dccf0365d12f582c737ce2`; canonical post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed. The user must still test the downloaded APK against the exact storage provider/device that originally failed. Stage 12 stays open-ended until all product and release acceptance criteria are evidenced.
+The code changes are a remediation tranche, not a declaration that all defects are fixed. PR #18 merged as `f530574869f51091b5dccf0365d12f582c737ce2`; canonical post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed. The original provider/device scenario still needs direct validation. That issue is now scheduled in Stage 13, while new findings return to the continuous Stage 12 lane.
 
 ## 8. Canonical post-merge CI — 2026-10-22 (runtime acceptance pending)
 
@@ -211,4 +213,4 @@ PR [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) merged as `c
 - Native build and APK verification passed for package `com.magd.source.engine`, ARMv7, 35 ELF libraries, 56,589,387 bytes, SHA-256 `8a16a300d4b4c5ee7a3333cb657dfcb996bbf4172c6adbfed2753fd91212b98b`.
 - The audit returned `RELEASE BLOCKED`; debug-artifact upload was skipped, signed-release steps were skipped, and the workflow reported no artifacts. This is the expected protective behavior, not a public release or device-acceptance result.
 
-Legal review has not been completed and no claim is made that the listed binaries are unlawful. Source provenance, license/notice obligations and redistribution rights need accountable review. Until then, Stage 12 remains open.
+Legal review has not been completed and no claim is made that the listed binaries are unlawful. Source provenance, license/notice obligations and redistribution rights need accountable review. Until that gate clears, approved downloadable APK artifacts remain blocked; this release prerequisite is tracked under Stage 19 and Final Acceptance.

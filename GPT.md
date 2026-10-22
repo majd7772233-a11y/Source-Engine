@@ -76,12 +76,13 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 
 ## 6. Current phase hand-off
 
-- **Stage 0 is complete.** Canonical branch: `android-fixes`. Final verification candidate: `bf7f506f741cac82c8f1419b4170e4ede3883cbe`; the completion-record commit records the verified result and is synchronized across the maintained branches.
-- Final verification passed in GitHub Actions run [38938001867](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38938001867) on candidate commit `bf7f506f741cac82c8f1419b4170e4ede3883cbe`: source/manifest/package checks, shell syntax checks, all native builds, Ant APK packaging, APK application-ID inspection, required ARMv7 native-library presence checks, and artifact upload all succeeded.
-- Artifact: `source-engine-android-debug`, 54,488,439 bytes, SHA-256 `0ed0e8919ef6209114eecd35dd15b3abbcca47588570d7dcb11a782a3f557e6b`.
-- Fixed the SDK path mismatch by explicitly selecting the cloned legacy Android SDK, installed the 32-bit runtime libraries needed by its old `aapt`, and made both build entry points generate `res/values/build_info.xml`.
-- Before beginning Stage 1, re-read its acceptance criteria. External dependency revisions remain unpinned; device installation/game launch, game discovery/storage UX, compatibility, and runtime stability are not claimed as verified by Stage 0.
-- No physical-device installation/launch smoke test was run during Stage 0.
+- Canonical repository/branch: majd7772233-a11y/Source-Engine, android-fixes.
+- **Correct roadmap model (2026-10-22):** Stage 12 is the permanent user-feedback/QA/bug-intake/correction lane; it is not the final stage. New implementation milestones are numbered Stage 13 onward. The real final gate is **Final Acceptance**, deliberately unnumbered.
+- **Current work point:** Stage 13 is next: storage-provider, folder-scope and permission reliability. Do not claim the user’s original provider error is fixed until that exact flow is reproduced or tested on the affected device/provider.
+- Stage 13 begins by re-auditing code already merged in PR #18; do not rewrite correct implementation blindly. Keep automated-test evidence distinct from physical-device acceptance.
+- PR #19 added a fail-closed source-provenance/release gate. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed source/build checks but correctly reported RELEASE BLOCKED, skipped downloadable APK artifact upload and skipped signed-release steps. Never bypass the gate or claim an artifact exists when none was uploaded.
+- Planned milestones after Stage 13: Stage 14 discovery/readiness/launch truth; Stage 15 in-game input; Stage 16 launcher UX/accessibility/localization; Stage 17 feature truth/settings/online-update behavior; Stage 18 runtime compatibility/performance/regression evidence; Stage 19 source provenance/privacy/release distribution. See ROADMAP.md for criteria.
+- After several milestones, the user should test an approved candidate and feed all findings into Stage 12. Prioritize any critical failure before progressing. Final Acceptance is unnumbered and requires implementation, user/device, legal and release evidence.
 
 ## 7. Dated engineering log
 
@@ -321,7 +322,7 @@ Use this section for new observations that do not yet fit another heading. Date 
 - `UpdateSystem` only retrieves a deployment version marker and logs a newer marker; `UpdateService` explicitly disables legacy notifications. The in-app server browser is documented unavailable. Neither should be presented as implemented update/server-discovery functionality.
 - `showCompatibilityDiagnostics` reports platform metadata/snapshots; it does not create a real GL context, benchmark a game, or verify audible runtime output. `ValveActivity2.applyUserEnvironment` can ignore malformed/invalid/reserved entries while continuing; user-facing validation/feedback remains a task.
 - Do not treat the successful 73-assertion JVM suite, static checks, or 35-library APK verification as evidence of SAF-provider behavior, working gameplay, input, audio, thermal stability or crash-free sessions.
-- Roadmap is re-scoped so **Stage 12 is the sole final, open-ended product remediation/release gate; no Stage 13 and no ETA**. Implementation has now started on `stage12-storage-fixes`: detailed SAF errors and canonical grant containment, incomplete-scan state, Arabic parity + placeholder validation, optional-microphone permission separation, preflight validation of environment overrides, truthful launch-attempt wording, touch-map disclosure, and directory-picker visual integration are present. `docs/USER-SETUP-TROUBLESHOOTING.md` was added. Full CI and device verification are still pending; do not mark the final stage complete based on source edits or a green build alone. Findings live in `docs/PRODUCT-QUALITY-AUDIT.md`; follow-up work must be numbered 12.x.
+- Historical note: the then-current plan mistakenly treated Stage 12 as the final gate. Superseded by the 2026-10-22 correction: Stage 12 is an ongoing feedback lane and implementation milestones 13+ are planned. Implementation has now started on `stage12-storage-fixes`: detailed SAF errors and canonical grant containment, incomplete-scan state, Arabic parity + placeholder validation, optional-microphone permission separation, preflight validation of environment overrides, truthful launch-attempt wording, touch-map disclosure, and directory-picker visual integration are present. `docs/USER-SETUP-TROUBLESHOOTING.md` was added. Full CI and device verification are still pending; do not mark the final stage complete based on source edits or a green build alone. Findings live in `docs/PRODUCT-QUALITY-AUDIT.md`; follow-up work must be numbered 12.x.
 
 
 ### 2026-10-22 — Stage 12 candidate CI succeeded; acceptance remains open
@@ -339,7 +340,7 @@ Use this section for new observations that do not yet fit another heading. Date 
 
 ### 2026-10-22 — Stage 12.9 license inventory and fail-closed release guard
 
-- Re-read the live canonical branch and Stage 12 rules. The roadmap explicitly has no Stage 13; work remains within the terminal Stage 12 until its whole acceptance matrix passes.
+- Re-read the live canonical branch and Stage 12 rules. Historical note: that version of the roadmap incorrectly had no Stage 13. Superseded by the corrected numbering recorded in the current hand-off and ROADMAP.md.
 - Audited the tracked repository tree at `dadb5e18d5774535fe7d8e1b7c0511b3640c0296`, the exact pinned `nillerusr/srcsdk` tree (`413f5848d9a4534cdf8a4d10f5c1e7b1eaf3835d`), its `gl4es/gl4es-git` submodule pin (`6996a61a9efed4192ac76dedf96acf9110bb75d7`), the native build workflow, the 35 tracked ARMv7 libraries, SDL-namespaced Java glue, and the available license/notice paths.
 - Added `docs/THIRD-PARTY-LICENSE-AUDIT.md`. Findings are intentionally provisional: the app repository has no top-level project license/third-party notice, the pinned Source SDK fork has no root license or `thirdpartylegalnotices.txt` in its inspected tree, and 30 checked-in native binaries are not rebuilt by the current workflow and lack a committed per-binary provenance/license manifest. The GL4ES license at its exact pinned commit is MIT and requires retaining its notice; protobuf/gtest notices exist in the Source SDK tree. These findings do not decide whether any particular binary is authorized for redistribution.
 - Added `scripts/verify-release-license-gate.py` and wired it before dependency fetching for release tags/manual signed-release dispatches only. It requires a `CLEARED` status, named reviewer, valid review date, full reviewed commit SHA and HTTP(S) evidence URL. The current audit remains `BLOCKED`, so the signed-release path intentionally stops before building. A second gate allows debug compilation/verification but withholds uploading new downloadable debug APKs until clearance. These procedural gates do not substitute for an actual rights/license review; normal engineering CI remains available.
@@ -352,4 +353,14 @@ Use this section for new observations that do not yet fit another heading. Date 
 - The audit is still `RELEASE BLOCKED`; the verified APK was not uploaded and signed-release steps were skipped. Do not provide a download link for this run or call the app release-ready.
 - Corrected the quality audit's stale permission baseline: PR #18 separated startup storage permission from optional microphone permission. The modern Android all-files-access path and version matrix are still unresolved.
 - Documented the existing `android:allowAudioPlaybackCapture="true"` as an opt-in for eligible playback capture by external, user-approved recorders. It does not initiate recording from Source Engine. Added a device smoke-test requirement and official Android documentation link.
-- Stage 12 remains the final, open-ended gate. Physical SAF/provider reproduction, storage/OS strategy, actual gameplay/input/audio/accessibility/performance, and accountable source-license/redistribution review remain open. No Stage 13 or ETA.
+- Historical plan note superseded on 2026-10-22: Stage 12 is now the permanent feedback/correction lane; the numbered implementation plan continues at Stage 13, and Final Acceptance is unnumbered.
+
+
+### 2026-10-22 — Roadmap numbering model corrected per user intent
+
+- The user clarified that Stage 12 must be a permanent place for feedback, bug reports, modifications and corrective fixes discovered over time—not a numbered final stage.
+- The current roadmap now defines Stage 12 as the cross-cutting feedback/defect-intake lane; numbered milestones 13–19 cover implementation, runtime evidence and controlled release preparation; **Final Acceptance has no stage number**.
+- Stage 13 is next and prioritizes the storage-provider/folder-scope failure previously reported. Existing PR #18 fixes must be re-audited and physically verified rather than assumed correct.
+- Old dated engineering-log entries mentioning “no Stage 13” preserve the original historical plan only; they are superseded by this entry and the current hand-off above.
+- Never bypass the fail-closed source-provenance gate to generate a downloadable APK. Plan the user’s candidate test around an artifact that is available through an approved gate.
+

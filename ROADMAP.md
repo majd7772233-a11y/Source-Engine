@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-22):** Stages 0–11 have implementation and CI/build evidence, but that is not proof of product-wide correctness. Stage 12 remains the sole final, open-ended remediation and release gate; no ETA or Stage 13 is planned. PRs [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) and [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) are merged. Canonical CI [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed source/build checks but withheld all new APK artifacts because license/source-provenance clearance is still blocked. Device/runtime acceptance and actual rights review remain incomplete. Do not close the gate based on a green build.
+> **Roadmap status (2026-10-22; numbering model corrected):** Stages 0–11 remain historical implementation milestones. Stage 12 is the permanent QA/feedback/defect-correction lane—not the final stage. The next numbered implementation stage is **Stage 13: Storage-provider and folder-access reliability**. Stages 13+ are real implementation milestones. The actual **Final Acceptance** gate is deliberately unnumbered and is reached only after implementation and user/device acceptance criteria are satisfied. PRs [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) and [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) are merged. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed source/build checks but withheld APK artifacts because source-provenance/redistribution clearance remains blocked. Device/runtime acceptance and accountable rights review remain incomplete; a green build does not close either.
 
 ## 1. Product goal
 
@@ -10,13 +10,13 @@ This repository is **not itself the complete Source SDK/game-content distributio
 
 ## 2. Current repository facts (rechecked 2026-10-21)
 
-- Canonical branch: `android-fixes`; audit baseline commit: `8b204a102437a20f621e42381c8f38b7b10119dc`. The review branch is documentation-only until product remediation is authorized.
+- Canonical branch: `android-fixes`; the audit baseline commit `8b204a102437a20f621e42381c8f38b7b10119dc` is historical and is not the current head.
 - Android application ID: `com.magd.source.engine`; legacy Ant/ADT build, checked-in project target API 29, manifest minimum API 17 and target API 24. Native payload is verified by CI for ARMv7/`armeabi-v7a` (35 ELF libraries); this does not establish that a device/game combination works.
 - Main user-facing path: `LauncherActivity` → `DirchActivity` / `StorageAccess` → `GameDiscovery` → `SDLActivity` / `ValveActivity2` and `TouchControlsOverlay`.
 - Storage selection uses `ACTION_OPEN_DOCUMENT_TREE` from API 21, but the native bridge only accepts `com.android.externalstorage.documents` trees which map to a canonical local filesystem path, and currently requires both `canRead()` and `canWrite()`. Generic document/cloud providers are rejected; this is the direct code path that can yield the user's reported “This provider cannot be used by the native engine” message. Without the selected URI authority and runtime logs, this audit cannot determine which exact rejection condition was hit on the user's device.
-- The manifest declares `WRITE_EXTERNAL_STORAGE` and `RECORD_AUDIO`, requests both together from API 23+, and has `requestLegacyExternalStorage=true`. It does not implement an Android 11+ special “all files access” settings flow. Android permissions cannot grant root access or access to every app-private directory, and any special access must be justified, user-approved, and handled within OS/distribution constraints.
+- The manifest declares shared-storage and microphone permissions and `requestLegacyExternalStorage=true`. After PR #18, startup storage permission is separated from optional microphone permission; there is still no user-facing Android 11+ special “all files access” settings flow. Android permissions cannot grant root access or access to every app-private directory, and any special access must be justified, user-approved, and handled within OS/distribution constraints.
 - Product code includes discovery, launcher UI, a keyboard-mapped touch overlay, visual styling, connectivity/compatibility reports, and a safe-but-disabled update path. The online status panel explicitly says that a working in-app server browser is unavailable. The update marker checker does not deliver or install app updates.
-- Stage 11's 73 JVM assertions exercise production path/prefs/discovery logic through host-side tests; CI additionally runs source/resource/workflow checks and builds/verifies an APK. These gates do not exercise Android's real document picker/providers, permissions UX, touch events, native startup, in-game controls, rendering/audio or sustained performance.
+- The current host-JVM regression suite reports 80 assertions (an earlier Stage 11 run had 73); CI also runs source/resource/workflow checks and builds/verifies an APK when distribution gates allow. These gates do not exercise Android's real document picker/providers, permissions UX, touch events, native startup, in-game controls, rendering/audio or sustained performance.
 - See [the product-quality audit](docs/PRODUCT-QUALITY-AUDIT.md) for evidence-based findings. Historical stage logs below are retained as history; earlier implementation/CI acceptance must not be interpreted as current product-wide or physical-device acceptance.
 
 ## 3. Rules for working through this roadmap
@@ -134,114 +134,142 @@ This repository is **not itself the complete Source SDK/game-content distributio
 - [x] **CI acceptance:** PR [#16](https://github.com/majd7772233-a11y/Source-Engine/pull/16) merged as `dec2b5f6b01c83cdfc58f8897578685680670b96`. PR workflow [39552539276](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552539276) passed 73 JVM assertions, all Stage 0–12 verifiers, YAML/workflow validation, ShellCheck, actionlint, pinned dependency fetch, native compilation, Java/Ant packaging, APK verification and artifact upload. Canonical push workflow [39552785558](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552785558) also passed. Canonical APK: 56,573,086 bytes; SHA-256 `f25673a0132c7a4b6b0e73ed0a48d27e32f914431521817cfd31a37a94271083`; artifact [12323743499](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39552785558/artifacts/12323743499), expires 2026-11-04.
 - [ ] Device acceptance remains separate: run the physical-device checklist with a lawful compatible game on at least two representative devices where available. CI/JVM tests do not establish real Android SAF/provider behavior, successful game launch, gameplay input, sound routing, rendering performance, thermal stability or crash-free sessions.
 
-### Stage 12 — Product correctness, user experience, runtime validation and release gate (FINAL / OPEN-ENDED)
+### Stage 12 — Continuous QA, user feedback, defect intake and corrective changes (ONGOING LANE)
 
-**Status: PR #18 (`f530574869f51091b5dccf0365d12f582c737ce2`) and PR #19 (`cbb4dfedc255c48100abc648e9a04805dc6a9213`) are merged. Canonical workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed Stage 0–12 source checks, 30 Stage 12 assertions, 80 JVM assertions and APK integrity verification. No debug or signed APK artifact was uploaded because source/license clearance remains blocked. Physical-device/product acceptance and actual rights review remain open; no completion date or release ETA is published.** This is the final roadmap stage. There is deliberately no Stage 13: newly discovered requirements or defects remain Stage 12.x until the product-wide acceptance gate passes. Passing CI alone does not close Stage 12.
+**Purpose:** Stage 12 is a permanent lane across the whole project lifecycle. It is not the final stage, is not a numbered implementation milestone that must be “completed”, and is not the release gate. Findings from user APK checks, device smoke tests, CI failures, code reviews and new requirements are recorded and triaged here.
 
-The authoritative initial findings are in [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md). The user-reported Android storage-provider failure is a known product failure. The tasks below are not marked complete merely because earlier implementation stages or their static checks passed.
+**Operating cycle**
+1. Record each finding with expected vs. actual behavior, reproduction steps, device/Android version where relevant, safe logs/screenshots, severity, and whether it is confirmed or still a hypothesis.
+2. Fix small, self-contained regressions as Stage 12.x corrective patches when that is clearest. Promote broader features or cross-cutting work into a numbered milestone (Stage 13 or later) and link the original finding to it.
+3. After several numbered milestones, provide a verified candidate only when the artifact gate permits it; the user tests the app and returns the outcome. New findings re-enter this lane and are prioritized before proceeding where they block core usage.
+4. Preserve prior reports as history. Never mark an unrun device test as passed or use a green build as a substitute for product acceptance.
 
-Initial remediation in the working branch now includes specific folder-picker error states and scope validation, incomplete-scan reporting that preserves the prior snapshot, full Arabic key/placeholder parity checks, separation of optional microphone permission from startup storage permission, pre-validation of environment overrides, explicit launch-attempt labels, touch-mapping disclosure, and consistent styling of the directory picker. These are code changes, not yet a green-CI or physical-device acceptance claim.
+**Current intake / hand-off (2026-10-22):**
+- The earlier interpretation of Stage 12 as the “final stage” was a roadmap-model mistake and is superseded. Current numbering: Stage 12 = continuous QA/feedback; Stage 13+ = implementation milestones; **Final Acceptance** = unnumbered terminal gate.
+- The reported Android storage-provider error remains a high-priority, user-observed failure. PR #18 added specific SAF errors and path-scope checks, but it has not been proven fixed on the affected device. It is scheduled under Stage 13.
+- Arabic resource parity (151 default and Arabic keys with placeholder parity) is present in source and has passed CI. On-device RTL/visual/accessibility review belongs to Stage 16.
+- The license/provenance workflow remains fail-closed. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed build verification but reported RELEASE BLOCKED, skipped artifact upload and skipped signed-release work. Do not bypass this protection to produce a downloadable APK.
+- The existing scripts/verify-stage12.sh checks the release-clearance gate and its fail-closed behavior. The script name is historical; it does not mean Stage 12 is the final stage.
 
-#### Stage 12 implementation ledger — 2026-10-22 (candidate CI passed; runtime/release acceptance open)
+### Stage 13 — Storage-provider, folder-scope and permission reliability (NEXT)
 
-- Merged from `stage12-storage-fixes` through [PR #18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) as canonical commit `f530574869f51091b5dccf0365d12f582c737ce2`. Candidate and canonical CI passed. None of the physical-device tests below are claimed done.
-- Storage: the picker returns distinct provider, malformed-ID, volume, read-grant, persisted-grant, unreadable, unwritable and scope errors. Selecting the game folder that contains `gameinfo.txt` itself is rejected; users are told to select its parent. Launch paths must be the granted root or its descendant, using canonical path-boundary checks (so a sibling whose name shares a prefix is not accepted).
-- Permissions: startup asks for shared-storage permission only, rather than coupling it to microphone permission. SDL can return later optional permission results to native code without exiting the game automatically. No root/unrestricted-private-directory claim is made; introducing Android 11+ all-files access still needs a deliberate target-SDK, policy and compatibility decision.
-- Discovery: added `GameDiscovery.ScanResult`/`scanDetailed` with inaccessible-directory, depth-limit and directory-limit state. The launcher keeps the last successful snapshot and displays an incomplete-scan message rather than saying no games were found after a partial walk.
-- Truthful UX: timestamps are labelled as launch **attempts** until a runtime-ready success signal exists. Malformed/reserved environment overrides are rejected before applying entries and produce user-facing messages. The touch-controls settings disclose the fixed keyboard/mouse mapping and lack of analogue-axis support. The directory picker uses the shared visual theme and bounded path text.
-- Localization/tests: Arabic resources now match all 151 default strings; the updated verifier enforces key parity and format-placeholder parity. Stage 4/7/10/11 verifiers and JVM regression tests now include storage scope, picker visual consistency, optional permission flow, scan incompleteness and mapping disclosure.
-- Candidate CI acceptance: [workflow 39679419842](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842) passed on commit `59f03a4c2013fe36f42ab9d417ebfb07e261d10d`: all Stage 0–12 verifiers, 80 JVM regression assertions, YAML/workflow validation, ShellCheck/actionlint, pinned native dependency fetch, native compilation, Ant packaging, APK identity/ABI/native dependency checks (35 ARMv7 ELF libraries), checksum recording and artifact upload. APK: 56,589,391 bytes; SHA-256 `aae99b750b88030a0ff0cc5d7bf293b260c369c942e0b61439fa77af2707e295`; artifact [12383626531](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842/artifacts/12383626531) (ZIP digest `a1c770735469be9b585caaa22286ec3c9c7c75437129efb572869434850bdb5e`, expires 2026-11-04). The artifact is a debug APK; release build/signing steps were not requested in this run.
-- Canonical post-merge CI acceptance: [workflow 39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed on `android-fixes` at `f530574869f51091b5dccf0365d12f582c737ce2`, including all Stage 0–12 verifiers, 80 JVM assertions, native build, Ant packaging, APK verification and artifact upload. APK: 56,589,387 bytes; SHA-256 `d8d2721257bd129a4cd43aed2f740c8e5dd76bad1b350b30b54b9f750de826ef`; [artifact 12383377856](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677/artifacts/12383377856) (ZIP digest `ba388bc3b1c9fe70ebe983c9259f4758f49bd761e87e636c6530a85375faab5d`, expires 2026-11-04). This is a debug APK, not a signed release.
-- Pending: runtime check with the exact APK on Android devices (including the user's failing provider), deeper UI/accessibility review, game-launch/input/audio/performance tests, license/attribution review and secret-backed signed-release verification. **Stage 12 remains open-ended.**
+**Goal:** Make the reported storage/provider failure reproducible, diagnosable and recoverable without widening access beyond the user-granted folder.
 
-#### 12.1 — Storage, permission model and folder-selection recovery
-- [ ] Reproduce and instrument each path through the tree picker, persisted grants and filesystem-path resolver; give specific, actionable messages for unsupported provider, missing grant, malformed document ID, unavailable/unmounted volume, unreadable path and read-only path.
-- [ ] Decide and implement an OS-aware storage strategy for the native engine's real-filesystem-path requirement. Evaluate special “all files access” only where justified; explain it, request it through Android's supported user-facing settings flow, verify return state, and provide a least-privilege fallback. Never promise root or unrestricted access to private app directories.
-- [ ] Fix the mismatch where the error asks only for readability while the resolver rejects `!canWrite()`; determine whether launch genuinely needs write access and check the actual write destinations instead of rejecting every otherwise readable source folder.
-- [ ] Keep the user-selected tree's granted scope aligned with the path passed to the engine, including the case where the selected node is the game folder and code derives its parent as launch root.
-- [ ] Define removable SD/USB behavior across supported Android versions, including the API 17–20 fallback; explicitly represent unsupported devices/providers instead of implying universal volume access.
-- [ ] Add regression coverage for cancellation, re-selection, persisted grant after process restart, revoked grant, read-only/unmounted volumes, internal storage, SD/USB, and game-folder-vs-parent selection. Verify on physical devices.
+- [ ] Re-audit merged StorageAccess, DirchActivity and launcher launch-path code before changing anything; distinguish fixes already present from remaining gaps.
+- [ ] Add privacy-conscious diagnostics for provider authority/type, returned permission flags, persisted-grant result, volume state, read/write checks and resolver failure reason. Do not log private file contents or unnecessarily expose full personal paths.
+- [ ] Establish actual read/write requirements from native engine write destinations. Remove blanket write requirements only if source tracing proves they are unnecessary; align errors with the real checks.
+- [ ] Verify that native paths never escape the canonical tree grant. Cover selected parent vs. game-folder cases, sibling path boundaries, spaces/non-ASCII names, revoked grants, cancellation, process restart, missing volumes and read-only storage.
+- [ ] Define a realistic provider/OS matrix: API 17–20 fallback, SAF from API 21, and current scoped-storage versions. Do not promise generic cloud providers or arbitrary app-private directories when the native engine requires a real filesystem path.
+- [ ] Add regression tests for each resolver outcome and recovery path; update setup/troubleshooting text to match observed behavior.
+- [ ] Physical acceptance: reproduce or explicitly mark blocked the original error on the affected device/provider; test internal storage and removable SD/USB where available. Record logs and exact APK checksum if an approved candidate exists.
 
-#### 12.2 — Library discovery, readiness truth and launch state
-- [ ] Surface incomplete/truncated scans, inaccessible roots and `listFiles()==null` as distinct states; never present a silent partial traversal as a definitive “no games found”.
-- [ ] Revisit the `Ready to try` contract: separate metadata/assets/native-file heuristics from confirmed engine/game compatibility; show what was checked and what still requires a launch attempt.
-- [ ] Only report a successful launch after a native/activity startup signal confirms it, or label the record as a launch attempt. Validate missing/incompatible content and failed native startup end to end.
-- [ ] Test multiple real, lawful game/mod layouts, long paths, empty folders, provider failures and rescan/hide/remove/restore behavior.
+**Acceptance:** each tested selection either resolves inside the granted tree or shows a precise, actionable reason; no parent/sibling scope expansion; regression suite passes; physical outcomes are recorded honestly. The original provider failure is not resolved until retested on that device or its exact cause is demonstrated and verified.
 
-#### 12.3 — In-game controls and input correctness
-- [ ] Test pointer capture/release, multitouch movement + fire, cancellation, overlay/menu hit regions, lifecycle transitions, resizing/rotation, and persistent per-game profiles on actual devices and a compatible game.
-- [ ] Make the controls contract explicit: current defaults simulate WASD, Space, E, R and mouse fire; they do not constitute an analogue gamepad axis or universal mod binding. Add supported remapping/calibration where feasible, or clearly expose current limits.
-- [ ] Ensure every visible control setting has a verified effect, survives restart where advertised, and has an accessible route to undo/reset.
+### Stage 14 — Game discovery, readiness truth and launch-state correctness
 
-#### 12.4 — Launcher UX, visual quality and accessibility
-- [ ] Review every screen and state (first run, picker, empty library, scan progress/failure, details, settings, launch failure, About, dialogs) for hierarchy, touch targets, text contrast, focus/accessibility, back/cancel behavior, small screens and portrait/landscape.
-- [ ] Make the directory picker and dialogs visually consistent with the launcher; compare actual material/rendering with the stated Liquid Glass goal. The current radial-gradient/tinted-panel treatment does not itself demonstrate true background blur or refraction.
-- [ ] Provide low-end/older-API fallbacks and test animation, frame pacing, power use, contrast and motion-off behavior on real devices. Do not declare visual acceptance from source inspection alone.
+- [ ] Audit existing GameDiscovery.ScanResult/scanDetailed work from PR #18 and close only remaining gaps; do not duplicate already-implemented handling.
+- [ ] Distinguish complete scan, partial/limit reached, inaccessible root/child, invalidated storage, cancellation and zero candidates. Preserve the last known-good library snapshot on incomplete scans.
+- [ ] Keep readiness explicitly a preflight result (metadata, asset markers, native package and ABI), not proof of compatibility. Keep “last attempt” separate from confirmed native startup.
+- [ ] Where practical, add a reliable native/activity startup-ready signal before recording successful launch; otherwise keep attempt-only language.
+- [ ] Test lawful game/mod layouts, malformed/missing metadata, absent assets, long paths, rescan, hide/remove/restore and startup failure; turn reproduced issues into regression tests.
 
-#### 12.5 — Feature-truth and dead-control audit
-- [ ] Inventory every setting, button, label, notification and preference, tracing it from visible UI to its actual consumer/effect. Implement it end to end, or remove it / label it honestly as unavailable.
-- [ ] Keep server discovery/list/filter/join unavailable until the native interface and compatible-server behavior are verified. Connectivity alone must never be shown as a server test.
-- [ ] Treat the current update marker check and legacy update service as non-updating functionality; either design a verifiable signed update path or remove misleading leftovers and communicate the supported manual-release path.
-- [ ] Validate environment overrides before starting; rejected/malformed/reserved settings must be surfaced to the user rather than silently ignored while the rest of the launch continues.
-- [ ] Review the audio-capture manifest setting and microphone permission as deliberate privacy/product decisions, not inherited defaults.
+**Acceptance:** incomplete scans are never represented as definitive emptiness, UI matches the available evidence, and readiness/launch history cannot falsely claim a successful game session.
 
-#### 12.6 — Arabic/English localization and content accessibility
-- [ ] Bring Arabic resources into parity with every user-facing default string. The source audit found 132 English strings and 98 Arabic strings; 34 default keys currently have no Arabic counterpart. The missing-key list is in the audit report.
-- [ ] Extend CI to fail on missing Arabic keys (while permitting explicitly documented untranslated product/game names), verify placeholder parity such as `%1$s`/`%2$d`, and review RTL paths, technical terms, dialogs and error messages on-device.
-- [ ] Audit screen-reader names, keyboard/controller focus order, dynamic status announcements and touch-target sizing across the launcher and overlay.
+### Stage 15 — In-game input and gameplay controls
 
-#### 12.7 — Native runtime, lifecycle, hardware and privacy validation
-- [ ] Test startup/failure/shutdown/relaunch, background/foreground, lock/unlock, audio routing, controllers, keyboard/mouse, simultaneous input and crash recovery with a known-compatible legal game.
-- [ ] Measure reproducible startup behavior, frame pacing, memory, sustained heat/throttling and power consumption on representative devices; optimize only evidence-based bottlenecks.
-- [ ] Document ABI/GPU/game compatibility based on observed results rather than package contents or Android's advertised GLES level.
+- [ ] Validate the touch overlay in a compatible game: simultaneous movement/fire, jump/use/reload, multi-pointer cancellation/release, overlay/menu hit-testing, hide/show, reset, resize/reposition and profile persistence.
+- [ ] Test physical keyboard, mouse, supported controller connection/disconnection, orientation changes and activity pause/resume. Do not infer real gameplay input from source checks alone.
+- [ ] Keep fixed keyboard/mouse bindings accurately disclosed. Implement remapping/calibration only where the native integration supports it end to end; do not label a digital movement pad as analogue input.
+- [ ] Verify every visible control preference changes behavior and has an accessible recovery/reset path.
 
-#### 12.8 — Regression suite and physical-device acceptance
-- [ ] Convert each confirmed product bug into regression coverage; add unit/instrumentation tests for observable behavior, not only string-presence/source-shape assertions.
-- [ ] Complete [`docs/DEVICE-SMOKE-TEST.md`](docs/DEVICE-SMOKE-TEST.md) with dated device, Android/API, ABI/GPU, lawful game/version, exact APK checksum, Pass/Fail/Blocked outcomes, and supporting logs. Aim for two representative physical devices where available; honestly record any limitation if fewer are available.
-- [x] Candidate CI re-run for this remediation tranche passed in [workflow 39679419842](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842), including the complete source/static suite, 80 JVM assertions, lint/workflow validation, locked native build, Ant packaging, APK verification and artifact/checksum upload. Canonical post-merge CI [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) also passed; CI is necessary but not sufficient.
+**Acceptance:** device-backed results for supported device/game combinations; unsupported bindings are disclosed rather than presented as universal.
 
-#### 12.9 — User documentation, license review and release gate
-- [x] Added a preliminary evidence-based license/source-provenance inventory at [`docs/THIRD-PARTY-LICENSE-AUDIT.md`](docs/THIRD-PARTY-LICENSE-AUDIT.md), including the tracked prebuilt-library list and exact pinned dependency references. This records blockers; it is not legal clearance.
-- [x] Added `scripts/verify-release-license-gate.py` and wired it into tag/manual signed-release runs so signing fails closed while the audit is blocked or its named review record is incomplete. Debug APKs may still be built and verified internally, but the workflow withholds new downloadable debug artifacts until clearance. `scripts/verify-stage12.sh` tests blocked, incomplete, and complete synthetic-record behavior; this only tests the guard, not legal sufficiency.
-- [ ] Resolve the underlying provenance/redistribution questions, include all applicable notices, and obtain accountable review. The audit remains `BLOCKED`; signed-release and overall Stage 12 acceptance remain open.
-- [x] Draft user-facing setup and troubleshooting documentation at [`docs/USER-SETUP-TROUBLESHOOTING.md`](docs/USER-SETUP-TROUBLESHOOTING.md), covering lawful content, parent-folder expectations, storage/provider errors, permission/OS limits, supported ABI/API, known limitations and log capture. CI/accuracy review still pending.
-- [ ] Review license/attribution obligations for launcher code, SDL, native wrappers, external source checkouts and redistributed binaries; preserve required notices and resolve any incompatibility before release.
-- [ ] Run and inspect the secret-backed release-signing workflow; verify certificate identity, version/package metadata, checksum, installation/upgrade behavior and that debug/release artifacts are not confused. Signing secrets must never be committed or exposed.
-- [ ] Run the final acceptance matrix and publish release notes only for behaviors supported by source evidence and actual verification.
-- [ ] **Final acceptance:** no known critical/high-priority user-facing blockers; storage and permissions work through documented supported paths; visible features are real or explicitly unavailable; Arabic/English behavior is coherent; regression/CI checks pass; device evidence and legal/release checks are recorded. Only then may Stage 12 be closed.
+### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility
+
+- [ ] Review each screen/state on devices: first run, picker, empty library, scan progress/failure, game details, advanced settings, launch failure, About and dialogs.
+- [ ] Keep Arabic/default string and format-placeholder parity enforced by CI (currently 151 keys per locale); focus remaining locale work on RTL rendering, technical wording, dynamic messages and visual truncation rather than recreating already-added translations.
+- [ ] Validate TalkBack labels/status announcements, keyboard/controller focus, touch targets, font scaling, contrast, cancel/back behavior and portrait/landscape layouts.
+- [ ] Compare real rendering with the Liquid Glass goal (depth, highlights, translucent layers, controlled blur/refraction-like treatment and motion). Gradients alone are not proof of a full glass effect.
+- [ ] Provide older-API/low-end fallbacks and verify motion-off behavior, readability, smoothness and thermal cost.
+
+**Acceptance:** device screenshots/results cover real app screens, there are no critical accessibility regressions, and the visual system remains usable with fallbacks.
+
+### Stage 17 — Feature truth, settings behavior and optional online/update capabilities
+
+- [ ] Trace each visible control, preference, button, message and notification to its consumer and observable result. Fix it end to end or explicitly label/remove unavailable functionality.
+- [ ] Keep server discovery/list/filter/join unavailable unless a real native/server interface and compatible-server end-to-end behavior are implemented and tested. Connectivity is not server discovery.
+- [ ] Treat the version-marker check and disabled legacy updater as non-updating functionality. Either implement a signed, checksum-verified update path with safe installation handoff or keep the limitation explicit and remove misleading remnants.
+- [ ] Recheck all-or-nothing environment override validation, reserved-variable handling, user-facing errors and persistence. Invalid configuration must not be silently partially applied.
+- [ ] Review microphone use and android:allowAudioPlaybackCapture="true" as explicit privacy choices; make no audio-recording claim unless an external, user-approved recorder test confirms it.
+
+**Acceptance:** an audited UI-to-effect inventory; no dead or misleading controls; unavailable online/update features remain honestly disclosed; configuration failures are actionable.
+
+### Stage 18 — Compatibility, runtime stability, performance and regression evidence
+
+- [ ] Maintain a concrete API/ABI/GPU/device matrix beginning at manifest minimum API 17 and the verified ARMv7/armeabi-v7a package. Do not imply support for untested combinations.
+- [ ] Complete relevant sections of docs/DEVICE-SMOKE-TEST.md: install/upgrade, process restart, permissions, SAF, discovery, game startup, pause/resume, input, audio, rendering, exit and crash recovery.
+- [ ] Record repeatable startup times, frame pacing, memory, heat/throttling and power observations on representative devices; optimize only evidence-based bottlenecks.
+- [ ] Convert confirmed defects from stages 13–18 into regression tests where feasible. Keep JVM/static checks, APK identity/ABI/dependency verification, YAML/action validation, ShellCheck/actionlint and pinned dependencies in CI.
+- [ ] Aim for two representative devices where available. If device/game access is limited, record the limitation as Blocked rather than inventing a pass.
+
+**Acceptance:** device records and logs accompany runtime compatibility claims; CI covers automatable regressions; untested combinations remain explicitly unverified.
+
+### Stage 19 — Source provenance, privacy/legal review and controlled build distribution
+
+- [ ] Complete docs/THIRD-PARTY-LICENSE-AUDIT.md with accountable, evidence-based decisions for project code, external source revisions, Java/native glue and every redistributed prebuilt binary. Preserve required notices and confirm redistribution rights; do not conclude anything is unlawful without evidence.
+- [ ] Decide and document the intended app license and attribution/notice delivery. Ensure audio-capture, microphone and storage choices match privacy disclosures.
+- [ ] Keep scripts/verify-release-license-gate.py fail-closed. Do not upload debug/release APKs while the required clearance record is missing, incomplete or not actually reviewed.
+- [ ] After clearance is granted and evidenced, run the secret-backed signed-release workflow. Verify package/version, certificate, signature, checksum, debuggability, install/upgrade behavior and artifact labels. Never commit signing secrets or keys.
+- [ ] Make any APK intended for user testing available only through the approved gate; if the gate remains blocked, record user-device testing as blocked and continue only safe source/test work.
+
+**Acceptance:** accountable provenance/redistribution review and notices are recorded; the gate accepts only the reviewed commit; signed package identity/signature/upgrade are verified; no unreviewed artifact is published.
+
+## Final Acceptance — UNNUMBERED PROJECT END GATE
+
+This is the actual final gate and deliberately has no stage number. It begins only when the numbered milestones have reached acceptance and the user has had a meaningful opportunity to inspect a testable candidate.
+
+- [ ] Stages 13–19 are completed or explicitly deferred non-critical items have documented rationale and user agreement.
+- [ ] Critical/high findings are fixed, verified or explicitly accepted by the user with known limitations.
+- [ ] The user tested a candidate after several milestones; any failures re-entered Stage 12 and were corrected/retested.
+- [ ] Required CI passes on the exact commit; artifact checksum, package/ABI and validation report match.
+- [ ] Physical-device acceptance covers storage/provider access, discovery, lawful game launch, input, lifecycle, sound, accessibility and observed performance for the supported matrix.
+- [ ] Rights/provenance review, notices, privacy decisions, signed-package verification and install/upgrade tests are recorded.
+- [ ] Release notes describe only observed capabilities. No critical blocker, false compatibility claim, unapproved artifact or missing required notice remains.
+
+**Do not mark Final Acceptance complete until user-visible evidence and required reviews actually exist. A CI-only pass is not enough.**
 
 ## 5. Active product defect register
 
-The historical implementation-stage checklists above record work performed and CI evidence. The active, evidence-based defects and missing product capabilities below are tracked to the **final Stage 12** and must not be considered closed by older stage checks. Full rationale and source evidence: [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md).
+The implementation-stage checklists above record history and CI evidence. Active defects enter the permanent **Stage 12 feedback lane** and are assigned to numbered implementation milestones; older checks are not product-wide acceptance. Full rationale and source evidence: [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md).
 
-| ID | Priority | Area | Audit finding | Stage 12 workstream | Current state (branch implementation; acceptance pending) |
+| ID | Priority | Area | Audit finding | Target milestone | Current state (implementation and acceptance kept separate) |
 |---|---|---|---|---|---|
-| PQ-01 | Critical | Storage | User-observed SAF provider rejection; strict provider/path assumptions, read/write mismatch and generic diagnostics | 12.1 | Distinct selection error codes/messages and root-scope checks added; must test with the provider/device that failed |
-| PQ-02 | High | Permissions | No OS-aware all-files-access route; storage and microphone previously requested together | 12.1, 12.7 | Microphone removed from startup permission bundle; all-files-access strategy remains an explicit compatibility/policy decision |
-| PQ-03 | High | Scope | Game-folder selection could derive a parent path wider than the tree grant | 12.1 | Selecting a game folder itself is rejected; canonical granted-root containment is checked on return and launch |
-| PQ-04 | High | Discovery | Scan limits and inaccessible child listings could look like definitive empty results | 12.2 | Detailed scan result tracks inaccessible paths and limits; incomplete scans preserve prior snapshot and show an explanation |
-| PQ-05 | High | Readiness | “Ready to try” is a filesystem/ABI heuristic, not proof the game runs | 12.2, 12.7 | Remains a preflight heuristic; explicit runtime compatibility evidence still missing |
-| PQ-06 | High | Launch history | Last-launch timestamp was recorded before SDL/native launch success | 12.2 | UI says “Last attempt”; an actual native-ready success signal remains unimplemented/unverified |
-| PQ-07 | High | Localization | Initial audit found 34 default strings without Arabic translations | 12.6 | Branch now has 151 keys in each locale and CI enforces key/placeholder parity; integrated CI pending |
-| PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls | 12.3 | Settings disclose current mapping and limits; real-game controls/remapping validation remains open |
-| PQ-09 | High | Visual UX | Picker/dialogs were visually inconsistent with the stated Liquid Glass goal | 12.4 | Shared visual styling applied to the picker; screenshots, accessibility and device performance remain unverified |
-| PQ-10 | Medium | Feature truth | Update checker only logs a version marker; legacy update service is disabled | 12.5 | “Newer marker” text is now explicit that in-app update is unavailable; a verified updater is still absent |
-| PQ-11 | Medium | Online | In-app server browser/join flow is not implemented | 12.5 | Remains explicitly unavailable; do not count connectivity as server discovery |
-| PQ-12 | High | Input validation | Invalid environment entries could be skipped while other entries applied | 12.5 | Entire list is validated before setenv and invalid/reserved entries return actionable localized errors; CI pending |
-| PQ-13 | High | Test coverage | Static checks/JVM assertions do not exercise Android providers, gameplay, audio or performance | 12.8 | Added regression assertions; physical-device and gameplay coverage remains open |
-| PQ-14 | High | Privacy/legal/release | Audio capture/permission decisions, license review and signed release validation remain open | 12.7, 12.9 | Startup permission coupling improved; privacy/legal/signing acceptance remains open |
+| PQ-01 | Critical | Storage | User-observed SAF provider rejection; strict provider/path assumptions, read/write mismatch and generic diagnostics | 13 | Distinct selection error codes/messages and root-scope checks added; must test with the provider/device that failed |
+| PQ-02 | High | Permissions | No OS-aware all-files-access route; storage and microphone previously requested together | 13, 17, 19 | Microphone removed from startup permission bundle; all-files-access strategy remains an explicit compatibility/policy decision |
+| PQ-03 | High | Scope | Game-folder selection could derive a parent path wider than the tree grant | 13 | Selecting a game folder itself is rejected; canonical granted-root containment is checked on return and launch |
+| PQ-04 | High | Discovery | Scan limits and inaccessible child listings could look like definitive empty results | 14 | Detailed scan result tracks inaccessible paths and limits; incomplete scans preserve prior snapshot and show an explanation |
+| PQ-05 | High | Readiness | “Ready to try” is a filesystem/ABI heuristic, not proof the game runs | 14, 18 | Remains a preflight heuristic; explicit runtime compatibility evidence still missing |
+| PQ-06 | High | Launch history | Last-launch timestamp was recorded before SDL/native launch success | 14 | UI says “Last attempt”; an actual native-ready success signal remains unimplemented/unverified |
+| PQ-07 | High | Localization | Initial audit found 34 default strings without Arabic translations | 16 | Branch now has 151 keys in each locale and CI enforces key/placeholder parity; integrated CI pending |
+| PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls | 15 | Settings disclose current mapping and limits; real-game controls/remapping validation remains open |
+| PQ-09 | High | Visual UX | Picker/dialogs were visually inconsistent with the stated Liquid Glass goal | 16 | Shared visual styling applied to the picker; screenshots, accessibility and device performance remain unverified |
+| PQ-10 | Medium | Feature truth | Update checker only logs a version marker; legacy update service is disabled | 17 | “Newer marker” text is now explicit that in-app update is unavailable; a verified updater is still absent |
+| PQ-11 | Medium | Online | In-app server browser/join flow is not implemented | 17 | Remains explicitly unavailable; do not count connectivity as server discovery |
+| PQ-12 | High | Input validation | Invalid environment entries could be skipped while other entries applied | 17 | Entire list is validated before setenv and invalid/reserved entries return actionable localized errors; CI pending |
+| PQ-13 | High | Test coverage | Static checks/JVM assertions do not exercise Android providers, gameplay, audio or performance | 18 | Added regression assertions; physical-device and gameplay coverage remains open |
+| PQ-14 | High | Privacy/legal/release | Audio capture/permission decisions, license review and signed release validation remain open | 17, 19 | Startup permission coupling improved; privacy/legal/signing acceptance remains open |
 
-### Stage 12 execution ledger — product-quality audit (2026-10-21)
+### Historical audit and correction of the Stage 12 model (2026-10-21 to 2026-10-22)
 
 - Audit baseline: canonical branch `android-fixes`, commit `8b204a102437a20f621e42381c8f38b7b10119dc`.
 - This is a **review and roadmap/documentation re-scope**, not a product-fix commit. The app source has not been changed as part of the initial audit; the user's observed storage failure has not yet been reproduced on a second device.
 - The known storage failure, 34 missing Arabic resources, silent scan truncation/error paths, heuristic readiness state, premature “last launched” recording, fixed touch bindings, visual target gap and feature/release gaps are recorded in `docs/PRODUCT-QUALITY-AUDIT.md`.
-- No Stage 12 remediation has been claimed complete and no completion date is published. Newly discovered work remains numbered 12.x; this is the terminal roadmap stage.
+- The original audit preceded fixes in PRs #18 and #19. The former plan incorrectly assigned all remaining work to terminal Stage 12.x. This is superseded: Stage 12 is the permanent feedback lane, PQ findings are mapped to Stages 13–19, and Final Acceptance is unnumbered.
 
 
 ## 6. Completion ledger
 
-Update this ledger at the end of every stage with commit SHA, files changed, checks actually run, failures still open, and the next stage. Never mark a stage complete from code inspection alone when its acceptance criteria require a build or runtime test.
+Update this ledger at the end of every numbered implementation milestone with commit SHA, changed files, checks actually run, open failures and the next milestone. Stage 12 is a persistent intake lane rather than a stage to close. Final Acceptance is unnumbered and must never be marked complete without user/device evidence and required rights/release records.
 
 - **Stage 0:** **Complete** — final verification candidate `bf7f506f741cac82c8f1419b4170e4ede3883cbe` passed run `38938001867`: source/manifest/shell checks, all five native builds, Ant APK packaging, application-ID inspection, required ARMv7 native-library checks, and artifact upload. The completion-record commit is synchronized across maintained branch refs. No device installation/launch is claimed. Integration commit: `95da41713d9df94f42a11cdd7d0e927fc9ee2c40`.
 - **Stage 1:** **Complete** — canonical Stage 1 commit `96092dbfc7f030d643125505dbd51c36e2cb3145`; CI run [38973176340](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38973176340) passed on the canonical branch. Immutable dependency locks, hardened build scripts, APK verification, and success-gated artifact upload are in place.
