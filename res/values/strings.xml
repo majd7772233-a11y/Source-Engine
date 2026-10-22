@@ -145,6 +145,7 @@
     <string name="srceng_storage_volume_unavailable">The selected storage volume is not mounted or is not currently accessible. Reconnect the SD/USB storage and choose the folder again.</string>
     <string name="srceng_storage_not_directory">The selected path is not an available folder. Choose an existing folder and try again.</string>
     <string name="srceng_storage_path_scope">The selected path cannot be mapped safely inside its storage volume. Choose a normal folder directly from the mounted volume.</string>
+    <string name="srceng_storage_no_write_grant">Android did not grant write access to this folder. Reopen the folder picker and select a writable local folder; the engine must be able to write configuration and cache data.</string>
     <string name="srceng_storage_no_read_grant">Android did not grant read access to this folder. Reopen the picker and confirm the folder selection.</string>
     <string name="srceng_storage_grant_failed">Android could not retain access to this folder. Reopen the picker and choose a normal local-storage folder.</string>
     <string name="srceng_storage_not_readable">The folder exists, but Android does not let the native engine read it. Choose a readable folder under shared Internal storage or a mounted volume.</string>
