@@ -309,7 +309,7 @@ Use this section for new observations that do not yet fit another heading. Date 
 
 
 
-### 2026-10-21 — Product-level logical/UX audit and terminal roadmap reset
+### 2026-10-21 — Product-level logical/UX audit and then-terminal roadmap interpretation (historical; superseded)
 
 - Canonical audit baseline: `majd7772233-a11y/Source-Engine`, branch `android-fixes`, commit `8b204a102437a20f621e42381c8f38b7b10119dc`.
 - User reported a physical-device storage-picking failure: “This provider cannot be used by the native engine…”. Code path in `StorageAccess.Api21.resolveFilesystemPath` permits only `com.android.externalstorage.documents`, then requires the candidate be a directory, readable **and writable**. `DirchActivity` maps null resolution/grant persistence failures to the same generic message. The exact provider/condition on the user's device remains unknown until URI-authority/permission-state diagnostics or device logs are captured.
@@ -329,13 +329,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 
 - Branch `stage12-storage-fixes`, candidate commit `59f03a4c2013fe36f42ab9d417ebfb07e261d10d`, PR [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18). Candidate workflow [39679419842](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842) completed successfully: all Stage 0–12 verifiers, 80 JVM regression assertions, 151 Arabic/default resource keys with placeholder parity, workflow/YAML/ShellCheck/actionlint validation, locked native dependency fetch/build, Ant package, APK verification and artifact upload.
 - APK is `com.magd.source.engine`, ARMv7/`armeabi-v7a`, 35 native ELF libraries, 56,589,391 bytes, SHA-256 `aae99b750b88030a0ff0cc5d7bf293b260c369c942e0b61439fa77af2707e295`. Debug artifact `12383626531` expires 2026-11-04; ZIP digest `a1c770735469be9b585caaa22286ec3c9c7c75437129efb572869434850bdb5e`. This run did not perform release packaging/signing because it was an ordinary PR debug build.
-- **Do not close Stage 12.** PR #18 is merged as `f530574869f51091b5dccf0365d12f582c737ce2`, and canonical post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed. The user's real storage provider/device test, game launch/gameplay/input/audio/performance tests, accessibility review, license/attribution/privacy review, and secret-backed signed-release/upgrade acceptance remain outstanding. No ETA; no Stage 13.
+- Historical candidate-run status (superseded by the 2026-10-22 roadmap correction): PR #18 merged and post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed, but user-device/runtime, accessibility, rights/privacy and signed-release acceptance remained outstanding. The old interpretation that Stage 12 was final and there was no Stage 13 is no longer current; see the corrected current hand-off above.
 
 ### 2026-10-22 — Stage 12 merged and canonical CI verified
 
 - PR [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) merged into `android-fixes` as `f530574869f51091b5dccf0365d12f582c737ce2`. Canonical post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) succeeded: 80 JVM assertions, all Stage 0–12 verifiers, lint/workflow checks, locked native build, Ant packaging, APK identity/ABI/library verification and artifact upload.
 - Canonical debug APK: 56,589,387 bytes; SHA-256 `d8d2721257bd129a4cd43aed2f740c8e5dd76bad1b350b30b54b9f750de826ef`; artifact `12383377856`, ZIP digest `ba388bc3b1c9fe70ebe983c9259f4758f49bd761e87e636c6530a85375faab5d`, expires 2026-11-04. Release packaging/signing was skipped.
-- Stage 12 remains the sole open-ended final stage. Do not claim the user's storage-provider failure is fixed on-device until they test the APK and report the result. Gameplay/input/audio/accessibility/performance, legal/privacy review and secret-backed signed-release/upgrade acceptance are still open; there is no Stage 13 or ETA.
+- Historical status wording at the time of this CI run (superseded): Stage 12 was incorrectly described as the final gate. The device/runtime, accessibility, rights/privacy and signing acceptance items remain open, but they are now mapped to Stages 13–19 and the unnumbered Final Acceptance gate.
 
 
 ### 2026-10-22 — Stage 12.9 license inventory and fail-closed release guard
