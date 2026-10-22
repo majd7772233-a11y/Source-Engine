@@ -314,7 +314,6 @@ public final class StorageAccess {
     }
 
     /** API 21+ document-provider and mounted-volume path resolution. */
-    /** API 21+ document-provider and mounted-volume path resolution. */
     private static final class Api21 {
         static String volumeState(Uri uri) {
             if (uri == null || !"com.android.externalstorage.documents".equals(uri.getAuthority())) return "unknown";
