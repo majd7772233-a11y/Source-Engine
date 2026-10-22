@@ -15,14 +15,15 @@ This application is a launcher/native-runtime integration. It does **not** conta
         pak01_dir.vpk
   ```
 
-  Choose Games, not hl2 (the folder that itself contains gameinfo.txt). The launcher stores the granted tree scope and now rejects launch paths that escape that scope.
+  Choose Games, not hl2 (the folder that itself contains gameinfo.txt). The launcher stores the granted tree scope and rejects paths that escape it. Because the native engine uses ordinary filesystem paths and may write configuration/cache data, this build requires both read and write folder grants plus a currently readable and writable local directory.
 - The game needs valid, readable gameinfo.txt and content files. A detected file/ABI preflight is not a guarantee that every game or mod starts.
 
 ## Which storage location should I select?
 
 The native engine interface consumes **filesystem paths**. A generic Android content URI from a cloud/virtual document provider cannot be passed directly to this native engine. Choose the volume's ordinary local folder in the system folder picker (often labelled **Internal storage**, the SD-card volume name, or USB storage). “Recent”, a cloud drive, or a virtual document-provider folder may not map to a filesystem path.
 
-Selection errors now distinguish common cases:
+Selection errors now distinguish common cases. A read-only result or a persisted grant missing write access is rejected rather than trusted based on `File.canWrite()` alone. If the saved URI is revoked, its volume disappears, its canonical mapping changes, or the volume becomes read-only, stale URI/path state is cleared and the folder must be selected again:
+
 
 - **Unsupported provider/location:** select a normal local folder on Internal storage or a mounted SD/USB volume.
 - **Read grant missing / grant could not be saved:** reopen the picker and confirm the selection.
@@ -58,10 +59,10 @@ If the app still fails, record the exact error and the tested APK's SHA-256 from
 
 ```sh
 adb logcat -c
-adb logcat -v threadtime -s SRCAPK ExtractAssets SDL AndroidRuntime
+adb logcat -v threadtime -s SRCAPK SRCAPK_STORAGE ExtractAssets SDL AndroidRuntime
 ```
 
-Reproduce the failure while the second command is running, then save the output. Include the device model, Android version/API, whether the folder was Internal/SD/USB, the provider shown in Android's picker, and whether the selected folder itself contained gameinfo.txt. Avoid posting personal files or credentials.
+Reproduce the failure while the second command is running, then save the output. Include the device model, Android version/API, whether the folder was Internal/SD/USB, the provider shown in Android's picker, and whether the selected folder itself contained gameinfo.txt. The `SRCAPK_STORAGE` line records provider authority, returned/persisted read-write flags, volume state, read/write probes and error codes; it deliberately omits full URI/document ID/absolute path. Avoid posting personal files or credentials.
 
 ## Data safety
 
