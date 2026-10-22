@@ -190,7 +190,8 @@ public final class StorageAccess {
                 ? Api21.resolvePath(context, uri)
                 : new PathResult(Build.VERSION.SDK_INT < 21 ? ERROR_UNSUPPORTED_ANDROID : ERROR_INVALID_SELECTION, null);
         File directory = mapping.error == ERROR_NONE ? new File(mapping.path)
-                : (selection != null && selection.path.length() > 0 ? new File(selection.path) : null);
+                : (selection != null && selection.path != null && selection.path.length() > 0
+                        ? new File(selection.path) : null);
         boolean readable = false, writable = false;
         if (directory != null) {
             try {
