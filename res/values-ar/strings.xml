@@ -140,6 +140,7 @@
     <string name="srceng_storage_volume_unavailable">وحدة التخزين المحددة غير موصولة أو لا يمكن الوصول إليها حاليًا. أعد توصيل SD/USB ثم اختر المجلد مجددًا.</string>
     <string name="srceng_storage_not_directory">المسار المحدد ليس مجلدًا متاحًا. اختر مجلدًا موجودًا ثم حاول مجددًا.</string>
     <string name="srceng_storage_path_scope">تعذّر ربط المسار المحدد بأمان داخل وحدة التخزين. اختر مجلدًا عاديًا من الوحدة المتصلة.</string>
+    <string name="srceng_storage_no_write_grant">لم يمنح Android صلاحية الكتابة إلى هذا المجلد. افتح منتقي المجلدات مجددًا واختر مجلدًا محليًا قابلًا للكتابة؛ يحتاج المحرك إلى حفظ الإعدادات وبيانات التخزين المؤقت.</string>
     <string name="srceng_storage_no_read_grant">لم يمنح Android التطبيق صلاحية قراءة هذا المجلد. افتح المنتقي مجددًا وأكد اختيار المجلد.</string>
     <string name="srceng_storage_grant_failed">تعذّر على Android الاحتفاظ بصلاحية الوصول إلى هذا المجلد. افتح المنتقي مجددًا واختر مجلدًا محليًا عاديًا.</string>
     <string name="srceng_storage_not_readable">المجلد موجود، لكن Android لا يسمح للمحرك الأصلي بقراءته. اختر مجلدًا قابلًا للقراءة من التخزين الداخلي المشترك أو وحدة تخزين موصولة.</string>
