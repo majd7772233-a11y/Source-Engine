@@ -1,0 +1,2 @@
+package android.content;import android.net.Uri;
+public final class UriPermission {private final Uri uri;private final boolean read,write;public UriPermission(Uri u,boolean r,boolean w){uri=u;read=r;write=w;}public Uri getUri(){return uri;}public boolean isReadPermission(){return read;}public boolean isWritePermission(){return write;}}
