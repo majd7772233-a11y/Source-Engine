@@ -61,6 +61,15 @@ public final class StorageAccess {
 
     private StorageAccess() { }
 
+    private static boolean isSameUri(String storedUri, Uri selectedUri) {
+        if (storedUri == null || selectedUri == null) return false;
+        try {
+            return selectedUri.equals(Uri.parse(storedUri));
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     public static Intent createTreePickerIntent() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -90,7 +99,7 @@ public final class StorageAccess {
 
         String priorUri = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .getString(TREE_URI_KEY, null);
-        boolean reselectingCurrentTree = uri.toString().equals(priorUri);
+        boolean reselectingCurrentTree = isSameUri(priorUri, uri);
 
         int grants = resultFlags & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -130,6 +139,9 @@ public final class StorageAccess {
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         preferences.edit().putString(TREE_URI_KEY, uri.toString())
                 .putString(TREE_PATH_KEY, mapped.path).apply();
+        // Replace the grant only after this new selection has fully passed validation and
+        // its URI/path pair has been stored. Failed attempts must keep the old selection usable.
+        releaseSupersededGrant(context, priorUri, uri);
         return new SelectionResult(ERROR_NONE, mapped.path);
     }
 
@@ -142,6 +154,20 @@ public final class StorageAccess {
     public static String getValidatedSelectedPath(Context context) {
         SelectionResult result = validateSelectedTree(context);
         return result.isSuccess() ? result.path : null;
+    }
+
+    /**
+     * Releases a prior tree grant after a different selection is committed. Otherwise every
+     * folder change accumulates unused persisted URI grants for the lifetime of the install.
+     */
+    private static void releaseSupersededGrant(Context context, String storedUri, Uri selectedUri) {
+        if (context == null || storedUri == null || selectedUri == null) return;
+        try {
+            Uri previousUri = Uri.parse(storedUri);
+            if (selectedUri.equals(previousUri)) return;
+            int flags = Api19.persistedGrantFlags(context, previousUri);
+            if (flags != 0) Api19.releaseGrant(context, previousUri, flags);
+        } catch (RuntimeException ignored) { }
     }
 
     /**

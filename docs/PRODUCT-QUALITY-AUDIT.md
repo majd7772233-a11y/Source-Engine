@@ -22,17 +22,17 @@ No application behavior was changed as part of this initial audit. Findings were
 
 ## 1. Critical/high findings
 
-### PQ-01 — Storage picker rejects valid user expectations and reports several causes as one error
+### PQ-01 — Storage picker/provider acceptance still blocks the affected-device diagnosis
 **Severity: P0 for users hitting the rejection.**  
-**Evidence:** `src/me/nillerusr/StorageAccess.java` (especially `Api21.resolveFilesystemPath`, lines 114–148), `src/me/nillerusr/DirchActivity.java` (lines 74–102), and `res/values/strings.xml`.
+**Evidence:** `src/me/nillerusr/StorageAccess.java`, `src/me/nillerusr/DirchActivity.java`, `src/me/nillerusr/LauncherActivity.java`, and `res/values/strings.xml`.
 
-The folder selection bridge permits only URI trees whose authority is exactly `com.android.externalstorage.documents`. It then converts the tree ID to a filesystem path and requires a directory that is both readable and writable. Other document/cloud providers are rejected because the native runtime expects a real path, not a generic `content://` URI. The caller maps a null path and a failed persistable grant to the same message, so it does not tell the user which condition failed. The message itself asks the user to ensure readability, while the implementation also rejects `canWrite()==false`.
+The native interface requires a real local filesystem path, so the SAF bridge deliberately accepts only `com.android.externalstorage.documents` trees that map safely to a mounted local volume. Cloud/virtual document providers remain unsupported; they cannot be passed to the native filesystem layer as though a `content://` URI were a path. The current source now distinguishes provider, document-ID, returned-grant, persisted-grant, volume, read/write and scope failures, and emits a privacy-conscious `SRCAPK_STORAGE` diagnostic line without logging full URIs or absolute paths.
 
-The exact condition for the user's device cannot be identified from the displayed message alone: provider allow-list rejection, tree/document ID parsing, returned permission flags, persistable-grant failure, volume state, or filesystem checks can converge on that same error.
+These changes improve the evidence and recovery path but do **not** establish which branch the originally affected device takes: no post-change physical-device reproduction has been recorded, and the APK distribution gate remains closed pending accountable provenance/redistribution review. The current requirement for writable storage is intentional because the pinned SDK source includes game-state writes and replay-output directory creation; those features are build/game dependent, but write support cannot be dropped without an end-to-end alternative write-path design.
 
-**User impact:** a user can pick a folder in Android's chooser and still be unable to use it, without knowing which folder/provider choice is compatible or why the selection failed. Read-only media may be rejected even if reading the game data would be enough; whether writable access is actually required must be established from the engine's true write destinations, rather than presumed.
+**User impact:** a chooser can return a location that this path-based native engine cannot use, or the folder/volume can fail grant/access checks. The user needs the concrete error category and a compatible local folder/provider—not a claim that every Android document provider is supported.
 
-**Required result:** distinguish error causes, validate the actual access requirements, tell the user which provider/location to choose, preserve retry/cancel behavior, and test real providers and volumes. Do not represent this as “fixed” based on the SAF intent or static source checks alone.
+**Required result:** retain the fail-closed provider/path/grant checks, preserve privacy-safe diagnostics, and reproduce the exact failure using an approved test APK on the affected device/provider before marking this finding resolved.
 
 ### PQ-02 — Requested “highest possible permission” is not implemented as an explicit Android storage-access design
 **Severity: P1.**  
@@ -42,13 +42,15 @@ At the 2026-10-21 baseline, the manifest declared `WRITE_EXTERNAL_STORAGE` and `
 
 **Implemented in source:** the startup shared-storage request is separated from optional microphone use. **Still required:** document and test an OS-version-by-version permission plan and evaluate `MANAGE_EXTERNAL_STORAGE` only if broad file access is demonstrably necessary and permitted by policy. Any special access requires a clear user-approved Settings flow and verified return state. Android apps cannot grant themselves root access, cross into every other app's private directory, or bypass provider/OS restrictions.
 
-### PQ-03 — Game-folder selection can derive a launch root outside the selected tree grant
-**Severity: P1.**  
-**Evidence:** `src/me/nillerusr/DirchActivity.java`, around lines 84–101; `src/me/nillerusr/LauncherActivity.java`, around lines 645–660.
+### PQ-03 — Tree-grant scope and engine-root consistency need physical-provider verification
+**Severity: P1 (source-level guard present; device verification open).**  
+**Evidence:** `src/me/nillerusr/StorageAccess.java` (`containsGameInfo`, `validateSelectedTree`), `src/me/nillerusr/DirchActivity.java`, `src/me/nillerusr/LauncherActivity.java` and `LauncherLogic.isPathWithinRoot`.
 
-If the selected folder itself contains `gameinfo.txt`, the picker stores its parent as `gamePath` and the selected folder name as `gamedir`. However, the persisted SAF tree grant is still for the selected child. The launcher’s “related to saved tree” check accepts ancestor/descendant relationships and does not require the path given to the engine to remain inside the granted tree. This is a scope mismatch: on scoped-storage devices, a readable selected child does not automatically prove access to its parent.
+The current source rejects selecting a folder that directly contains `gameinfo.txt` as the granted root, because the engine's launch model needs the parent folder and game-directory name. Before launch it revalidates the saved URI/path pair and requires the engine root to be inside the canonical selected root using a segment-aware containment check. A prior audit description that said the picker silently widened the selected child to its parent is historical and is no longer an accurate description of the current source.
 
-**Required result:** choose one documented folder model (select a game root, or select a game directory and keep every path/grant requirement consistent), reject scope escalation and test both folder layouts.
+The source-level mitigation is covered by CI/JVM checks, but real Android providers may map or expose removable storage differently. The original device/provider case therefore remains open until the current intended folder layout is tested on the affected device with a permitted candidate APK.
+
+**Required result:** keep selected-root and engine-root relationships fail-closed and record physical results for the supported internal and removable-storage cases.
 
 ### PQ-04 — Scan limits and unreadable folders can appear to be a definitive empty library
 **Severity: P1.**  
@@ -237,3 +239,8 @@ The pinned SDK source also contains native filesystem write call sites for game 
 ### Stage 13 follow-up finding — partial persisted tree-selection state
 
 A source review after the initial Stage 13 CI pass found that `LauncherActivity.startSource()` entered SAF grant/scope validation only when the saved mapped-path key existed. A stale/corrupt record containing only the URI could therefore bypass that launch-time check. The follow-up makes the validation predicate treat either URI or mapped-path key as evidence of an existing selection and adds JVM/static regression coverage. The implementation is now source-checked, but device/provider acceptance remains pending.
+
+
+### 2026-10-23 — Stage 13 grant-lifecycle follow-up
+
+A further source review found that successful folder changes replaced the saved selection while leaving an obsolete persisted SAF grant active. The Stage 13 implementation now releases the prior grant only after the replacement selection has passed all checks and the URI/path state is stored; a failed replacement preserves the existing active grant. The JVM suite covers failed and successful replacement, and the Stage 13 verifier checks the ordering. This is a source/JVM fix only; provider behavior on the user's device remains unverified.

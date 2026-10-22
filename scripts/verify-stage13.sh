@@ -22,6 +22,7 @@ checks={
  "launch validation maps concrete failure reasons":"StorageAccess.validateSelectedTree(this)" in l and "storageValidationMessage(validation.error)" in l,
  "launch validation cannot be skipped by a partial URI/path preference pair":"StorageAccess.hasStoredTreeSelection(this)" in l and "public static boolean hasStoredTreeSelection(Context context)" in s and "TREE_URI_KEY" in s and "TREE_PATH_KEY" in s,
  "JVM suite compiles bridge and runs Stage 13 tests":"src/me/nillerusr/StorageAccess.java" in t and "Stage13StorageAccessTestSuite" in t and "selectionState()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
+ "successful replacement releases obsolete persisted grants only after storing the new selection":s.index("preferences.edit().putString(TREE_URI_KEY, uri.toString())") < s.index("releaseSupersededGrant(context, priorUri, uri)") and "private static void releaseSupersededGrant" in s and "replacementReleasesOldGrant()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
  "workflow invokes Stage 13 verifier":"bash scripts/verify-stage13.sh" in w,
  "new missing-write message is localized in English and Arabic":all("srceng_storage_no_write_grant" in v for v in strings.values())}
 bad=[k for k,v in checks.items() if not v]
