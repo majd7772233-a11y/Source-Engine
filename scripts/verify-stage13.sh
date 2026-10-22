@@ -15,6 +15,7 @@ checks={
  "read-only media is explicitly rejected":"MEDIA_MOUNTED_READ_ONLY.equals(state)" in s and "new PathResult(ERROR_NOT_WRITABLE, null)" in s,
  "revoked and stale selections are cleared":"ERROR_GRANT_REVOKED" in s and "validateSelectedTree(Context context)" in s and "clearSelection(context);" in s,
  "canonical path containment remains enforced":"getCanonicalPath()" in s and "ERROR_PATH_OUTSIDE_VOLUME" in s,
+ "document tree IDs cannot traverse between sibling folders":"hasTraversalSegment(relative)" in s and '".." .equals(segment)' not in s and '"..".equals(segment)' in s,
  "diagnostics include permission/volume/access/failure evidence":all(x in s for x in ("returnedRead=","returnedWrite=","persistedRead=","persistedWrite=","volumeState=","directoryReadable=","directoryWritable=","mappingReason=","selectionResult=")),
  "diagnostics do not print full URI":"uri.toString()" not in s[s.index("public static String diagnosticSummary"):s.index("private static boolean hasFlag")],
  "picker logs privacy-safe diagnostics":"SRCAPK_STORAGE" in p and "StorageAccess.diagnosticSummary" in p,

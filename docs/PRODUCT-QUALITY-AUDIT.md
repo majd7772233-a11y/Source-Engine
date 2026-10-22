@@ -227,4 +227,8 @@ Changes on the Stage 13 branch:
 - Add a `SRCAPK_STORAGE` line with provider authority, returned/persisted permission flags, volume state, read/write probes and categorized resolver/selection outcomes. The log omits full URIs, document IDs, absolute paths, filenames and file contents.
 - Add JVM regression tests for valid Unicode/space paths, missing grants, persistence failure, selecting the game folder itself, traversal, revoked grants, disconnected/read-only media, insufficient persisted write grants and stale path state.
 
+An additional audit found that canonical containment inside the volume root alone would still allow a malformed tree ID such as `Games/../Sibling` to resolve to a sibling folder. Stage 13 now rejects explicit `.` and `..` path segments before canonical mapping and has a regression assertion for this case.
+
+The pinned SDK source also contains native filesystem write call sites for game state and replay output, so the writable-root requirement is retained pending proof of a working, appropriately scoped alternate write directory. These files are evidence of SDK behavior, not proof that every target build enables those optional features.
+
 **Acceptance limitation:** these JVM tests use host-side Android API fakes. They cannot prove a particular OEM's document picker/provider behavior or reproduce the user's original error. The physical-device test remains open until run with the affected provider/device and a candidate APK that is permitted by the existing distribution gate.

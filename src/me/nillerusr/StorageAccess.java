@@ -335,6 +335,15 @@ public final class StorageAccess {
             } catch (RuntimeException e) { return "unavailable"; }
         }
 
+        private static boolean hasTraversalSegment(String relative) {
+            if (relative == null || relative.length() == 0) return false;
+            String[] segments = relative.split("/", -1);
+            for (String segment : segments) {
+                if (".".equals(segment) || "..".equals(segment)) return true;
+            }
+            return false;
+        }
+
         static PathResult resolvePath(Context context, Uri uri) {
             if (context == null || uri == null) return new PathResult(ERROR_INVALID_SELECTION, null);
             if (!"com.android.externalstorage.documents".equals(uri.getAuthority())) {
@@ -353,6 +362,12 @@ public final class StorageAccess {
 
             String volume = documentId.substring(0, separator);
             String relative = documentId.substring(separator + 1);
+            // A tree document ID describes the exact selected folder. Canonical volume
+            // containment alone is not enough: "Games/../Sibling" stays on-volume but
+            // would broaden the mapping outside the selected tree's scope.
+            if (hasTraversalSegment(relative)) {
+                return new PathResult(ERROR_PATH_OUTSIDE_VOLUME, null);
+            }
             File base;
             if ("primary".equalsIgnoreCase(volume)) {
                 base = Environment.getExternalStorageDirectory();

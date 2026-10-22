@@ -372,3 +372,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Require returned and persisted read/write grants, reject read-only mounted storage, and clear stale/corrupt folder selection state after provider/volume/path/access failures.
 - Added `SRCAPK_STORAGE` diagnostics that omit URI strings and absolute paths, plus host-JVM regression coverage wired into the build workflow.
 - Physical Android picker/provider, process restart, SD/USB and original-error reproduction remain pending. Do not report Stage 13 complete until the device outcomes are recorded.
+
+
+### 2026-10-23 — Stage 13 scope-boundary follow-up
+
+- Continued from the live canonical Stage 13 implementation at `48ac4875fef8bacd5cb3b3680c1ab4421e10b4c7`.
+- Found a defense-in-depth gap: canonicalizing `primary:Games/../Sibling` keeps the result inside the storage volume but can move it outside the exact selected tree. The next correction explicitly rejects dot and dot-dot document-ID path segments and adds a regression test.
+- Traced writable-storage assumptions against the pinned Source SDK revision. SDK source includes game-state file writes and replay-output directory creation (optional/build-dependent); do not remove the writable-root requirement without a deliberate, tested write-location redesign.
+- The Stage 13 CI run passed APK build verification, but distribution clearance blocked all artifact uploads. Physical-device/provider acceptance remains open.

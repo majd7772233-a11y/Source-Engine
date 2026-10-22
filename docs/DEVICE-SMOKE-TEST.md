@@ -36,6 +36,8 @@ This checklist is separate from CI. A successful JVM test or APK build is not ev
 - [ ] Open the system folder picker and cancel; confirm the selection is not silently changed.
 - [ ] Select a local Internal-storage folder; confirm Android returns both read and write grants and the launcher successfully persists both.
 - [ ] Select a local SD/USB volume where the device exposes a filesystem path; verify the library after process restart.
+- [ ] Try a tree selection that contains a game folder with spaces/non-ASCII names; verify it succeeds.
+- [ ] Where a malformed URI/path can be injected in a test build, verify `Games/../Sibling`, `../outside`, and explicit `./` segments are rejected rather than remapped to a sibling directory.
 - [ ] Try a read-only volume or a selection missing write access when the device permits it; the launcher must display the specific reason and must not save false-success state.
 - [ ] Revoke the grant, disconnect a removable volume, and reconnect it; verify stale URI/path state is cleared and the folder must be selected again.
 - [ ] Capture `SRCAPK_STORAGE` diagnostics and confirm they show provider/grant/volume/access/reason metadata but never a full URI or absolute path.
