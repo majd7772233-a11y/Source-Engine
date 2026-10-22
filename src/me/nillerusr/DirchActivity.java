@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -82,6 +83,8 @@ public class DirchActivity extends Activity implements View.OnClickListener {
         }
         Uri uri = data.getData();
         StorageAccess.SelectionResult selection = StorageAccess.selectTree(this, uri, data.getFlags());
+        Log.i("SRCAPK_STORAGE", "Folder selection: "
+                + StorageAccess.diagnosticSummary(this, uri, data.getFlags(), selection));
         if (!selection.isSuccess()) {
             new AlertDialog.Builder(this).setTitle(R.string.srceng_storage_error_title)
                     .setMessage(storageErrorMessage(selection.error))
@@ -116,6 +119,10 @@ public class DirchActivity extends Activity implements View.OnClickListener {
                 return R.string.srceng_storage_path_scope;
             case StorageAccess.ERROR_READ_PERMISSION_MISSING:
                 return R.string.srceng_storage_no_read_grant;
+            case StorageAccess.ERROR_WRITE_PERMISSION_MISSING:
+                return R.string.srceng_storage_no_write_grant;
+            case StorageAccess.ERROR_GRANT_REVOKED:
+                return R.string.srceng_storage_revoked;
             case StorageAccess.ERROR_GRANT_PERSIST_FAILED:
                 return R.string.srceng_storage_grant_failed;
             case StorageAccess.ERROR_NOT_READABLE:
