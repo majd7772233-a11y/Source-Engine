@@ -181,6 +181,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 - [x] Add JVM regression coverage for missing read/write grants, provider rejection, persisted-grant failure/revocation, unmounted/read-only storage, stale state, game-folder selection, traversal, Unicode/space paths and incomplete stored URI/path pairs; add Stage 13 static assertions to canonical CI.
 - [x] Close a launch-time fail-open gap: the launcher now validates saved storage state if either the persisted URI or mapped path exists, so a partial/corrupt pair cannot bypass SAF grant and tree-scope checks. Reselecting the currently saved URI also avoids needlessly re-taking or revoking an existing grant on a failed repeat selection.
 - [x] Keep launch-time error messages aligned with picker errors for unsupported providers, malformed document IDs, and unsupported Android versions rather than collapsing these stored-selection failures into an unrelated generic message.
+- [x] Keep API-19+ persisted-URI permission types and grant enumeration inside the API-19 compatibility helper; the outer class stays free of direct UriPermission references for the manifest minimum API 17. Added a Stage 13 static regression assertion.
 - [x] Prevent persisted URI-grant accumulation when switching folders: release superseded external-storage tree grants only after a new selection has been validated and stored, retain all grants on a failed replacement, and prune orphaned storage-tree grants after stale selection cleanup. File/document grants from other providers are untouched. Added JVM coverage and static assertions.
 - [x] Document the practical provider/API matrix: constrained local-path browser for API 17–20; SAF local external-storage mapping from API 21; no promise for generic cloud/virtual providers or arbitrary app-private paths. Android 11+ all-files access remains intentionally unrequested pending policy, privacy and target-SDK review.
 - [ ] Physical acceptance: reproduce or explicitly mark blocked the original error on the affected device/provider; test internal storage and removable SD/USB where available. Record logs and exact APK checksum if an approved candidate exists.
@@ -356,3 +357,10 @@ Update this ledger at the end of every numbered implementation milestone with co
 - Final source review found that the picker surfaced unsupported providers and malformed document IDs specifically, but the launch-time revalidation mapper sent those same categories to a generic invalid-selection message if the saved URI later became malformed or unsupported.
 - Added explicit launch-time mappings to the existing localized resource strings and extended the Stage 13 static verifier to prevent the mismatch returning.
 - Device/provider acceptance remains pending; this improves source-level diagnosability but does not reproduce the user's original provider failure.
+
+
+### 2026-10-23 — Stage 13 API 17–18 compatibility correction
+
+- A post-implementation compatibility review caught that the tree-grant-pruning helper directly referenced android.content.UriPermission in the outer StorageAccess class, despite the existing design isolating API-19 URI-permission calls in a nested helper for the declared API-17 minimum.
+- Moved the persisted-permission enumeration into Api19; the outer class now calls that method only behind the API-level guard. Added a static assertion that fails if UriPermission leaks back into the outer class.
+- Full-device API 17/18 class-loading and storage behavior still require an actual legacy device or emulator; the source guard is not treated as a runtime test.

@@ -244,3 +244,8 @@ A source review after the initial Stage 13 CI pass found that `LauncherActivity.
 ### 2026-10-23 — Stage 13 grant-lifecycle follow-up
 
 A further source review found that successful folder changes replaced the saved selection while leaving obsolete persisted SAF grants active; partial/corrupt preferences could strand grants with no matching saved URI. Stage 13 now prunes only obsolete tree grants from Android's external-storage document provider after a replacement selection is validated and stored, and during stale-selection cleanup. Failed replacements preserve the old selection and grants. It does not touch file/document grants from other providers. The JVM suite covers failed replacement preservation, old/orphan grant cleanup and active-grant retention. This is a source/JVM fix only; provider behavior on the user's device remains unverified.
+
+
+### 2026-10-23 — Stage 13 legacy API compatibility review
+
+The storage-tree grant cleanup helper was moved into the existing API-19 nested compatibility class after review found a direct android.content.UriPermission reference in the outer class, which declares API 17 as the minimum. The Stage 13 verifier now guards against such references outside Api19. This is a source-compatibility safeguard; actual API 17/18 class-loading and document-provider behavior remain to be tested on suitable runtime targets.

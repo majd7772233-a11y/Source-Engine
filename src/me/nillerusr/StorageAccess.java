@@ -141,7 +141,7 @@ public final class StorageAccess {
                 .putString(TREE_PATH_KEY, mapped.path).apply();
         // Replace the grant only after this new selection has fully passed validation and
         // its URI/path pair has been stored. Failed attempts must keep the old selection usable.
-        releaseSupersededTreeGrants(context, uri);
+        Api19.releaseSupersededTreeGrants(context, uri);
         return new SelectionResult(ERROR_NONE, mapped.path);
     }
 
@@ -156,33 +156,6 @@ public final class StorageAccess {
         return result.isSuccess() ? result.path : null;
     }
 
-    /**
-     * Retains the active tree grant and releases obsolete external-storage tree grants.
-     * This also cleans up grants orphaned by older/corrupt preferences, without touching
-     * other providers or file/document grants used by unrelated flows.
-     */
-    private static void releaseSupersededTreeGrants(Context context, Uri selectedUri) {
-        if (context == null || Build.VERSION.SDK_INT < 19) return;
-        try {
-            java.util.List<android.content.UriPermission> permissions =
-                    context.getContentResolver().getPersistedUriPermissions();
-            if (permissions == null) return;
-            for (android.content.UriPermission permission : permissions) {
-                if (permission == null) continue;
-                Uri grantedUri = permission.getUri();
-                if (grantedUri == null || (selectedUri != null && selectedUri.equals(grantedUri))) continue;
-                if (!"com.android.externalstorage.documents".equals(grantedUri.getAuthority())) continue;
-                final String path;
-                try { path = grantedUri.getPath(); }
-                catch (RuntimeException ignored) { continue; }
-                if (path == null || !path.startsWith("/tree/")) continue;
-                int flags = 0;
-                if (permission.isReadPermission()) flags |= Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                if (permission.isWritePermission()) flags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
-                if (flags != 0) Api19.releaseGrant(context, grantedUri, flags);
-            }
-        } catch (RuntimeException ignored) { }
-    }
 
     /**
      * True if either half of the persisted selection record exists. Callers must validate
@@ -307,7 +280,7 @@ public final class StorageAccess {
                 if (grants != 0) Api19.releaseGrant(context, uri, grants);
             } catch (RuntimeException ignored) { }
         }
-        if (Build.VERSION.SDK_INT >= 19) releaseSupersededTreeGrants(context, null);
+        if (Build.VERSION.SDK_INT >= 19) Api19.releaseSupersededTreeGrants(context, null);
         preferences.edit().remove(TREE_URI_KEY).remove(TREE_PATH_KEY).apply();
     }
 
@@ -374,6 +347,33 @@ public final class StorageAccess {
             if (context == null || uri == null || flags == 0) return;
             try { context.getContentResolver().releasePersistableUriPermission(uri, flags); }
             catch (RuntimeException ignored) { }
+        }
+        /**
+         * Prunes only obsolete tree grants owned by the external-storage document provider.
+         * Kept inside this API-19 helper so old API 17-18 class verification never resolves
+         * android.content.UriPermission from the outer StorageAccess class.
+         */
+        static void releaseSupersededTreeGrants(Context context, Uri selectedUri) {
+            if (context == null) return;
+            try {
+                java.util.List<android.content.UriPermission> permissions =
+                        context.getContentResolver().getPersistedUriPermissions();
+                if (permissions == null) return;
+                for (android.content.UriPermission permission : permissions) {
+                    if (permission == null) continue;
+                    Uri grantedUri = permission.getUri();
+                    if (grantedUri == null || (selectedUri != null && selectedUri.equals(grantedUri))) continue;
+                    if (!"com.android.externalstorage.documents".equals(grantedUri.getAuthority())) continue;
+                    final String path;
+                    try { path = grantedUri.getPath(); }
+                    catch (RuntimeException ignored) { continue; }
+                    if (path == null || !path.startsWith("/tree/")) continue;
+                    int flags = 0;
+                    if (permission.isReadPermission()) flags |= Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                    if (permission.isWritePermission()) flags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+                    if (flags != 0) releaseGrant(context, grantedUri, flags);
+                }
+            } catch (RuntimeException ignored) { }
         }
     }
 
