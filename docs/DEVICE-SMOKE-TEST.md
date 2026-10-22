@@ -34,8 +34,11 @@ This checklist is separate from CI. A successful JVM test or APK build is not ev
 ## Storage and game discovery
 
 - [ ] Open the system folder picker and cancel; confirm the selection is not silently changed.
-- [ ] Select a readable primary-storage folder that contains a test game/mod and scan it.
+- [ ] Select a local Internal-storage folder; confirm Android returns both read and write grants and the launcher successfully persists both.
 - [ ] Select a local SD/USB volume where the device exposes a filesystem path; verify the library after process restart.
+- [ ] Try a read-only volume or a selection missing write access when the device permits it; the launcher must display the specific reason and must not save false-success state.
+- [ ] Revoke the grant, disconnect a removable volume, and reconnect it; verify stale URI/path state is cleared and the folder must be selected again.
+- [ ] Capture `SRCAPK_STORAGE` diagnostics and confirm they show provider/grant/volume/access/reason metadata but never a full URI or absolute path.
 - [ ] Disconnect a removable volume and reconnect it; verify stale entries are not shown as launch-ready and an actionable message appears.
 - [ ] Rescan after adding/removing a game folder; verify the count and entries update and hidden/removed folders follow the documented behavior.
 - [ ] Test valid gameinfo.txt and required assets, malformed/missing metadata, missing VPK/BSP content, unsupported ABI/native-library state (where reproducible), and long paths/names.
