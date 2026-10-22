@@ -170,11 +170,11 @@ The numbered sequence below remains as historical implementation milestones; thi
 - The license/provenance workflow remains fail-closed. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed build verification but reported RELEASE BLOCKED, skipped artifact upload and skipped signed-release work. Do not bypass this protection to produce a downloadable APK.
 - The existing scripts/verify-stage12.sh checks the release-clearance gate and its fail-closed behavior. The script name is historical; it does not mean Stage 12 is the final stage.
 
-### Stage 13 — Storage-provider, folder-scope and permission reliability (NEXT)
+### Stage 13 — Storage-provider, folder-scope and permission reliability (IN PROGRESS)
 
 **Goal:** Make the reported storage/provider failure reproducible, diagnosable and recoverable without widening access beyond the user-granted folder.
 
-- [ ] Re-audit merged StorageAccess, DirchActivity and launcher launch-path code before changing anything; distinguish fixes already present from remaining gaps.
+- [x] Re-audit merged StorageAccess, DirchActivity and launcher launch-path code. The provider allowlist and canonical containment are preserved; explicit persisted write-grant verification and stale-state cleanup were missing.
 - [ ] Add privacy-conscious diagnostics for provider authority/type, returned permission flags, persisted-grant result, volume state, read/write checks and resolver failure reason. Do not log private file contents or unnecessarily expose full personal paths.
 - [ ] Establish actual read/write requirements from native engine write destinations. Remove blanket write requirements only if source tracing proves they are unnecessary; align errors with the real checks.
 - [ ] Verify that native paths never escape the canonical tree grant. Cover selected parent vs. game-folder cases, sibling path boundaries, spaces/non-ASCII names, revoked grants, cancellation, process restart, missing volumes and read-only storage.
