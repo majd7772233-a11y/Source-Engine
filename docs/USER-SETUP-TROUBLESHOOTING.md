@@ -66,3 +66,10 @@ Reproduce the failure while the second command is running, then save the output.
 ## Data safety
 
 Folder permission state is persisted by Android and can become invalid when a removable volume is disconnected or access is revoked. Re-select the folder when asked. Do not clear app data as a first troubleshooting step; doing so removes launcher preferences and saved library state. Keep backups of game data and saves before testing unfamiliar builds.
+
+
+## Gameplay audio and screen recording
+
+The manifest explicitly opts into Android playback-audio capture with `android:allowAudioPlaybackCapture="true"`. This is intended to let users choose an external Android screen-recording/streaming app that captures eligible game audio. **Source Engine does not start recording or streaming audio itself.** On Android 10+ the external recorder must use the playback-capture API, hold `RECORD_AUDIO`, and obtain the user's approval for a `MediaProjection` session; actual capture also depends on playback usage and capture policy. See [Android's official playback-capture guide](https://developer.android.com/media/platform/av-capture).
+
+There is no in-app switch for this manifest opt-in. It is a product/privacy choice that still needs testing with the system recorder and a trusted external recorder on supported devices. A successful build does not establish that capture works for a particular game or Android-vendor build.

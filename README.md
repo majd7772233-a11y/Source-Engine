@@ -4,7 +4,7 @@
 
 See the [product-quality audit](docs/PRODUCT-QUALITY-AUDIT.md), the [terminal Stage 12 roadmap](ROADMAP.md), and the new [setup and troubleshooting guide](docs/USER-SETUP-TROUBLESHOOTING.md).
 
-> **Product status (2026-10-22): NOT release-ready.** The product audit identified storage/path-scope problems, incomplete-scan ambiguity, missing Arabic translations, fixed touch bindings and several unimplemented capabilities. Initial code remediation is under [PR #18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) and candidate CI passed, but device/runtime, license/privacy and signed-release acceptance remain open. [Stage 12](ROADMAP.md) is the sole final, open-ended remediation/release gate: no ETA and no Stage 13.
+> **Product status (2026-10-22): NOT release-ready.** The original audit found storage/path-scope problems, incomplete-scan ambiguity, a 34-key Arabic translation gap and fixed touch bindings. Localization is now corrected in source/CI (151 keys in each locale with placeholder parity); storage, runtime, accessibility/performance and legal/release acceptance remain open. PR #19 withholds new downloadable APK artifacts until source provenance and redistribution rights are reviewed. [Stage 12](ROADMAP.md) remains the sole final, open-ended gate: no ETA and no Stage 13.
 
 
 An Android launcher and native-runtime integration for compatible Source-engine games. This repository is **not** a complete game-content distribution: users must supply game files they are legally entitled to use. Installing the APK does not install Half-Life 2, Portal, VPK files, or other proprietary game assets.

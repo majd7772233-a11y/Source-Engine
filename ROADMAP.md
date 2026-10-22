@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-21):** Stages 0–11 have implementation and CI/build evidence, but this is not proof of product-wide correctness. A source-level product audit found significant storage, discovery, localization, UX and acceptance gaps. **Stage 12 is the final, open-ended remediation and release gate; it has been re-scoped and no ETA is announced.** Physical-device/runtime acceptance remains pending where explicitly recorded. Do not start or close the release gate based only on a green build.
+> **Roadmap status (2026-10-22):** Stages 0–11 have implementation and CI/build evidence, but that is not proof of product-wide correctness. Stage 12 remains the sole final, open-ended remediation and release gate; no ETA or Stage 13 is planned. PRs [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) and [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) are merged. Canonical CI [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed source/build checks but withheld all new APK artifacts because license/source-provenance clearance is still blocked. Device/runtime acceptance and actual rights review remain incomplete. Do not close the gate based on a green build.
 
 ## 1. Product goal
 
@@ -136,7 +136,7 @@ This repository is **not itself the complete Source SDK/game-content distributio
 
 ### Stage 12 — Product correctness, user experience, runtime validation and release gate (FINAL / OPEN-ENDED)
 
-**Status: initial remediation tranche is merged as `f530574869f51091b5dccf0365d12f582c737ce2`; candidate CI and canonical post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed. Physical-device/product acceptance remains open, with no completion date or release ETA.** This is the final stage of the roadmap. There is deliberately no Stage 13: any newly discovered requirement or defect is added as Stage 12.x until the product-wide acceptance gate genuinely passes. Passing CI alone is not a Stage 12 completion condition.
+**Status: PR #18 (`f530574869f51091b5dccf0365d12f582c737ce2`) and PR #19 (`cbb4dfedc255c48100abc648e9a04805dc6a9213`) are merged. Canonical workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed Stage 0–12 source checks, 30 Stage 12 assertions, 80 JVM assertions and APK integrity verification. No debug or signed APK artifact was uploaded because source/license clearance remains blocked. Physical-device/product acceptance and actual rights review remain open; no completion date or release ETA is published.** This is the final roadmap stage. There is deliberately no Stage 13: newly discovered requirements or defects remain Stage 12.x until the product-wide acceptance gate passes. Passing CI alone does not close Stage 12.
 
 The authoritative initial findings are in [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md). The user-reported Android storage-provider failure is a known product failure. The tasks below are not marked complete merely because earlier implementation stages or their static checks passed.
 

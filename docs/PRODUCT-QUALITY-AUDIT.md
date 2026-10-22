@@ -36,11 +36,9 @@ The exact condition for the user's device cannot be identified from the displaye
 **Severity: P1.**  
 **Evidence:** `AndroidManifest.xml`; `LauncherActivity.applyPermissions` and `onRequestPermissionsResult` (around lines 65–124 and 617–618).
 
-The manifest declares `WRITE_EXTERNAL_STORAGE` and `RECORD_AUDIO`; from API 23 the app requests both together. There is no user-facing special “all files access” request/settings-return flow for Android 11+. `requestLegacyExternalStorage=true` is not a substitute for an OS-aware permission flow across current Android versions.
+At the 2026-10-21 baseline, the manifest declared `WRITE_EXTERNAL_STORAGE` and `RECORD_AUDIO`, and the launcher requested both together. PR #18 split the initial request so it asks for shared-storage permission only; optional microphone permission is handled later by SDL/native functionality. The manifest still has no user-facing Android 11+ special “all files access” request/settings-return flow. `requestLegacyExternalStorage=true` is not an OS-aware storage strategy for current Android versions.
 
-The app also treats denial of either item as one generic storage/game-permission failure. Declining microphone permission therefore follows the same failure branch as declining storage permission, even though microphone use is a separate capability and may be optional for a particular game.
-
-**Required result:** document a version-by-version permission plan, request only permissions needed for the action, separate optional audio permission from game storage, and evaluate `MANAGE_EXTERNAL_STORAGE` only if the engine genuinely requires broad file access and the use/policy permits it. Special access needs an explicit user-approved Settings flow. Android apps cannot grant themselves root access, cross into every other app's private directory, or bypass provider/OS restrictions.
+**Implemented in source:** the startup shared-storage request is separated from optional microphone use. **Still required:** document and test an OS-version-by-version permission plan and evaluate `MANAGE_EXTERNAL_STORAGE` only if broad file access is demonstrably necessary and permitted by policy. Any special access requires a clear user-approved Settings flow and verified return state. Android apps cannot grant themselves root access, cross into every other app's private directory, or bypass provider/OS restrictions.
 
 ### PQ-03 — Game-folder selection can derive a launch root outside the selected tree grant
 **Severity: P1.**  
@@ -202,3 +200,15 @@ PR [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) was merged i
 - Canonical debug APK: 56,589,387 bytes; SHA-256 `d8d2721257bd129a4cd43aed2f740c8e5dd76bad1b350b30b54b9f750de826ef`.
 - [Artifact 12383377856](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677/artifacts/12383377856); ZIP digest `ba388bc3b1c9fe70ebe983c9259f4758f49bd761e87e636c6530a85375faab5d`; expires 2026-11-04.
 - Release signing was not run. The actual user's SAF provider/volume behavior, compatible-game startup/gameplay, input/audio/accessibility/performance, legal/privacy review and signed release/upgrade remain unverified. A green CI build is not a device acceptance test.
+
+
+## 9. Canonical Stage 12 license-gate acceptance — 2026-10-22
+
+PR [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) merged as `cbb4dfedc255c48100abc648e9a04805dc6a9213`. Canonical workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) completed successfully on that exact commit:
+
+- Stage 1 static checks passed; Stage 12 reported 30 assertions including blocked/incomplete/complete synthetic review-record behavior.
+- JVM regressions passed 80 assertions; workflow/YAML/action validation passed.
+- Native build and APK verification passed for package `com.magd.source.engine`, ARMv7, 35 ELF libraries, 56,589,387 bytes, SHA-256 `8a16a300d4b4c5ee7a3333cb657dfcb996bbf4172c6adbfed2753fd91212b98b`.
+- The audit returned `RELEASE BLOCKED`; debug-artifact upload was skipped, signed-release steps were skipped, and the workflow reported no artifacts. This is the expected protective behavior, not a public release or device-acceptance result.
+
+Legal review has not been completed and no claim is made that the listed binaries are unlawful. Source provenance, license/notice obligations and redistribution rights need accountable review. Until then, Stage 12 remains open.

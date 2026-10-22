@@ -59,6 +59,7 @@ This checklist is separate from CI. A successful JVM test or APK build is not ev
 - [ ] Tap outside overlays and test hardware keyboard/mouse, controller connect/disconnect, and volume keys where hardware is available.
 - [ ] Background the game, lock/unlock the device, rotate if supported, return to the app, and exit normally; confirm no stuck input, frozen camera, stale progress, or broken repeated launch.
 - [ ] Verify speaker/headphone/Bluetooth audio where available and check pause/resume.
+- [ ] On Android 10+ where supported, test external gameplay screen recording after explicit system consent; record whether eligible game audio is captured and whether stopping/revoking capture ends the session. Record the recorder/API/device. Source Engine itself does not start recording.
 - [ ] Play for at least 10 minutes; note frame pacing, available memory, heat/throttling, battery drain and any crash.
 - [ ] Repeat at least three cold starts and five warm starts on each representative device; attach measured times instead of estimates.
 - [ ] Save logs and mark each item Pass/Fail/Blocked with reproducible steps. Do not mark an unrun test as passing.
