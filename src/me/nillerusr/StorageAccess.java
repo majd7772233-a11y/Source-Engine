@@ -236,7 +236,7 @@ public final class StorageAccess {
         }
     }
 
-    public static void clearSelection(Context context) {    public static void clearSelection(Context context) {
+    public static void clearSelection(Context context) {
         if (context == null) return;
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String value = preferences.getString(TREE_URI_KEY, null);
