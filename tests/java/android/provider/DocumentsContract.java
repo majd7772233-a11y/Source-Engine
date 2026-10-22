@@ -1,0 +1,2 @@
+package android.provider;import android.net.Uri;
+public final class DocumentsContract {private DocumentsContract(){}public static String getTreeDocumentId(Uri u){if(u==null)throw new IllegalArgumentException("null URI");String p=u.getPath();if(p==null)throw new IllegalArgumentException("no path");int i=p.indexOf("/tree/");if(i<0)throw new IllegalArgumentException("not tree URI");String id=p.substring(i+6);if(id.length()==0)throw new IllegalArgumentException("empty ID");return id;}}
