@@ -32,6 +32,8 @@ public final class StorageAccess {
     public static final int ERROR_NOT_WRITABLE = 10;
     public static final int ERROR_GAME_DIRECTORY_SELECTED = 11;
     public static final int ERROR_INVALID_SELECTION = 12;
+    public static final int ERROR_WRITE_PERMISSION_MISSING = 13;
+    public static final int ERROR_GRANT_REVOKED = 14;
 
     public static final class SelectionResult {
         public final int error;
@@ -91,6 +93,9 @@ public final class StorageAccess {
         if ((grants & Intent.FLAG_GRANT_READ_URI_PERMISSION) == 0) {
             return new SelectionResult(ERROR_READ_PERMISSION_MISSING, null);
         }
+        if ((grants & Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0) {
+            return new SelectionResult(ERROR_WRITE_PERMISSION_MISSING, null);
+        }
 
         PathResult mapped = Api21.resolvePath(context, uri);
         if (mapped.error != ERROR_NONE) return new SelectionResult(mapped.error, null);
@@ -101,7 +106,9 @@ public final class StorageAccess {
             return new SelectionResult(ERROR_GAME_DIRECTORY_SELECTED, mapped.path);
         }
 
-        if (!Api19.persistGrant(context, uri, grants)) {
+        if (!Api19.persistGrant(context, uri, grants)
+                || !Api19.hasPersistedReadWriteGrant(context, uri)) {
+            Api19.releaseGrant(context, uri, Api19.persistedGrantFlags(context, uri));
             return new SelectionResult(ERROR_GRANT_PERSIST_FAILED, null);
         }
 
@@ -123,32 +130,113 @@ public final class StorageAccess {
         return selectTree(context, uri, resultFlags).isSuccess();
     }
 
-    /** Revalidate saved grant, volume state, filesystem path and current access before launch. */
+    /** Backwards-compatible validated path API. */
     public static String getValidatedSelectedPath(Context context) {
-        if (context == null || Build.VERSION.SDK_INT < 21) return null;
+        SelectionResult result = validateSelectedTree(context);
+        return result.isSuccess() ? result.path : null;
+    }
+
+    /** Revalidate grants, volume state and canonical path before every native launch. */
+    public static SelectionResult validateSelectedTree(Context context) {
+        if (context == null) return new SelectionResult(ERROR_INVALID_SELECTION, null);
+        if (Build.VERSION.SDK_INT < 21) return new SelectionResult(ERROR_UNSUPPORTED_ANDROID, null);
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String uriValue = preferences.getString(TREE_URI_KEY, null);
         String pathValue = preferences.getString(TREE_PATH_KEY, null);
-        if (uriValue == null || pathValue == null) return null;
-
-        Uri uri;
-        try {
-            uri = Uri.parse(uriValue);
-        } catch (RuntimeException e) {
+        if (uriValue == null && pathValue == null) return new SelectionResult(ERROR_INVALID_SELECTION, null);
+        if (uriValue == null || pathValue == null) {
             clearSelection(context);
-            return null;
+            return new SelectionResult(ERROR_INVALID_SELECTION, null);
         }
-        if (!Api19.hasPersistedReadGrant(context, uri)) {
+        final Uri uri;
+        try { uri = Uri.parse(uriValue); }
+        catch (RuntimeException e) {
             clearSelection(context);
-            return null;
+            return new SelectionResult(ERROR_INVALID_SELECTION, null);
         }
-
+        int persisted = Api19.persistedGrantFlags(context, uri);
+        if ((persisted & Intent.FLAG_GRANT_READ_URI_PERMISSION) == 0) {
+            clearSelection(context);
+            return new SelectionResult(ERROR_GRANT_REVOKED, null);
+        }
+        if ((persisted & Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == 0) {
+            clearSelection(context);
+            return new SelectionResult(ERROR_WRITE_PERMISSION_MISSING, null);
+        }
         PathResult resolved = Api21.resolvePath(context, uri);
-        if (resolved.error != ERROR_NONE || !resolved.path.equals(pathValue)) return null;
-        return accessError(new File(resolved.path)) == ERROR_NONE ? resolved.path : null;
+        if (resolved.error != ERROR_NONE) {
+            clearSelection(context);
+            return new SelectionResult(resolved.error, null);
+        }
+        if (!resolved.path.equals(pathValue)) {
+            clearSelection(context);
+            return new SelectionResult(ERROR_INVALID_SELECTION, null);
+        }
+        int accessError = accessError(new File(resolved.path));
+        if (accessError != ERROR_NONE) {
+            clearSelection(context);
+            return new SelectionResult(accessError, null);
+        }
+        return new SelectionResult(ERROR_NONE, resolved.path);
     }
 
-    public static void clearSelection(Context context) {
+    /** Diagnostic string with provider/grant/access metadata only; no URI/path/file data. */
+    public static String diagnosticSummary(Context context, Uri uri, int returnedFlags,
+                                           SelectionResult selection) {
+        String scheme = safeDiagnosticToken(uri == null ? null : uri.getScheme(), "unknown");
+        String authority = safeDiagnosticToken(uri == null ? null : uri.getAuthority(), "unknown");
+        int persisted = Build.VERSION.SDK_INT >= 19 ? Api19.persistedGrantFlags(context, uri) : 0;
+        PathResult mapping = context != null && uri != null && Build.VERSION.SDK_INT >= 21
+                ? Api21.resolvePath(context, uri)
+                : new PathResult(Build.VERSION.SDK_INT < 21 ? ERROR_UNSUPPORTED_ANDROID : ERROR_INVALID_SELECTION, null);
+        File directory = mapping.error == ERROR_NONE ? new File(mapping.path)
+                : (selection != null && selection.path.length() > 0 ? new File(selection.path) : null);
+        boolean readable = false, writable = false;
+        if (directory != null) {
+            try {
+                readable = directory.isDirectory() && directory.canRead();
+                writable = directory.isDirectory() && directory.canWrite();
+            } catch (SecurityException ignored) { }
+        }
+        int resultError = selection == null ? ERROR_INVALID_SELECTION : selection.error;
+        return "api=" + Build.VERSION.SDK_INT + " scheme=" + scheme + " provider=" + authority
+                + " returnedRead=" + hasFlag(returnedFlags, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                + " returnedWrite=" + hasFlag(returnedFlags, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                + " returnedPersistable=" + hasFlag(returnedFlags, Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                + " persistedRead=" + hasFlag(persisted, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                + " persistedWrite=" + hasFlag(persisted, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                + " volumeState=" + Api21.volumeState(uri)
+                + " directoryReadable=" + readable + " directoryWritable=" + writable
+                + " mappingReason=" + errorName(mapping.error) + " selectionResult=" + errorName(resultError);
+    }
+    private static boolean hasFlag(int flags, int flag) { return (flags & flag) != 0; }
+    private static String safeDiagnosticToken(String value, String fallback) {
+        if (value == null || value.length() == 0) return fallback;
+        String safe = value.replaceAll("[^A-Za-z0-9._:-]", "_");
+        return safe.length() > 96 ? safe.substring(0, 96) : safe;
+    }
+    public static String errorName(int error) {
+        switch (error) {
+            case ERROR_NONE: return "NONE";
+            case ERROR_UNSUPPORTED_ANDROID: return "UNSUPPORTED_ANDROID";
+            case ERROR_UNSUPPORTED_PROVIDER: return "UNSUPPORTED_PROVIDER";
+            case ERROR_INVALID_DOCUMENT_ID: return "INVALID_DOCUMENT_ID";
+            case ERROR_VOLUME_UNAVAILABLE: return "VOLUME_UNAVAILABLE";
+            case ERROR_NOT_DIRECTORY: return "NOT_DIRECTORY";
+            case ERROR_PATH_OUTSIDE_VOLUME: return "PATH_OUTSIDE_VOLUME";
+            case ERROR_READ_PERMISSION_MISSING: return "READ_PERMISSION_MISSING";
+            case ERROR_GRANT_PERSIST_FAILED: return "GRANT_PERSIST_FAILED";
+            case ERROR_NOT_READABLE: return "NOT_READABLE";
+            case ERROR_NOT_WRITABLE: return "NOT_WRITABLE";
+            case ERROR_GAME_DIRECTORY_SELECTED: return "GAME_DIRECTORY_SELECTED";
+            case ERROR_INVALID_SELECTION: return "INVALID_SELECTION";
+            case ERROR_WRITE_PERMISSION_MISSING: return "WRITE_PERMISSION_MISSING";
+            case ERROR_GRANT_REVOKED: return "GRANT_REVOKED";
+            default: return "UNKNOWN";
+        }
+    }
+
+    public static void clearSelection(Context context) {    public static void clearSelection(Context context) {
         if (context == null) return;
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String value = preferences.getString(TREE_URI_KEY, null);
@@ -195,42 +283,60 @@ public final class StorageAccess {
         static boolean persistGrant(Context context, Uri uri, int flags) {
             try {
                 context.getContentResolver().takePersistableUriPermission(uri, flags);
-                return true;
-            } catch (RuntimeException e) {
-                return false;
-            }
+                return (persistedGrantFlags(context, uri) & flags) == flags;
+            } catch (RuntimeException e) { return false; }
         }
-
-        static boolean hasPersistedReadGrant(Context context, Uri uri) {
-            for (android.content.UriPermission permission
-                    : context.getContentResolver().getPersistedUriPermissions()) {
-                if (uri.equals(permission.getUri()) && permission.isReadPermission()) return true;
-            }
-            return false;
+        static boolean hasPersistedReadWriteGrant(Context context, Uri uri) {
+            int required = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+            return (persistedGrantFlags(context, uri) & required) == required;
         }
-
         static int persistedGrantFlags(Context context, Uri uri) {
-            for (android.content.UriPermission permission
-                    : context.getContentResolver().getPersistedUriPermissions()) {
-                if (uri.equals(permission.getUri())) {
-                    int flags = 0;
-                    if (permission.isReadPermission()) flags |= Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                    if (permission.isWritePermission()) flags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
-                    return flags;
+            if (context == null || uri == null) return 0;
+            try {
+                java.util.List<android.content.UriPermission> permissions = context.getContentResolver().getPersistedUriPermissions();
+                if (permissions == null) return 0;
+                for (android.content.UriPermission permission : permissions) {
+                    if (permission != null && uri.equals(permission.getUri())) {
+                        int flags = 0;
+                        if (permission.isReadPermission()) flags |= Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                        if (permission.isWritePermission()) flags |= Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+                        return flags;
+                    }
                 }
-            }
+            } catch (RuntimeException ignored) { }
             return 0;
         }
-
         static void releaseGrant(Context context, Uri uri, int flags) {
+            if (context == null || uri == null || flags == 0) return;
             try { context.getContentResolver().releasePersistableUriPermission(uri, flags); }
             catch (RuntimeException ignored) { }
         }
     }
 
     /** API 21+ document-provider and mounted-volume path resolution. */
+    /** API 21+ document-provider and mounted-volume path resolution. */
     private static final class Api21 {
+        static String volumeState(Uri uri) {
+            if (uri == null || !"com.android.externalstorage.documents".equals(uri.getAuthority())) return "unknown";
+            try {
+                String id = android.provider.DocumentsContract.getTreeDocumentId(uri);
+                if (id == null) return "unknown";
+                int separator = id.indexOf(':');
+                if (separator <= 0) return "unknown";
+                String volume = id.substring(0, separator);
+                File base;
+                if ("primary".equalsIgnoreCase(volume)) base = Environment.getExternalStorageDirectory();
+                else {
+                    if (volume.contains("/") || volume.contains("\\")
+                            || ".".equals(volume) || "..".equals(volume)) return "unknown";
+                    base = new File("/storage", volume);
+                }
+                return Environment.getExternalStorageState(base);
+            } catch (RuntimeException e) { return "unavailable"; }
+        }
+
         static PathResult resolvePath(Context context, Uri uri) {
+            if (context == null || uri == null) return new PathResult(ERROR_INVALID_SELECTION, null);
             if (!"com.android.externalstorage.documents".equals(uri.getAuthority())) {
                 return new PathResult(ERROR_UNSUPPORTED_PROVIDER, null);
             }
@@ -264,8 +370,10 @@ public final class StorageAccess {
             } catch (RuntimeException e) {
                 return new PathResult(ERROR_VOLUME_UNAVAILABLE, null);
             }
-            if (!Environment.MEDIA_MOUNTED.equals(state)
-                    && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+                return new PathResult(ERROR_NOT_WRITABLE, null);
+            }
+            if (!Environment.MEDIA_MOUNTED.equals(state)) {
                 return new PathResult(ERROR_VOLUME_UNAVAILABLE, null);
             }
 
