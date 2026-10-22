@@ -94,8 +94,18 @@ jobs:
           test -s build-reports/SHA256SUMS
           cat build-reports/build-metadata.txt
           cat build-reports/SHA256SUMS
-      - name: Upload verified debug APK and build report
+      - name: Check debug artifact distribution clearance
+        id: debug_artifact_clearance
         if: success()
+        run: |
+          if python3 scripts/verify-release-license-gate.py; then
+            printf 'eligible=true\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'eligible=false\n' >> "$GITHUB_OUTPUT"
+            echo 'Debug APK built for CI verification; public artifact withheld because redistribution clearance is blocked.'
+          fi
+      - name: Upload verified debug APK and build report
+        if: ${{ success() && steps.debug_artifact_clearance.outputs.eligible == 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: source-engine-android-debug

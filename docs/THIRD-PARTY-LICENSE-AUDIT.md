@@ -49,6 +49,6 @@ Before a signed/release APK may be produced:
 
 ## Release-gate behavior
 
-`scripts/verify-release-license-gate.py` is intentionally fail-closed. The normal source/CI checks may still run for engineering work, but a release-tag build or manual workflow dispatch with `sign_release=true` must stop before fetching/building release dependencies while the clearance header is blocked or its review record is incomplete. Passing the script's synthetic test fixture proves only the guard's behavior; it does **not** establish that licensing has been cleared.
+`scripts/verify-release-license-gate.py` is intentionally fail-closed. The normal source/CI checks may still build and verify a debug APK internally for engineering work, but the workflow withholds uploading any new downloadable debug artifact while the audit is blocked or the review record is incomplete. A release-tag build or manual workflow dispatch with `sign_release=true` stops before fetching/building release dependencies under the same conditions. Passing synthetic tests proves only the guard's behavior; it does **not** establish that licensing has been cleared.
 
-Existing debug artifacts or a green CI run are not license clearance and should not be described as approved public releases.
+Previously uploaded debug artifacts or a green CI run are not license clearance and should not be described as approved public releases.

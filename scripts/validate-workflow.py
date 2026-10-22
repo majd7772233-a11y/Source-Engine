@@ -54,8 +54,17 @@ for step in steps:
     if not re.search(r"@[0-9a-fA-F]{40}$", str(uses)):
         fail("third-party action is not pinned to a full commit SHA: " + str(uses))
 
+debug_upload = next((step for step in steps if isinstance(step, dict) and step.get("name") == "Upload verified debug APK and build report"), None)
+if not isinstance(debug_upload, dict):
+    fail("debug APK artifact upload step is missing")
+debug_upload_condition = str(debug_upload.get("if", ""))
+if "success()" not in debug_upload_condition or "steps.debug_artifact_clearance.outputs.eligible" not in debug_upload_condition or "true" not in debug_upload_condition:
+    fail("debug artifact upload must require successful build and license clearance")
+clearance_step = next((step for step in steps if isinstance(step, dict) and step.get("name") == "Check debug artifact distribution clearance"), None)
+if not isinstance(clearance_step, dict) or clearance_step.get("id") != "debug_artifact_clearance":
+    fail("debug artifact distribution clearance step is missing")
 if not any(isinstance(step, dict) and step.get("if") == "success()" for step in steps):
-    fail("debug artifact upload must be gated on successful build")
+    fail("expected-output processing must remain success-gated")
 if not any(isinstance(step, dict) and isinstance(step.get("with"), dict)
            and step["with"].get("if-no-files-found") == "error" for step in steps):
     fail("artifact upload must fail when expected outputs are absent")
