@@ -125,3 +125,7 @@ The Stage 10 candidate tightens internal activity/service exposure, permission-d
 - Post-merge workflow [39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677) passed all Stage 0–12 checks, 80 JVM assertions, YAML/workflow validation, ShellCheck/actionlint, pinned native dependency fetch, native compilation, Ant packaging and APK verification (35 ARMv7 ELF libraries).
 - Canonical debug APK: 56,589,387 bytes; SHA-256 `d8d2721257bd129a4cd43aed2f740c8e5dd76bad1b350b30b54b9f750de826ef`; [artifact 12383377856](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677/artifacts/12383377856), expires 2026-11-04; artifact ZIP digest `ba388bc3b1c9fe70ebe983c9259f4758f49bd761e87e636c6530a85375faab5d`.
 - This verifies source/build integrity only. The physical-device provider error, real game launch/gameplay/input/audio, accessibility/performance/thermal behavior, license/privacy review, and secret-backed signed release and upgrade remain open in Stage 13+ and the unnumbered Final Acceptance gate.
+
+### Stage 13 — Storage provider reliability (in progress)
+
+The launcher now verifies both returned and persisted folder read/write grants, rejects read-only media, clears stale selection state after provider/volume/path errors, and logs provider diagnostics without full URIs or absolute paths. These changes still need on-device testing with the affected provider; they do not bypass the source-provenance/redistribution gate or create a downloadable APK.

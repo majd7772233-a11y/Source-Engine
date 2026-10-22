@@ -214,3 +214,17 @@ PR [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) merged as `c
 - The audit returned `RELEASE BLOCKED`; debug-artifact upload was skipped, signed-release steps were skipped, and the workflow reported no artifacts. This is the expected protective behavior, not a public release or device-acceptance result.
 
 Legal review has not been completed and no claim is made that the listed binaries are unlawful. Source provenance, license/notice obligations and redistribution rights need accountable review. Until that gate clears, approved downloadable APK artifacts remain blocked; this release prerequisite is tracked under Stage 19 and Final Acceptance.
+
+
+## Stage 13 initial storage reliability changes — 2026-10-22
+
+The source audit confirmed that the native interface requires real filesystem paths, so the SAF bridge intentionally supports the Android external-storage document provider rather than pretending any cloud/virtual provider URI is a local path. Existing code checked `File.canRead()` and `File.canWrite()`, but explicitly required only the returned SAF read flag and only revalidated persisted read access. Launch validation also collapsed different provider/volume/access failures into a generic null path and did not consistently clear stale URI/path preferences.
+
+Changes on the Stage 13 branch:
+- Require returned and persisted SAF read **and** write grants; verify the persisted result before storing a folder.
+- Explicitly reject a mounted read-only volume with a writable-folder explanation.
+- Clear stale selection state after revoked grants, failed path mapping, changed canonical path, failed access checks, disconnected volumes and read-only storage.
+- Add a `SRCAPK_STORAGE` line with provider authority, returned/persisted permission flags, volume state, read/write probes and categorized resolver/selection outcomes. The log omits full URIs, document IDs, absolute paths, filenames and file contents.
+- Add JVM regression tests for valid Unicode/space paths, missing grants, persistence failure, selecting the game folder itself, traversal, revoked grants, disconnected/read-only media, insufficient persisted write grants and stale path state.
+
+**Acceptance limitation:** these JVM tests use host-side Android API fakes. They cannot prove a particular OEM's document picker/provider behavior or reproduce the user's original error. The physical-device test remains open until run with the affected provider/device and a candidate APK that is permitted by the existing distribution gate.

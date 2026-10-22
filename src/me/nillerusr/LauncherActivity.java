@@ -658,6 +658,21 @@ public class LauncherActivity extends Activity {
 		editor.commit();
 	}
 
+	private int storageValidationMessage(int error) {
+		switch (error) {
+			case StorageAccess.ERROR_WRITE_PERMISSION_MISSING: return R.string.srceng_storage_no_write_grant;
+			case StorageAccess.ERROR_READ_PERMISSION_MISSING: return R.string.srceng_storage_no_read_grant;
+			case StorageAccess.ERROR_GRANT_PERSIST_FAILED: return R.string.srceng_storage_grant_failed;
+			case StorageAccess.ERROR_GRANT_REVOKED: return R.string.srceng_storage_revoked;
+			case StorageAccess.ERROR_VOLUME_UNAVAILABLE: return R.string.srceng_storage_volume_unavailable;
+			case StorageAccess.ERROR_NOT_WRITABLE: return R.string.srceng_storage_not_writable;
+			case StorageAccess.ERROR_NOT_READABLE: return R.string.srceng_storage_not_readable;
+			case StorageAccess.ERROR_NOT_DIRECTORY: return R.string.srceng_storage_not_directory;
+			case StorageAccess.ERROR_PATH_OUTSIDE_VOLUME: return R.string.srceng_storage_path_scope;
+			default: return R.string.srceng_storage_invalid_selection;
+		}
+	}
+
 	public void startSource(View view)
 	{
 		if (launchInProgress) return;
@@ -671,9 +686,10 @@ public class LauncherActivity extends Activity {
 		if (Build.VERSION.SDK_INT >= 21) {
 			String expectedTree = mPref.getString(StorageAccess.TREE_PATH_KEY, null);
 			if (expectedTree != null) {
-				String grantedRoot = StorageAccess.getValidatedSelectedPath(this);
+				StorageAccess.SelectionResult validation = StorageAccess.validateSelectedTree(this);
+				String grantedRoot = validation.isSuccess() ? validation.path : null;
 				if (grantedRoot == null) {
-					showStartupError(getString(R.string.srceng_storage_revoked));
+					showStartupError(getString(storageValidationMessage(validation.error)));
 					return;
 				}
 				if (!LauncherLogic.isPathWithinRoot(grantedRoot, gamepath)) {

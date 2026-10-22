@@ -17,7 +17,7 @@ workflow = (root / ".github/workflows/build.yml").read_text(encoding="utf-8")
 checks = {
     "SAF tree picker": "ACTION_OPEN_DOCUMENT_TREE" in storage and "createTreePickerIntent" in picker,
     "persistable read grant": "FLAG_GRANT_PERSISTABLE_URI_PERMISSION" in storage and "takePersistableUriPermission" in storage,
-    "persisted grant revalidation": "getPersistedUriPermissions()" in storage and "hasPersistedReadGrant(context, uri)" in storage,
+    "persisted grant revalidation": "getPersistedUriPermissions()" in storage and "hasPersistedReadWriteGrant(context, uri)" in storage,
     "provider allowlist avoids fake URI paths": '"com.android.externalstorage.documents".equals(uri.getAuthority())' in storage,
     "safe document ID parsing": "indexOf(':')" in storage and 'volume.contains("/")' in storage,
     "canonical path containment": "getCanonicalPath()" in storage and "canonicalCandidate.startsWith(canonicalBase.endsWith(File.separator)" in storage,

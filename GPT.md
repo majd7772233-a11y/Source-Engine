@@ -364,3 +364,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Old dated engineering-log entries mentioning “no Stage 13” preserve the original historical plan only; they are superseded by this entry and the current hand-off above.
 - Never bypass the fail-closed source-provenance gate to generate a downloadable APK. Plan the user’s candidate test around an artifact that is available through an approved gate.
 
+
+
+### 2026-10-22 — Stage 13 started: storage provider and permission reliability
+
+- Re-audited `StorageAccess`, `DirchActivity` and launcher path revalidation. The external-storage provider allowlist and canonical containment remain deliberate constraints.
+- Require returned and persisted read/write grants, reject read-only mounted storage, and clear stale/corrupt folder selection state after provider/volume/path/access failures.
+- Added `SRCAPK_STORAGE` diagnostics that omit URI strings and absolute paths, plus host-JVM regression coverage wired into the build workflow.
+- Physical Android picker/provider, process restart, SD/USB and original-error reproduction remain pending. Do not report Stage 13 complete until the device outcomes are recorded.

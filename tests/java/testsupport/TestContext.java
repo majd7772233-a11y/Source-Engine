@@ -1,6 +1,7 @@
 package testsupport;
 
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import com.magd.source.engine.R;
@@ -8,6 +9,7 @@ import com.magd.source.engine.R;
 public final class TestContext extends Context {
     private final InMemorySharedPreferences preferences = new InMemorySharedPreferences();
     private final ApplicationInfo applicationInfo = new ApplicationInfo();
+    private ContentResolver contentResolver = new ContentResolver();
 
     public TestContext(String nativeLibraryDir) {
         applicationInfo.nativeLibraryDir = nativeLibraryDir;
@@ -15,6 +17,11 @@ public final class TestContext extends Context {
     @Override public SharedPreferences getSharedPreferences(String name, int mode) { return preferences; }
     @Override public ApplicationInfo getApplicationInfo() { return applicationInfo; }
     public InMemorySharedPreferences preferences() { return preferences; }
+    @Override public ContentResolver getContentResolver() { return contentResolver; }
+    public void setContentResolver(ContentResolver resolver) {
+        if (resolver == null) throw new IllegalArgumentException("resolver must not be null");
+        contentResolver = resolver;
+    }
 
     @Override public String getString(int id) {
         switch (id) {
