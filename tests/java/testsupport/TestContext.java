@@ -1,6 +1,7 @@
 package testsupport;
 
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import com.magd.source.engine.R;
