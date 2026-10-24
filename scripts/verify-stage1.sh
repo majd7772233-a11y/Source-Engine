@@ -16,7 +16,7 @@ fetch = (root / "scripts/fetch-build-deps.sh").read_text(encoding="utf-8")
 lock = (root / "scripts/dependencies.lock").read_text(encoding="utf-8")
 deploy = (root / "scripts/upload-to-github.sh").read_text(encoding="utf-8")
 discord = (root / "scripts/send-to-discord.py").read_text(encoding="utf-8")
-if "actions/upload-artifact" not in workflow or "steps.debug_artifact_clearance.outputs.eligible" not in workflow or "if-no-files-found: error" not in workflow: raise SystemExit("Artifact upload must be success-gated and license-clearance-gated.")
+if "actions/upload-artifact" not in workflow or "Upload debug test APK and build report" not in workflow or "source-engine-android-debug-test" not in workflow or "if: ${{ success() }}" not in workflow or "if-no-files-found: error" not in workflow: raise SystemExit("Debug test artifact upload must be success-gated and fail when expected files are missing.")
 for label, source in (("native workflow", native), ("Java build", build)):
     if 'rm -f "$ROOT_DIR/bin/srceng-debug.apk"' not in source: raise SystemExit(f"{label} must remove stale APKs.")
     if "verify-apk.sh" not in source: raise SystemExit(f"{label} must verify the APK.")
