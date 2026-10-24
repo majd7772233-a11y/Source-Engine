@@ -28,7 +28,7 @@
 
 ## Online, updates and privacy
 
-- **Connectivity:** online dialog reads Android's active-network state. It does not probe an actual game server or guarantee DNS, reachability, authentication, compatibility or multiplayer.
+- **Connectivity:** `LauncherActivity.showOnlineFeaturesStatus` reads Android's active-network state. It does not probe an actual game server or guarantee DNS, reachability, authentication, compatibility or multiplayer.
 - **Server browser/join:** unavailable. No verified native list/filter/query/join path is wired; the UI must not fabricate servers or imply a successful join.
 - **Application updates:** there is no in-app checker, APK download or automatic installer. The unused marker-checker and disabled service were removed. The release/provenance gate must not be bypassed.
 - **Microphone:** `RECORD_AUDIO` remains for optional SDL/native features; it is not bundled with startup storage permission. Native code may request it only when a relevant feature needs it; microphone denial is not a storage failure.
