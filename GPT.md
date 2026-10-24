@@ -78,7 +78,7 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 
 - Canonical repository/branch: majd7772233-a11y/Source-Engine, android-fixes.
 - **Correct roadmap model (2026-10-22):** Stage 12 is the permanent user-feedback/QA/bug-intake/correction lane; it is not the final stage. New implementation milestones are numbered Stage 13 onward. The real final gate is **Final Acceptance**, deliberately unnumbered.
-- **Current work point:** Stage 13 is next: storage-provider, folder-scope and permission reliability. Do not claim the user’s original provider error is fixed until that exact flow is reproduced or tested on the affected device/provider.
+- **Historical work point (superseded):** Stage 13 storage-provider work began first; the current implementation milestone is Stage 15. See ROADMAP.md for the active ledger.
 - Stage 13 begins by re-auditing code already merged in PR #18; do not rewrite correct implementation blindly. Keep automated-test evidence distinct from physical-device acceptance.
 - PR #19 added a fail-closed source-provenance/release gate. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed source/build checks but correctly reported RELEASE BLOCKED, skipped downloadable APK artifact upload and skipped signed-release steps. Never bypass the gate or claim an artifact exists when none was uploaded.
 - Planned milestones after Stage 13: Stage 14 discovery/readiness/launch truth; Stage 15 in-game input; Stage 16 launcher UX/accessibility/localization; Stage 17 feature truth/settings/online-update behavior; Stage 18 runtime compatibility/performance/regression evidence; Stage 19 source provenance/privacy/release distribution. See ROADMAP.md for criteria.
@@ -403,3 +403,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Added Stage 13 static CI assertions that require both regression scenarios to remain wired into the suite.
 - Added an explicit `content://` scheme check before filesystem mapping and in volume diagnostics, with a JVM regression for an HTTPS URI that has a spoofed external-storage authority. This prevents non-content URI shapes from being treated as local storage.
 - Canonical branch at start of this follow-up: `android-fixes` @ `5f29a19b7ecd106a0299f8afaebdecbde1b3a0ff`; latest recorded canonical CI at that point: [39866755223](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39866755223) passed, but the license-clearance gate withheld downloadable artifacts. Physical storage/provider acceptance is still required and is not claimed from JVM/static tests.
+
+
+## 7. Stage 15 resume point — 2026-10-24
+
+- Canonical branch remains android-fixes. Stage 12 remains the permanent feedback/defect-correction lane; Final Acceptance is unnumbered.
+- Current numbered implementation milestone: Stage 15, in-game input and gameplay controls. Stages 13 and 14 have source changes but their Android-provider/game-runtime acceptance is still incomplete.
+- Commit 5a2ac95 extracts TouchInputState, a pure-Java key ownership layer, and adds JVM regressions for concurrent owners, pointer reuse and cancellation. Touch input is released before the settings dialog and on focus loss, pause/stop, configuration/viewport changes, detach and cancel.
+- Commit 979f9fc adds the Stage 15 static verifier to canonical CI and expands the physical-device acceptance checklist.
+- Fixed mapping remains WASD/Space/E/R/mouse button 1. No analogue movement or universal remapping is claimed.
+- Stage 15 remains open until an approved APK is available through the independent rights gate and an actual compatible game is tested on physical device(s). Do not bypass the source-provenance/redistribution gate.

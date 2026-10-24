@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-22; numbering model corrected):** Stages 0–11 remain historical implementation milestones. Stage 12 is the permanent QA/feedback/defect-correction lane—not the final stage. The next numbered implementation stage is **Stage 13: Storage-provider and folder-access reliability**. Stages 13+ are real implementation milestones. The actual **Final Acceptance** gate is deliberately unnumbered and is reached only after implementation and user/device acceptance criteria are satisfied. PRs [#18](https://github.com/majd7772233-a11y/Source-Engine/pull/18) and [#19](https://github.com/majd7772233-a11y/Source-Engine/pull/19) are merged. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed source/build checks but withheld APK artifacts because source-provenance/redistribution clearance remains blocked. Device/runtime acceptance and accountable rights review remain incomplete; a green build does not close either.
+> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 (storage reliability) and Stage 14 (game discovery/launch-state correctness) have active implementation records, while physical-device/runtime acceptance remains open. The current implementation milestone is **Stage 15: In-game input and gameplay controls**; Stages 16–19 remain subsequent implementation milestones. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Canonical head entering Stage 15 was dc0589b3c9ab52582776c0e45da31e7c9c223c7c. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
 
 ## 1. Product goal
 
@@ -201,14 +201,16 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Acceptance:** source/JVM checks pass; incomplete scans are never shown as definitive emptiness; missing storage, cancellation and complete-zero-candidate outcomes remain distinguishable; “ready” and “last attempt” do not overstate runtime success. Device acceptance remains external.
 
-### Stage 15 — In-game input and gameplay controls
+### Stage 15 — In-game input and gameplay controls (IMPLEMENTATION IN PROGRESS; DEVICE ACCEPTANCE PENDING)
 
-- [ ] Validate the touch overlay in a compatible game: simultaneous movement/fire, jump/use/reload, multi-pointer cancellation/release, overlay/menu hit-testing, hide/show, reset, resize/reposition and profile persistence.
-- [ ] Test physical keyboard, mouse, supported controller connection/disconnection, orientation changes and activity pause/resume. Do not infer real gameplay input from source checks alone.
-- [ ] Keep fixed keyboard/mouse bindings accurately disclosed. Implement remapping/calibration only where the native integration supports it end to end; do not label a digital movement pad as analogue input.
-- [ ] Verify every visible control preference changes behavior and has an accessible recovery/reset path.
+- [x] Extract keyboard-key ownership/reference counting into a platform-independent state helper so overlapping touch/button/joystick sources emit one key-down and one final key-up; host-JVM regression tests cover shared-key presses, pointer reuse, and release/cancel cleanup.
+- [x] Harden interruption paths: opening the touch-settings menu, losing window focus, pause/stop, configuration/viewport resize, detached overlay and ACTION_CANCEL release held overlay keys/mouse buttons. A secondary pointer on empty space no longer rejects an active multitouch stream, and a second edit pointer cannot hijack the first pointer's drag.
+- [x] Keep per-game settings for preset, control positions, size, opacity, sensitivity and visibility; preserve fixed mapping disclosure in English/Arabic and the reset/recovery route. The movement pad remains keyboard-mapped WASD, not analogue.
+- [x] Add Stage 15 static verification and wire it into canonical CI alongside the new pure-Java regression suite.
+- [ ] Physical-device/game acceptance: simultaneous move/fire/action presses; pointer up/cancel; menu interruption; hide/show/edit/reset; resize/orientation; per-game profile persistence after process restart; physical keyboard/mouse; supported controller hot-plug and axis/button behavior. Record exact device, Android version, game/mod, APK SHA-256 and logs.
+- [ ] Verify supported hardware input in an actual compatible game. SDL keyboard/mouse/controller integration is preserved in source, but source/static/JVM checks do not prove device events reach every game/mod as expected.
 
-**Acceptance:** device-backed results for supported device/game combinations; unsupported bindings are disclosed rather than presented as universal.
+**Acceptance:** implementation checks and JVM regressions pass, plus documented gameplay outcomes for specific supported device/game combinations. Until physical-device evidence exists, Stage 15 remains open and product compatibility is not generalized.
 
 ### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility
 
@@ -271,6 +273,13 @@ This is the actual final gate and deliberately has no stage number. It begins on
 - Added explicit root status, cooperative cancellation, separate counts for invalidated roots, and regression coverage for complete-empty vs incomplete results. Stage 14 static checks and JVM suite are mandatory in canonical CI.
 - Device/native-runtime acceptance is still pending. This work does not bypass the independent source-provenance and redistribution artifact gate.
 
+### Stage 15 implementation log — 2026-10-24
+
+- Source changes landed in commit [5a2ac95](https://github.com/majd7772233-a11y/Source-Engine/commit/5a2ac95d47ae966b5d4b6d5645e7a0a1975d0574). The overlay’s key ownership was not isolated for JVM testing; TouchInputState now reference-counts simultaneous button/joystick owners and emits key-up only after the final owner releases. Tests cover two pointers sharing a key, overlapping joystick/button ownership, pointer-ID reuse and idempotent release-all cleanup.
+- Touch input is released before the modal settings dialog and on focus loss, pause/stop, configuration/viewport changes, detachment, and cancellation. Edit-mode drags are single-pointer-owned. The Stage 15 static verifier and expanded physical-device steps are wired into canonical CI/documentation.
+- The fixed mapping remains WASD, Space, E, R and mouse button 1. This is not an analogue stick and does not promise universal mod compatibility.
+- Physical-game tests remain unchecked: simultaneous controls, real controller/keyboard/mouse behavior, focus/lifecycle interruptions and profile persistence must be recorded against a specific device, game and APK hash. The license/provenance gate is not bypassed to obtain a downloadable APK.
+
 ## 5. Active product defect register
 
 The implementation-stage checklists above record history and CI evidence. Active defects enter the permanent **Stage 12 feedback lane** and are assigned to numbered implementation milestones; older checks are not product-wide acceptance. Full rationale and source evidence: [`docs/PRODUCT-QUALITY-AUDIT.md`](docs/PRODUCT-QUALITY-AUDIT.md).
@@ -284,7 +293,7 @@ The implementation-stage checklists above record history and CI evidence. Active
 | PQ-05 | High | Readiness | “Ready to try” is a filesystem/ABI heuristic, not proof the game runs | 14, 18 | Remains a preflight heuristic; explicit runtime compatibility evidence still missing |
 | PQ-06 | High | Launch history | Last-launch timestamp was recorded before SDL/native launch success | 14 | UI says “Last attempt”; an actual native-ready success signal remains unimplemented/unverified |
 | PQ-07 | High | Localization | Initial audit found 34 default strings without Arabic translations | 16 | Branch has 151 keys in each locale; key/placeholder parity passed in canonical workflow 39832326942; on-device RTL review remains open |
-| PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls | 15 | Settings disclose current mapping and limits; real-game controls/remapping validation remains open |
+| PQ-08 | High | Input | Touch overlay simulates a fixed keyboard/mouse mapping, not analogue or universal mod controls; touch state must be balanced across interruptions | 15 | Key ownership and menu/focus/resize recovery have JVM/static coverage; real-game input and device acceptance remain open |
 | PQ-09 | High | Visual UX | Picker/dialogs were visually inconsistent with the stated Liquid Glass goal | 16 | Shared visual styling applied to the picker; screenshots, accessibility and device performance remain unverified |
 | PQ-10 | Medium | Feature truth | Update checker only logs a version marker; legacy update service is disabled | 17 | “Newer marker” text is now explicit that in-app update is unavailable; a verified updater is still absent |
 | PQ-11 | Medium | Online | In-app server browser/join flow is not implemented | 17 | Remains explicitly unavailable; do not count connectivity as server discovery |
@@ -311,6 +320,8 @@ Update this ledger at the end of every numbered implementation milestone with co
 - **Stage 7 implementation and CI:** PR [#10](https://github.com/majd7772233-a11y/Source-Engine/pull/10) was squash-merged as `b46a6ae5fdff9b1c3328fe10b50dd1701f344c0a`. PR candidate workflow [39073005622](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39073005622) and post-merge canonical workflow [39073356292](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39073356292) both passed; canonical build uploaded APK artifact `12115514936`, SHA-256 `c78883743d21c5cf56372553096a59c3c148a5f9057dfd9a21eadfe6e3b8de69`. All 19 Stage 7 input assertions, native build, Java/Ant packaging, APK identity/ABI/dependency verification, and artifact upload passed. Real-game input, multitouch, profile, controller hot-plug, and lifecycle acceptance remain **pending physical-device verification**.
 - **Stage 3 implementation and CI:** merged by PR [#6](https://github.com/majd7772233-a11y/Source-Engine/pull/6), squash commit `2bcc9e76eb73f977add87c8a94866a22002b4814`. Workflow run [38981504284](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/38981504284) passed all Stage 0–3 static checks, dependency fetch, native compilation, Ant packaging, APK identity/ARMv7 ELF/dependency validation, and artifact upload. APK: 56,534,379 bytes; SHA-256 `43712524774bed50c24a115fb2105f6699d022b5ad70ce85d7bf601e04005c7f`. Artifact ID `12080753429` expires 2026-10-30. The scanner/library implementation is merged; physical-device discovery against multiple real game/mod layouts and actual launch compatibility remain unverified.
 
+
+- **Stage 15 implementation (in progress):** source changes in commit `5a2ac95d47ae966b5d4b6d5645e7a0a1975d0574` add testable key ownership and touch-interruption cleanup. Commit `979f9fc076520342926bd8a9ea77171933f7d3e1` adds the Stage 15 verifier and physical-device cases. CI and physical-game acceptance are not yet complete; do not close the stage.
 
 ### Stage 0 execution log — 2026-10-16
 - Canonical branch retained as `android-fixes`; a curated multi-parent integration commit records `con-wrappers` and `test` ancestry without blindly taking their conflicting trees.
