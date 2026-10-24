@@ -9,8 +9,9 @@ trap 'rm -rf "$TEST_BUILD_DIR"' EXIT
 mkdir -p "$TEST_BUILD_DIR/classes"
 SOURCES_FILE="$TEST_BUILD_DIR/sources.txt"
 find tests/java -type f -name '*.java' -print0 | sort -z | while IFS= read -r -d '' source; do printf '"%s"\n' "$source" >> "$SOURCES_FILE"; done
-printf '"%s"\n' "$ROOT_DIR/src/me/nillerusr/LauncherLogic.java" "$ROOT_DIR/src/me/nillerusr/LauncherPreferences.java" "$ROOT_DIR/src/me/nillerusr/GameDiscovery.java" "$ROOT_DIR/src/me/nillerusr/StorageAccess.java" >> "$SOURCES_FILE"
+printf '"%s"\n' "$ROOT_DIR/src/me/nillerusr/LauncherLogic.java" "$ROOT_DIR/src/me/nillerusr/LauncherPreferences.java" "$ROOT_DIR/src/me/nillerusr/GameDiscovery.java" "$ROOT_DIR/src/me/nillerusr/StorageAccess.java" "$ROOT_DIR/src/org/libsdl/app/TouchInputState.java" >> "$SOURCES_FILE"
 javac -encoding UTF-8 -Xlint:all -d "$TEST_BUILD_DIR/classes" @"$SOURCES_FILE"
 java -cp "$TEST_BUILD_DIR/classes" me.nillerusr.Stage11TestSuite
 java -cp "$TEST_BUILD_DIR/classes" me.nillerusr.Stage13StorageAccessTestSuite
 java -cp "$TEST_BUILD_DIR/classes" me.nillerusr.Stage14GameDiscoveryTestSuite
+java -cp "$TEST_BUILD_DIR/classes" org.libsdl.app.TouchInputStateTestSuite

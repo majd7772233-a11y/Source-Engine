@@ -44,10 +44,10 @@ final class TouchControlsOverlay extends View {
     private final String prefix;
     private final float[] cx = new float[5];
     private final float[] cy = new float[5];
-    private final Map<Integer, Integer> buttonCounts = new HashMap<Integer, Integer>();
-    private final Map<Integer, Boolean> joystickKeys = new HashMap<Integer, Boolean>();
-    private final Map<Integer, Boolean> nativeKeys = new HashMap<Integer, Boolean>();
-    private final Map<Integer, Integer> pointerKeys = new HashMap<Integer, Integer>();
+    private final TouchInputState inputState = new TouchInputState(new TouchInputState.Sink() {
+        @Override public void keyDown(int keyCode) { SDLActivity.onNativeKeyDown(keyCode); }
+        @Override public void keyUp(int keyCode) { SDLActivity.onNativeKeyUp(keyCode); }
+    });
     private final Map<Integer, Boolean> pointerMouse = new HashMap<Integer, Boolean>();
     private final Map<Integer, Integer> pointerControls = new HashMap<Integer, Integer>();
 
@@ -140,6 +140,7 @@ final class TouchControlsOverlay extends View {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        if (oldw > 0 && oldh > 0 && (w != oldw || h != oldh)) releaseAll();
         placeDefaults();
         for (int i = 0; i < 5; i++) {
             cx[i] = clamp(cx[i], 0.06f, 0.94f);
@@ -256,12 +257,14 @@ final class TouchControlsOverlay extends View {
         float px = event.getX(index), py = event.getY(index);
         if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN) {
             int control = hitControl(px, py);
-            if (control < 0) return false;
+            if (control < 0) return action == MotionEvent.ACTION_POINTER_DOWN && hasActiveControlGesture();
             if (control == CONTROL_MENU) {
                 showSettings();
                 return true;
             }
             if (editMode) {
+                // A secondary pointer must not hijack the active reposition drag.
+                if (dragControl >= 0) return true;
                 dragControl = control;
                 pointerControls.put(pointer, Integer.valueOf(control));
                 return true;
@@ -278,8 +281,7 @@ final class TouchControlsOverlay extends View {
                     pointerMouse.put(Integer.valueOf(pointer), Boolean.TRUE);
                 } else {
                     int key = keyForControl(control);
-                    pointerKeys.put(Integer.valueOf(pointer), Integer.valueOf(key));
-                    pressButtonKey(key);
+                    inputState.pressButton(pointer, key);
                 }
             }
             invalidate();
@@ -316,8 +318,7 @@ final class TouchControlsOverlay extends View {
                 pointerControls.clear();
                 return true;
             }
-            Integer key = pointerKeys.remove(Integer.valueOf(pointer));
-            if (key != null) releaseButtonKey(key.intValue());
+            inputState.releaseButton(pointer);
             if (pointerMouse.remove(Integer.valueOf(pointer)) != null && pointerMouse.isEmpty()) {
                 SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP, 0.0f, 0.0f, true);
             }
@@ -334,6 +335,10 @@ final class TouchControlsOverlay extends View {
             return true;
         }
         return true;
+    }
+
+    private boolean hasActiveControlGesture() {
+        return joystickPointer >= 0 || !pointerControls.isEmpty() || !pointerMouse.isEmpty();
     }
 
     private int keyForControl(int control) {
@@ -359,56 +364,27 @@ final class TouchControlsOverlay extends View {
     }
 
     private void setJoystickKey(int key, boolean pressed) {
-        joystickKeys.put(Integer.valueOf(key), Boolean.valueOf(pressed));
-        updateNativeKey(key);
-    }
-
-    private void pressButtonKey(int key) {
-        Integer old = buttonCounts.get(Integer.valueOf(key));
-        buttonCounts.put(Integer.valueOf(key), Integer.valueOf(old == null ? 1 : old.intValue() + 1));
-        updateNativeKey(key);
-    }
-
-    private void releaseButtonKey(int key) {
-        Integer old = buttonCounts.get(Integer.valueOf(key));
-        if (old == null || old.intValue() <= 1) buttonCounts.remove(Integer.valueOf(key));
-        else buttonCounts.put(Integer.valueOf(key), Integer.valueOf(old.intValue() - 1));
-        updateNativeKey(key);
-    }
-
-    private void updateNativeKey(int key) {
-        Integer k = Integer.valueOf(key);
-        Integer count = buttonCounts.get(k);
-        Boolean joy = joystickKeys.get(k);
-        boolean wanted = (count != null && count.intValue() > 0) || (joy != null && joy.booleanValue());
-        Boolean old = nativeKeys.get(k);
-        boolean wasDown = old != null && old.booleanValue();
-        if (wasDown != wanted) {
-            nativeKeys.put(k, Boolean.valueOf(wanted));
-            if (wanted) SDLActivity.onNativeKeyDown(key);
-            else SDLActivity.onNativeKeyUp(key);
-        }
+        inputState.setJoystickKey(key, pressed);
     }
 
     void releaseAll() {
-        if (!pointerMouse.isEmpty()) SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP, 0.0f, 0.0f, true);
-        for (Integer key : nativeKeys.keySet().toArray(new Integer[nativeKeys.size()])) {
-            Boolean down = nativeKeys.get(key);
-            if (down != null && down.booleanValue()) SDLActivity.onNativeKeyUp(key.intValue());
+        if (!pointerMouse.isEmpty() && !SDLActivity.mBrokenLibraries) {
+            SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP, 0.0f, 0.0f, true);
         }
-        nativeKeys.clear();
-        buttonCounts.clear();
-        joystickKeys.clear();
-        pointerKeys.clear();
+        inputState.releaseAll();
         pointerMouse.clear();
         pointerControls.clear();
         joystickPointer = -1;
         dragControl = -1;
-        setJoystickDirections(false, false, false, false);
+        joystickX = 0.0f;
+        joystickY = 0.0f;
+        joyUp = false; joyDown = false; joyLeft = false; joyRight = false;
         invalidate();
     }
 
     private void showSettings() {
+        // A modal dialog can interrupt the current gesture before normal pointer-up.
+        releaseAll();
         final String[] items = new String[] {
             getResources().getString(R.string.srceng_controls_layout),
             getResources().getString(R.string.srceng_controls_size),
@@ -491,6 +467,12 @@ final class TouchControlsOverlay extends View {
             }).setNegativeButton(R.string.srceng_controls_cancel, new DialogInterface.OnClickListener() {
                 @Override public void onClick(DialogInterface dialog, int which) { load(); invalidate(); }
             }).show();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        if (!SDLActivity.mBrokenLibraries) releaseAll();
+        super.onDetachedFromWindow();
     }
 
     private void resetControls() {

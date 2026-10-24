@@ -440,7 +440,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     @Override
     protected void onPause() {
         Log.v(TAG, "onPause()");
-        if (mTouchControls != null) mTouchControls.releaseAll();
+        if (!mBrokenLibraries && mTouchControls != null) mTouchControls.releaseAll();
         super.onPause();
 
         if (!mHasMultiWindow) {
@@ -462,6 +462,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected void onStop() {
         Log.v(TAG, "onStop()");
         super.onStop();
+        if (!mBrokenLibraries && mTouchControls != null) mTouchControls.releaseAll();
         if (mHasMultiWindow) {
             pauseNativeThread();
         }
@@ -507,6 +508,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         Log.v(TAG, "onWindowFocusChanged(): " + hasFocus);
+        if (!hasFocus && !mBrokenLibraries && mTouchControls != null) mTouchControls.releaseAll();
 
         if (SDLActivity.mBrokenLibraries) {
            return;
@@ -545,6 +547,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onConfigurationChanged(Configuration newConfig) {
         Log.v(TAG, "onConfigurationChanged()");
         super.onConfigurationChanged(newConfig);
+        if (!mBrokenLibraries && mTouchControls != null) {
+            // A configuration/viewport change can invalidate an in-flight pointer stream.
+            mTouchControls.releaseAll();
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            return;
@@ -565,7 +571,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     @Override
     protected void onDestroy() {
         Log.v(TAG, "onDestroy()");
-        if (mTouchControls != null) { mTouchControls.releaseAll(); mTouchControls = null; }
+        if (mTouchControls != null) {
+            if (!mBrokenLibraries) mTouchControls.releaseAll();
+            mTouchControls = null;
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            // Failed startup must not poison the next launch through static SDL state.
