@@ -40,7 +40,7 @@ checks = {
     "startup validation does not log full user-supplied path/error text": 'Log.e(TAG, "Startup validation failed; details are shown in the launcher.")' in valve and 'error.replace(\'\\n\', \' \')' not in valve,
     "runtime asset extraction has no shell chmod or command interpolation": "Runtime.getRuntime().exec" not in extract and "chmod(" not in extract,
     "launch arguments and selected paths have explicit size and NUL guards": "arguments.length() > 4096" in valve and "path.length() > 4096" in valve and "customVpk.length() > 8192" in valve,
-    "environment overrides have per-entry and count limits": "rawEnvironment.length() > 8192" in valve and "entries.length > 64" in valve and "item.length() > 2048" in valve,
+    "environment overrides retain bounded input, entry count, and entry length": "MAX_INPUT_LENGTH = 8192" in source("src/me/nillerusr/EnvironmentOverrides.java") and "MAX_ENTRIES = 64" in source("src/me/nillerusr/EnvironmentOverrides.java") and "MAX_ENTRY_LENGTH = 2048" in source("src/me/nillerusr/EnvironmentOverrides.java"),
     "optional data directory creation and write access are checked": "!directory.mkdirs()" in launcher and "!directory.canWrite()" in launcher and "gameRootForEngine.isEmpty()" in valve,
     "native startup stops when required environment values fail": "if (!setRequiredEnvironment(" in valve and "return \"The native runtime rejected a required startup setting." in valve,
     "native build metadata is passed as arguments and XML escaped": "escape(commit)" in workflow_script and "escape(branch)" in workflow_script and ' "$COMMIT" "$BUILD_BRANCH" ' in workflow_script,
