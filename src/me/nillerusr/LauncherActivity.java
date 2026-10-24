@@ -953,6 +953,20 @@ public class LauncherActivity extends Activity {
 		if (isFinishing()) return;
 		styleGlassDialog(new AlertDialog.Builder(this).setTitle(R.string.srceng_launcher_error).setMessage(message).setPositiveButton(R.string.srceng_launcher_ok, null).show());
 	}
+	@Override public void onBackPressed() {
+		if (advancedPanel != null && advancedPanel.getVisibility() == View.VISIBLE) {
+			advancedPanel.setVisibility(View.GONE);
+			if (advancedToggle != null) {
+				advancedToggle.setText(R.string.srceng_library_advanced);
+				advancedToggle.setContentDescription(getString(R.string.srceng_library_advanced));
+				advancedToggle.announceForAccessibility(getString(R.string.srceng_library_advanced));
+				advancedToggle.requestFocus();
+			}
+			return;
+		}
+		super.onBackPressed();
+	}
+
 	@Override protected void onResume() {
 		super.onResume();
 		launchInProgress = false;
