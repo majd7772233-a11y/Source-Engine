@@ -388,3 +388,10 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Stage 13 follow-up changes validation to run whenever either half of the stored tree-selection record exists; host-JVM coverage exercises empty, URI-only and path-only preference state, and the Stage 13 verifier checks that launch code uses the shared predicate.
 - Hardened repeat selection so an existing full persisted grant succeeds without relying on duplicate-take behavior, and a failed attempt to reselect the currently active URI does not unnecessarily release that grant.
 - Device acceptance is still open; the current fail-closed release gate has no uploaded APK artifact, so do not infer or claim physical-device success from the CI build.
+
+
+### 2026-10-24 — Stage 13 negative-path storage grant regression
+- Extended `Stage13StorageAccessTestSuite` to exercise several failed replacement choices after a valid folder is active: missing write permission, selecting the game folder itself, and a cloud/virtual provider. The original URI/path and read-write grant must remain intact; rejected replacement URIs must not become persisted grants.
+- Added clear-selection coverage proving cleanup removes the selected and orphaned external-storage document-tree grants but preserves an unrelated provider's persisted grant.
+- Added Stage 13 static CI assertions that require both regression scenarios to remain wired into the suite.
+- Canonical branch at start of this follow-up: `android-fixes` @ `5f29a19b7ecd106a0299f8afaebdecbde1b3a0ff`; latest recorded canonical CI at that point: [39866755223](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39866755223) passed, but the license-clearance gate withheld downloadable artifacts. Physical storage/provider acceptance is still required and is not claimed from JVM/static tests.
