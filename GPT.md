@@ -326,8 +326,8 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Resource audit: 132 default-locale strings vs 98 Arabic strings; 34 user-facing keys have no Arabic counterpart. The current Stage 11 resource check ensures Arabic keys are a subset of default keys, but does not enforce full Arabic coverage.
 - `TouchControlsOverlay` supports a documented fixed keyboard/mouse mapping (WASD, Space, E, R, mouse fire), not a true analogue gamepad axis or universal mod bindings. **Correction to the initial investigation:** hiding controls does not strand the user; the gear menu is still drawn and hit-tested when controls are hidden. Do not report that as a confirmed bug.
 - `LiquidGlassTheme` draws animated radial gradients/tinted panels and styled controls; source inspection does not show background blur/refraction, and `activity_directory_choice.xml` remains visually distinct legacy styling. Actual visual quality and low-end performance need device review.
-- `UpdateSystem` only retrieves a deployment version marker and logs a newer marker; `UpdateService` explicitly disables legacy notifications. The in-app server browser is documented unavailable. Neither should be presented as implemented update/server-discovery functionality.
-- `showCompatibilityDiagnostics` reports platform metadata/snapshots; it does not create a real GL context, benchmark a game, or verify audible runtime output. `ValveActivity2.applyUserEnvironment` can ignore malformed/invalid/reserved entries while continuing; user-facing validation/feedback remains a task.
+- Stage 17 removes the disconnected `UpdateSystem` marker checker, the disabled `UpdateService` stub, unused update string, and dead checkbox fields. There is no in-app update checker/installer; server browser/join remains explicitly unavailable.
+- `showCompatibilityDiagnostics` reports platform metadata/snapshots; it does not create a real GL context, benchmark a game, or verify audible runtime output. Stage 17 replaces inline environment parsing with the pure-Java `EnvironmentOverrides` helper, which validates the full list before mutation and has its own JVM regression suite.
 - Do not treat the successful 73-assertion JVM suite, static checks, or 35-library APK verification as evidence of SAF-provider behavior, working gameplay, input, audio, thermal stability or crash-free sessions.
 - Historical note: the then-current plan mistakenly treated Stage 12 as the final gate. Superseded by the 2026-10-22 correction: Stage 12 is an ongoing feedback lane and implementation milestones 13+ are planned. Implementation has now started on `stage12-storage-fixes`: detailed SAF errors and canonical grant containment, incomplete-scan state, Arabic parity + placeholder validation, optional-microphone permission separation, preflight validation of environment overrides, truthful launch-attempt wording, touch-map disclosure, and directory-picker visual integration are present. `docs/USER-SETUP-TROUBLESHOOTING.md` was added. Full CI and device verification are still pending; do not mark the final stage complete based on source edits or a green build alone. Findings live in docs/PRODUCT-QUALITY-AUDIT.md. Historical instruction superseded by the later roadmap correction: small fixes may use 12.x within the ongoing feedback lane; broader work is assigned to Stage 13+.
 
@@ -412,22 +412,22 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Canonical branch at start of this follow-up: `android-fixes` @ `5f29a19b7ecd106a0299f8afaebdecbde1b3a0ff`; latest recorded canonical CI at that point: [39866755223](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39866755223) passed, but the license-clearance gate withheld downloadable artifacts. Physical storage/provider acceptance is still required and is not claimed from JVM/static tests.
 
 
-## 7. Stage 15 resume point — 2026-10-24
+## 7. Stage 17 resume point — 2026-10-24
 
-- Canonical branch remains android-fixes. Stage 12 remains the permanent feedback/defect-correction lane; Final Acceptance is unnumbered.
-- Current numbered implementation milestone: Stage 15, in-game input and gameplay controls. Stages 13 and 14 have source changes but their Android-provider/game-runtime acceptance is still incomplete.
-- Commit 5a2ac95 extracts TouchInputState, a pure-Java key ownership layer, and adds JVM regressions for concurrent owners, pointer reuse and cancellation. Touch input is released before the settings dialog and on focus loss, pause/stop, configuration/viewport changes, detach and cancel.
-- Commit 979f9fc adds the Stage 15 static verifier to canonical CI and expands the physical-device acceptance checklist.
-- Fixed mapping remains WASD/Space/E/R/mouse button 1. No analogue movement or universal remapping is claimed.
-- Stage 15 remains open until an approved APK is available through the independent rights gate and an actual compatible game is tested on physical device(s). Do not bypass the source-provenance/redistribution gate.
+- Canonical repository/branch: `majd7772233-a11y/Source-Engine`, `android-fixes`.
+- Verified branch head at the start of Stage 17: `d372d7b6a0e575f8557c743d3aaec0a950e673fd`. Canonical workflow [40125765154](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125765154) succeeded through Stage 16 source verification, host-JVM tests, lint/workflow validation, native build and APK verification; the fail-closed provenance/redistribution gate withheld the APK artifact.
+- Stage 13 storage source/JVM implementation, Stage 14 scan source/JVM implementation, Stage 15 input-state source/JVM implementation and Stage 16 launcher/localization/accessibility source work have coverage. Physical provider, gameplay, TalkBack, rendering, audio and performance acceptance remains deferred to the consolidated Stage 18 window. Do not infer device acceptance from static/JVM/CI success.
+- **Current implementation stage: Stage 17 — feature truth, settings behavior and optional online/update capabilities.**
+- Stage 17 changes separate environment parsing into pure Java with negative-path tests, remove unused version-marker/update-service remnants rather than implying a functioning updater, create a source-to-effect control inventory and add the Stage 17 static verifier to canonical CI.
+- Inspect CI for the implementation commit; fix failures before recording Stage 17 source verification as passed. Stage 19 rights/provenance review remains fail-closed. Do not bypass it to create a downloadable APK.
+- Stage 12 stays the permanent feedback/defect-correction lane. **Final Acceptance is unnumbered**, after numbered implementation, user/device acceptance and required review.
 
-
-### 2026-10-24 — Stage 16 source implementation in place; CI verification pending, device checks consolidated in Stage 18
+### Historical Stage 16 source implementation and canonical CI verification
 
 - Stage 16 adds localized game-card TalkBack summaries, API-guarded semantic headings, scan status announcements, advanced-panel focus transfer/return and open/close announcements, and 48dp minimum dimensions for dynamically styled action buttons.
 - LiquidGlassTheme composes translucent base and sheen layers with rounded specular edges and keeps the existing ambient color lighting, focused/pressed/disabled states, and persisted motion-off setting. It intentionally avoids requiring RenderEffect/blur, preserving the legacy API fallback; actual rendering quality and performance remain device-acceptance items.
 - About content is more readable and game-card accessibility labels include status, explanation and folder. String-key and placeholder parity remain CI enforced in English/Arabic.
-- Stage 16 is implementation-complete only after its Stage 16 verifier and canonical CI pass. Physical TalkBack, RTL/font-scale, visual, motion and thermal checks remain in Stage 18; no device acceptance is implied.
+- Canonical workflow [40125765154](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125765154) subsequently passed the Stage 16 verifier and full source/JVM/native/APK verification. Physical TalkBack, RTL/font-scale, visual, motion and thermal checks remain in Stage 18; no device acceptance is implied.
 
 
 - Stage 16 follow-up: advanced-settings Back now collapses the panel and restores focus before normal activity Back behavior. The glass overlay now draws a soft linear highlight, radial color bleed and a rounded specular edge within the surface; these are API-17-compatible and do not require RenderEffect. The verifier explicitly guards both behaviors.

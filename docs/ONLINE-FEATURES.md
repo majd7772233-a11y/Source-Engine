@@ -23,3 +23,8 @@ This project is a launcher/runtime integration, not a game-server hosting servic
 ## Automated coverage and limits
 
 scripts/verify-stage9.sh checks the manifest permissions, advanced-settings entry point, Android connectivity-state reporting, English/Arabic disclosure strings, absence of fabricated server endpoints, and CI wiring. These are static checks; they do not demonstrate a successful server query or multiplayer session.
+
+
+## App update status
+
+There is no in-app update checker, APK download, or automatic installer in this launcher. The previously present deployment-marker checker had no user-facing result path and did not update the application; that dead code and its disabled service have been removed rather than implying a newer build will be detected. A future update flow requires an approved signed release, checksum/signature verification, and a safe Android installation handoff. Until that exists, install only a separately approved build distributed through the project's cleared release process.

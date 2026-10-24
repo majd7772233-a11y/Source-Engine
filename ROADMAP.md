@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 storage reliability and Stage 14 discovery/launch-state work have source-level changes, but their physical-device/runtime acceptance remains open. Stage 15 input-control source implementation is complete and has passed the latest canonical CI; device/game acceptance is deliberately deferred until all numbered implementation stages are finished. Stage 16 source implementation is in place; its canonical CI run still needs to execute and be inspected. Physical rendering, TalkBack and performance acceptance is deferred to Stage 18. Physical-device testing for Stages 13–16 is deferred to the consolidated pre-final test window after Stage 19. Stages 17–19 follow Stage 16. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Stage 16 work starts from canonical head 576a193834266967b52a75e6d2c7de354a377f05. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
+> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stages 13–16 have source implementations and regression/static coverage; physical Android/provider/game/accessibility/performance acceptance is deferred to the consolidated Stage 18 window because no approved APK can be distributed yet. Canonical workflow [40125765154](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125765154) passed on head `d372d7b6a0e575f8557c743d3aaec0a950e673fd`, including source verifiers through Stage 16, JVM/lint/workflow validation, native build and APK verification. The provenance/redistribution gate remained blocked, so no artifact was uploaded and signing/release steps were skipped. **Current implementation stage: Stage 17 — feature truth, settings behavior and optional online/update capabilities.** Stage 19 remains the accountable source/legal review and controlled-distribution gate; **Final Acceptance** is unnumbered. Do not infer device acceptance or release readiness from static/JVM/build success.
 
 ## 1. Product goal
 
@@ -170,7 +170,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 - The license/provenance workflow remains fail-closed. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed build verification but reported RELEASE BLOCKED, skipped artifact upload and skipped signed-release work. Do not bypass this protection to produce a downloadable APK.
 - The existing scripts/verify-stage12.sh checks the release-clearance gate and its fail-closed behavior. The script name is historical; it does not mean Stage 12 is the final stage.
 
-### Stage 13 — Storage-provider, folder-scope and permission reliability (IN PROGRESS)
+### Stage 13 — Storage-provider, folder-scope and permission reliability (SOURCE IMPLEMENTATION COMPLETE; DEVICE ACCEPTANCE DEFERRED TO STAGE 18)
 
 **Goal:** Make the reported storage/provider failure reproducible, diagnosable and recoverable without widening access beyond the user-granted folder.
 
@@ -191,7 +191,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Acceptance:** each tested selection either resolves inside the granted tree or shows a precise, actionable reason; no parent/sibling scope expansion; regression suite passes; physical outcomes are recorded honestly. The original provider failure is not resolved until retested on that device or its exact cause is demonstrated and verified.
 
-### Stage 14 — Game discovery, readiness truth and launch-state correctness (IMPLEMENTATION IN PROGRESS)
+### Stage 14 — Game discovery, readiness truth and launch-state correctness (SOURCE IMPLEMENTATION COMPLETE; RUNTIME ACCEPTANCE DEFERRED TO STAGE 18)
 
 - [x] Audit the existing GameDiscovery.ScanResult / scanDetailed implementation from PR #18 without duplicating its depth, directory-limit or inaccessible-child guards.
 - [x] Classify invalid input, unavailable/missing roots, non-directory roots, unreadable roots and access-denied roots; expose cooperative cancellation and distinguish complete zero-candidate scans.
@@ -214,7 +214,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Implementation acceptance:** source/static checks and JVM regressions pass in canonical CI (latest checked run: [39847170781](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39847170781)). Stage 15 source implementation is complete. Device/game acceptance is intentionally outstanding and moved to Stage 18; do not generalize compatibility before that evidence exists.
 
-### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (SOURCE IMPLEMENTATION COMPLETE; CI VERIFICATION PENDING; DEVICE ACCEPTANCE DEFERRED TO STAGE 18)
+### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (SOURCE IMPLEMENTATION COMPLETE; CANONICAL CI PASS; DEVICE ACCEPTANCE DEFERRED TO STAGE 18)
 
 - [x] Audit the source-level first-run, picker, empty-library, scan progress/failure, game-card/details, advanced-settings, launch-error, About and dialog paths. Keep real-device visual/TalkBack review in Stage 18.
 - [x] Keep the CI verifier enforcing complete default/Arabic string-key coverage and format-placeholder parity; preserve the corrected Arabic first-game call to action and scan-result wording.
@@ -226,17 +226,18 @@ The numbered sequence below remains as historical implementation milestones; thi
 - [x] Strengthen the Liquid Glass surface with layered translucent base/sheen, soft linear and radial specular reflections, rounded edge treatment, existing colored ambient lighting, pressed/focused/disabled button states, and a persisted motion-off path. No mandatory RenderEffect/blur API is used, so older Android versions retain the layered fallback.
 - [x] Verify the source implementation with scripts/verify-stage16.sh, including localized accessibility strings, heading API guard, announcements, touch-target constraints and layered surfaces.
 
-**Acceptance:** source changes and the Stage 16 verifier are authored, and local source-level parity/assertion checks were reviewed. Canonical CI has not yet produced a run for this exact head, so Stage 16 remains open until the verifier, Java/native build, and workflow checks pass on this commit. Physical screenshots, TalkBack/focus checks, RTL/font-scale layout, rendering quality and performance/thermal measurements remain consolidated in Stage 18; no device acceptance is claimed.
+**Acceptance:** the Stage 16 verifier, JVM/lint/workflow checks, native build and APK verification passed in canonical run [40125765154](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125765154) on commit `d372d7b6a0e575f8557c743d3aaec0a950e673fd`. The release-provenance gate intentionally skipped artifact upload and signing. Physical screenshots, TalkBack/focus checks, RTL/font-scale layout, rendering quality and performance/thermal measurements remain consolidated in Stage 18; no device acceptance is claimed.
 
-### Stage 17 — Feature truth, settings behavior and optional online/update capabilities
+### Stage 17 — Feature truth, settings behavior and optional online/update capabilities (SOURCE WORK IMPLEMENTED; CI VERIFICATION PENDING)
 
-- [ ] Trace each visible control, preference, button, message and notification to its consumer and observable result. Fix it end to end or explicitly label/remove unavailable functionality.
-- [ ] Keep server discovery/list/filter/join unavailable unless a real native/server interface and compatible-server end-to-end behavior are implemented and tested. Connectivity is not server discovery.
-- [ ] Treat the version-marker check and disabled legacy updater as non-updating functionality. Either implement a signed, checksum-verified update path with safe installation handoff or keep the limitation explicit and remove misleading remnants.
-- [ ] Recheck all-or-nothing environment override validation, reserved-variable handling, user-facing errors and persistence. Invalid configuration must not be silently partially applied.
-- [ ] Review microphone use and android:allowAudioPlaybackCapture="true" as explicit privacy choices; make no audio-recording claim unless an external, user-approved recorder test confirms it.
+- [x] Trace main visible launcher/library/advanced-settings controls and settings persistence/forwarding paths in [the feature-to-effect inventory](docs/FEATURE-TRUTH-INVENTORY.md). Real-device and unverified game effects remain distinct.
+- [x] Keep server discovery/list/filter/join unavailable until a real native bridge and compatible-server end-to-end behavior exist. The UI describes connectivity as Android network state only.
+- [x] Remove the disconnected version-marker checker, unused “newer marker” string, unreferenced updater service and orphaned checkbox fields instead of implying in-app update detection or installation.
+- [x] Extract environment parsing/application into a pure-Java helper. It validates the full list before calling native `setenv`, rejects duplicate names and launcher/Android/dynamic-linker reserved variables, keeps existing bounds, and provides actionable localized errors. Host-JVM tests cover invalid-after-valid input causing zero mutations and stopping after a native setter failure.
+- [x] Review permissions/playback capture: startup storage permission remains separate from optional microphone access; the intentional playback-capture opt-in is documented as behavior for eligible external user-approved recorders, not an in-app recording feature.
+- [x] Add Stage 17 static verification and wire it into canonical CI alongside the JVM parser tests.
 
-**Acceptance:** an audited UI-to-effect inventory; no dead or misleading controls; unavailable online/update features remain honestly disclosed; configuration failures are actionable.
+**Acceptance:** the source inventory and dedicated verifier exist; unavailable online/update capabilities remain honest; invalid configuration cannot partially apply a validated prefix; native setter failure is surfaced. Canonical CI for this implementation commit must pass before Stage 17 source work is considered verified. Physical provider/game/audio/accessibility/performance checks remain deferred to Stage 18.
 
 ### Stage 18 — Compatibility, runtime stability, performance and consolidated device acceptance (AFTER ALL IMPLEMENTATION STAGES)
 

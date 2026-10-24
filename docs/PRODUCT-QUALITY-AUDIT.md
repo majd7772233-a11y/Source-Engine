@@ -108,11 +108,11 @@ The theme builds animated radial gradients, translucent/tinted panels, borders, 
 
 **Required result:** review actual screenshots on devices, make picker/dialogs consistent, validate contrast and touch targets, and test older-API/low-end fallbacks and motion-off mode.
 
-### PQ-10 — Update code is not a functioning in-app updater
+### PQ-10 — Update code was not a functioning in-app updater
 **Severity: P2.**  
-**Evidence:** `src/me/nillerusr/UpdateSystem.java`, `src/me/nillerusr/UpdateService.java`.
+**Evidence at original finding:** `UpdateSystem` and `UpdateService`, both removed in Stage 17 after confirming neither provided a working user-visible update path.
 
-`UpdateSystem` checks a deployment version marker and only logs if it differs from the build’s marker. `UpdateService` explicitly discards legacy update notifications. No signed update manifest, verified release download, installation handoff or user-visible update flow is implemented. This is safer than installing unverified APKs, but the old update strings/service remnants must not be mistaken for a working update feature.
+The original marker checker only logged a version difference; the stub service discarded legacy notifications, and neither provided a verified user-visible update flow. Stage 17 removes those classes, the unused update string, manifest service declaration and orphaned checkbox fields. No in-app update checker, APK downloader or installer is implemented; any future update flow must use approved signed releases, integrity verification, and Android's safe installation handoff.
 
 ### PQ-11 — Server browser/join capability is absent, and should stay honestly labelled unavailable
 **Severity: P2.**  
@@ -120,13 +120,13 @@ The theme builds animated radial gradients, translucent/tinted panels, borders, 
 
 The visible panel reports Android connectivity and explicitly says an in-app server browser is unavailable. There is no verified discovery/list/filter/join bridge. This is not a fake server list because the limitation is disclosed; it is still an unimplemented capability and must not be marked complete without a compatible-server end-to-end test.
 
-### PQ-12 — Environment overrides can be partially ignored without clear user feedback
+### PQ-12 — Environment overrides require strict whole-list validation
 **Severity: P1.**  
-**Evidence:** `src/com/valvesoftware/ValveActivity2.java`, `applyUserEnvironment`.
+**Evidence:** `src/com/valvesoftware/ValveActivity2.java`, `src/me/nillerusr/EnvironmentOverrides.java`.
 
-Malformed entries and invalid/reserved variable names are logged and skipped, but skipped entries do not always make validation fail or provide an actionable message in the launcher. A user can believe settings were applied when part of the configuration was ignored.
+Stage 17 extracts parsing/application into a pure-Java helper. It validates the complete list before native `setenv`, rejects duplicates and launcher/Android/dynamic-linker reserved variables, and returns localized errors. A native setter failure stops subsequent assignments and identifies the failing variable; host-JVM coverage includes invalid-after-valid input causing zero mutations.
 
-**Required result:** validate the entire override field before native launch; show which entry needs correction without leaking sensitive values into logs.
+**Acceptance boundary:** host-JVM tests validate parser behavior, not actual native engine consumption on device.
 
 ### PQ-13 — “Device compatibility diagnostics” is an informational report, not a runtime test
 **Severity: P2 (capability/wording).**  

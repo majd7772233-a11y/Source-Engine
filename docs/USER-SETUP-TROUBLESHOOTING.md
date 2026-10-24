@@ -49,7 +49,7 @@ The “ready to try” state is a preflight based on metadata/content markers, r
 ## Controls, updates and online features
 
 - The touch overlay simulates keyboard/mouse inputs (W/A/S/D, Space, E, R and mouse fire). It is not a true analogue gamepad and nonstandard mods may use different key bindings.
-- The current update checker reads an advisory deployment marker only. It does not download or install an APK update; use a separately verified release artifact.
+- This build has no in-app update checker, APK download, or automatic installer. Do not expect an in-app update notification; install only a candidate distributed after the repository's provenance/redistribution gate has been explicitly cleared.
 - The online status panel reports Android connectivity only. A working in-app server browser and join flow are not implemented.
 - Compatibility diagnostics are an informational snapshot, not an actual game benchmark, GL-context test, audio test, or thermal-stability guarantee.
 

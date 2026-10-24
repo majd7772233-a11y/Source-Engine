@@ -1,11 +1,12 @@
 # Source Engine for Android
 
-> **Stage 12 is the ongoing feedback/defect-correction lane; the application is NOT release-ready.** The earlier remediation tranche passed CI in [workflow 39679419842](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39679419842), and the post-merge build passed [workflow 39680488677](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39680488677). This is source/build evidence, not proof of real storage-provider behavior, gameplay, audio, performance, licensing or release signing. Workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) correctly withheld new downloadable artifacts while provenance/redistribution clearance remained blocked.
+> **Current status (2026-10-24): NOT release-ready.** Stage 12 is the permanent QA/defect-correction lane. Stages 13–16 have source implementations and CI coverage, but real Android provider/gameplay/accessibility/performance acceptance remains deferred to Stage 18. The current implementation milestone is **Stage 17 — feature truth, settings behavior, and optional online/update capabilities**. Stage 19 is the accountable provenance/redistribution review and controlled-build gate; **Final Acceptance is unnumbered**.
+>
+> Canonical workflow [40125765154](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125765154) passed source checks through Stage 16, JVM/lint/workflow validation, native build, and APK identity/ABI verification. The provenance/redistribution gate remained blocked; no APK artifact was uploaded and signing/release steps were skipped. A green build is not device acceptance and does not make the app release-ready.
+>
+> There is no in-app server browser/join flow or automatic APK updater. The online panel reports Android connectivity only. The launcher does not include proprietary game content; supply only files you are entitled to use.
 
-See the [roadmap](ROADMAP.md), [product-quality audit](docs/PRODUCT-QUALITY-AUDIT.md), and [setup and troubleshooting guide](docs/USER-SETUP-TROUBLESHOOTING.md). Stage 12 is a permanent feedback lane; the next numbered implementation milestone is Stage 13.
-
-> **Product status (2026-10-22): NOT release-ready.** Localization is corrected in source/CI (151 keys in each locale with placeholder parity), but the user-reported storage-provider failure still needs affected-device validation; runtime, accessibility/performance and legal/release acceptance also remain open. PR #19’s fail-closed gate withholds new downloadable APK artifacts until source provenance and redistribution rights receive accountable review. Stage 12 is the ongoing feedback lane; Stage 13 is next; Final Acceptance is unnumbered.
-
+See the [roadmap](ROADMAP.md), [feature-to-effect inventory](docs/FEATURE-TRUTH-INVENTORY.md), [product-quality audit](docs/PRODUCT-QUALITY-AUDIT.md), and [setup and troubleshooting guide](docs/USER-SETUP-TROUBLESHOOTING.md).
 
 An Android launcher and native-runtime integration for compatible Source-engine games. This repository is **not** a complete game-content distribution: users must supply game files they are legally entitled to use. Installing the APK does not install Half-Life 2, Portal, VPK files, or other proprietary game assets.
 
