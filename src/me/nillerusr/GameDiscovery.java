@@ -60,7 +60,15 @@ public final class GameDiscovery {
         }
     }
 
-    /** Result type that makes bounded/inaccessible scans explicit instead of pretending they are empty. */
+    public enum RootStatus { ACCESSIBLE, INVALID_INPUT, UNAVAILABLE, NOT_DIRECTORY, UNREADABLE, ACCESS_DENIED }
+
+    public static final class CancellationToken {
+        private volatile boolean cancelled;
+        public void cancel() { cancelled = true; }
+        public boolean isCancelled() { return cancelled; }
+    }
+
+    /** Complete empty results are distinct from partial or unavailable roots. */
     public static final class ScanResult {
         public final List<GameEntry> entries;
         public final int visitedDirectories;
@@ -68,22 +76,34 @@ public final class GameDiscovery {
         public final boolean rootAccessible;
         public final boolean depthLimitReached;
         public final boolean directoryLimitReached;
+        public final RootStatus rootStatus;
+        public final boolean cancelled;
 
-        private ScanResult(List<GameEntry> entries, int visitedDirectories,
-                           int inaccessibleDirectories, boolean rootAccessible,
-                           boolean depthLimitReached, boolean directoryLimitReached) {
+        private ScanResult(List<GameEntry> entries, int visitedDirectories, int inaccessibleDirectories,
+                           boolean rootAccessible, boolean depthLimitReached, boolean directoryLimitReached,
+                           RootStatus rootStatus, boolean cancelled) {
             this.entries = Collections.unmodifiableList(new ArrayList<GameEntry>(entries));
             this.visitedDirectories = visitedDirectories;
             this.inaccessibleDirectories = inaccessibleDirectories;
             this.rootAccessible = rootAccessible;
             this.depthLimitReached = depthLimitReached;
             this.directoryLimitReached = directoryLimitReached;
+            this.rootStatus = rootStatus;
+            this.cancelled = cancelled;
         }
 
         public boolean isComplete() {
-            return rootAccessible && inaccessibleDirectories == 0
-                    && !depthLimitReached && !directoryLimitReached;
+            return rootAccessible && rootStatus == RootStatus.ACCESSIBLE && inaccessibleDirectories == 0
+                    && !depthLimitReached && !directoryLimitReached && !cancelled;
         }
+
+        public boolean hasNoCandidates() { return isComplete() && entries.isEmpty(); }
+    }
+
+    public static boolean canCommitSnapshot(List<ScanResult> results, boolean runtimeFailure, boolean cancelled) {
+        if (runtimeFailure || cancelled || results == null || results.isEmpty()) return false;
+        for (ScanResult result : results) if (result == null || !result.isComplete()) return false;
+        return true;
     }
 
     private static final class ScanState {
@@ -92,6 +112,8 @@ public final class GameDiscovery {
         boolean rootAccessible = true;
         boolean depthLimitReached;
         boolean directoryLimitReached;
+        boolean cancelled;
+        RootStatus rootStatus = RootStatus.ACCESSIBLE;
     }
 
     /** Legacy list API retained for existing callers; use scanDetailed for user-visible status. */
@@ -100,35 +122,40 @@ public final class GameDiscovery {
     }
 
     public static ScanResult scanDetailed(Context context, String rootPath) {
+        return scanDetailed(context, rootPath, new CancellationToken());
+    }
+
+    public static ScanResult scanDetailed(Context context, String rootPath, CancellationToken cancellation) {
         List<GameEntry> results = new ArrayList<GameEntry>();
         ScanState state = new ScanState();
+        CancellationToken token = cancellation == null ? new CancellationToken() : cancellation;
         if (context == null || rootPath == null || rootPath.trim().length() == 0) {
-            state.rootAccessible = false;
-            return new ScanResult(results, 0, 1, false, false, false);
+            state.rootAccessible = false; state.rootStatus = RootStatus.INVALID_INPUT;
+            state.inaccessibleDirectories++;
+            return scanResult(results, state);
         }
-
         File root = new File(rootPath.trim());
         try {
-            if (!root.isDirectory() || !root.canRead()) {
-                state.rootAccessible = false;
-                state.inaccessibleDirectories++;
-                return new ScanResult(results, 0, state.inaccessibleDirectories,
-                        false, false, false);
+            if (!root.exists()) {
+                state.rootAccessible = false; state.rootStatus = RootStatus.UNAVAILABLE;
+                state.inaccessibleDirectories++; return scanResult(results, state);
+            }
+            if (!root.isDirectory()) {
+                state.rootAccessible = false; state.rootStatus = RootStatus.NOT_DIRECTORY;
+                state.inaccessibleDirectories++; return scanResult(results, state);
+            }
+            if (!root.canRead()) {
+                state.rootAccessible = false; state.rootStatus = RootStatus.UNREADABLE;
+                state.inaccessibleDirectories++; return scanResult(results, state);
             }
         } catch (SecurityException e) {
-            state.rootAccessible = false;
-            state.inaccessibleDirectories++;
-            return new ScanResult(results, 0, state.inaccessibleDirectories,
-                    false, false, false);
+            state.rootAccessible = false; state.rootStatus = RootStatus.ACCESS_DENIED;
+            state.inaccessibleDirectories++; return scanResult(results, state);
         }
-
         Set<String> visited = new HashSet<String>();
-        try {
-            scanDirectory(context, root, 0, visited, state, results);
-        } catch (SecurityException e) {
-            state.inaccessibleDirectories++;
-        }
-
+        try { scanDirectory(context, root, 0, visited, state, results, token); }
+        catch (SecurityException e) { state.inaccessibleDirectories++; }
+        state.cancelled = token.isCancelled();
         Collections.sort(results, new Comparator<GameEntry>() {
             @Override public int compare(GameEntry left, GameEntry right) {
                 int state = right.launchable == left.launchable ? 0 : (right.launchable ? 1 : -1);
@@ -136,13 +163,19 @@ public final class GameDiscovery {
                 return left.displayName.compareToIgnoreCase(right.displayName);
             }
         });
+        return scanResult(results, state);
+    }
+
+    private static ScanResult scanResult(List<GameEntry> results, ScanState state) {
         return new ScanResult(results, state.visitedDirectories, state.inaccessibleDirectories,
-                state.rootAccessible, state.depthLimitReached, state.directoryLimitReached);
+                state.rootAccessible, state.depthLimitReached, state.directoryLimitReached,
+                state.rootStatus, state.cancelled);
     }
 
     private static void scanDirectory(Context context, File directory, int depth,
                                       Set<String> visited, ScanState state,
-                                      List<GameEntry> results) {
+                                      List<GameEntry> results, CancellationToken cancellation) {
+        if (cancellation.isCancelled()) { state.cancelled = true; return; }
         if (directory == null) return;
         if (depth > MAX_DEPTH) {
             state.depthLimitReached = true;
@@ -194,6 +227,7 @@ public final class GameDiscovery {
         }
 
         for (File child : children) {
+            if (cancellation.isCancelled()) { state.cancelled = true; break; }
             if (child == null) continue;
             final boolean childDirectory;
             try {
@@ -221,7 +255,7 @@ public final class GameDiscovery {
                 state.directoryLimitReached = true;
                 break;
             }
-            scanDirectory(context, child, depth + 1, visited, state, results);
+            scanDirectory(context, child, depth + 1, visited, state, results, cancellation);
         }
     }
 

@@ -58,7 +58,9 @@ The source-level mitigation is covered by CI/JVM checks, but real Android provid
 
 Discovery is bounded to depth 4 and 1,200 directories. When the count limit is reached the walk simply stops; it does not return a “partial/truncated” state. A null result from `listFiles()`, a denied nested directory, or an invalid saved root may be skipped without a visible per-root warning. The launcher can consequently show “No candidate game folders found” when the search was incomplete or inaccessible.
 
-**Required result:** return structured scan outcomes: complete, partial/limit reached, unreadable root/child, invalidated media, cancelled, and no candidates. Show the number of roots checked and a recovery action. A partial scan must never silently replace the last known-good result.
+**Stage 14 source correction (2026-10-24):** the scanner now distinguishes invalid input, unavailable/missing root, non-directory, unreadable and access-denied roots; bounded scans can be cancelled; and the library snapshot plus existing rendered view are retained unless every configured root completes. A complete empty traversal is distinguished from an inaccessible or missing root. The verifier/JVM tests cover the source contract; device/provider behavior is still unverified.
+
+**Remaining acceptance:** record real Android outcomes for disconnected SD/USB, revoked access and inaccessible child paths. Do not count static checks as provider simulation.
 
 ### PQ-05 — “Ready to try” is a heuristic, not an actual compatibility test
 **Severity: P1 (wording/expectation gap).**  

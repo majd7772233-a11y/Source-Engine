@@ -148,7 +148,11 @@
     <string name="srceng_storage_game_folder_selected">اخترت مجلد اللعبة نفسه (يحتوي على gameinfo.txt). اختر المجلد الأب بدلًا منه حتى يشمل نطاق الإذن مجلد اللعبة.</string>
     <string name="srceng_storage_invalid_selection">أعاد Android اختيار مجلد غير صالح. افتح المنتقي مجددًا واختر مجلدًا محليًا عاديًا.</string>
     <string name="srceng_storage_scope_mismatch">مسار اللعبة خارج المجلد الذي منحت التطبيق صلاحية الوصول إليه. اختر المجلد الأب الذي يحتوي على مجلد اللعبة، ثم حدد اللعبة من المكتبة.</string>
-    <string name="srceng_library_scan_incomplete">الفحص غير مكتمل: تعذرت قراءة %1$d مجلدات، ووصل الفحص إلى حد العمق في %2$d جذور، وإلى حد عدد المجلدات في %3$d مواضع. احتُفظ بنسخة المكتبة السابقة. تحقق من صلاحية التخزين أو اختر مجلدًا أضيق ثم أعد الفحص.</string>
+    <string name="srceng_library_scan_cancel">إلغاء الفحص</string>
+    <string name="srceng_library_scan_cancelling">جارٍ إلغاء الفحص…</string>
+    <string name="srceng_library_scan_cancelled">أُلغِي الفحص. احتُفظ بنسخة المكتبة السابقة.</string>
+    <string name="srceng_library_scan_no_roots">لم تُضبط مجلدات للبحث بعد. اختر مجلد اللعبة الحالي وابدأ فحصه أولًا.</string>
+    <string name="srceng_library_scan_incomplete">الفحص غير مكتمل: تعذّرت قراءة %1$d مجلدات، ووصل الفحص إلى حد العمق في %2$d جذور، وإلى حد عدد المجلدات في %3$d مواضع، وفُقد الوصول إلى %4$d جذور أو أصبحت غير متاحة. احتُفظ بنسخة المكتبة السابقة. أعد إتاحة التخزين أو اختر مجلدًا أضيق ثم أعد الفحص.</string>
     <string name="srceng_environment_invalid">تحتوي إعدادات متغيرات البيئة على قيمة غير صالحة أو محجوزة. استخدم NAME=VALUE، عنصرًا في كل سطر أو افصل بينها بفاصلة منقوطة، وبحد أقصى 64 عنصرًا و2048 حرفًا لكل عنصر. احذف العنصر غير الصالح ثم أعد المحاولة.</string>
     <string name="srceng_environment_apply_failed">تعذّر على المحرك الأصلي تطبيق متغير البيئة %1$s. احذفه أو استخدم قيمة مدعومة ثم أعد المحاولة.</string>
     <string name="srceng_controls_mapping_note">تحاكي هذه الأدوات لوحة المفاتيح والفأرة: الحركة WASD، والقفز Space، والاستخدام E، وإعادة التلقيم R، والإطلاق بزر الفأرة الأول. هذه ليست عصا تحكم تناظرية، وقد لا تناسب كل لعبة أو تعديل.</string>

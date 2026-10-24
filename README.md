@@ -24,6 +24,10 @@ An Android launcher and native-runtime integration for compatible Source-engine 
 
 - Stage 11 automated tests and CI quality gates are merged as [PR #16](https://github.com/majd7772233-a11y/Source-Engine/pull/16). The most recent recorded debug APK in [workflow 39553121834](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39553121834) passed JVM, static/workflow checks and native packaging: 56,573,080 bytes, SHA-256 `fb95dbbedfca831b58103c1ba4404525ccde72f8f0178968b23a864ee3949047`; [artifact 12324333097](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39553121834/artifacts/12324333097), expires 2026-11-04. This validates the build, not physical-device/gameplay behavior.
 
+## Current implementation status
+
+Stage 14 tightens discovery certainty and library-state preservation: missing/unavailable roots, invalid input, permission failures, traversal caps, cancellation and a complete scan with zero candidates are now distinct. An incomplete/failed scan no longer redraws or replaces the last-known-good library snapshot. Game readiness remains a preflight heuristic, and “Last attempt” is not a claim of successful native gameplay. Device and provider acceptance remains pending; release downloads are separately blocked by provenance clearance.
+
 ## Build
 
 ### Option A — Package the checked-in native libraries

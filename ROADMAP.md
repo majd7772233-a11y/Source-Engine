@@ -189,15 +189,17 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Acceptance:** each tested selection either resolves inside the granted tree or shows a precise, actionable reason; no parent/sibling scope expansion; regression suite passes; physical outcomes are recorded honestly. The original provider failure is not resolved until retested on that device or its exact cause is demonstrated and verified.
 
-### Stage 14 — Game discovery, readiness truth and launch-state correctness
+### Stage 14 — Game discovery, readiness truth and launch-state correctness (IMPLEMENTATION IN PROGRESS)
 
-- [ ] Audit existing GameDiscovery.ScanResult/scanDetailed work from PR #18 and close only remaining gaps; do not duplicate already-implemented handling.
-- [ ] Distinguish complete scan, partial/limit reached, inaccessible root/child, invalidated storage, cancellation and zero candidates. Preserve the last known-good library snapshot on incomplete scans.
-- [ ] Keep readiness explicitly a preflight result (metadata, asset markers, native package and ABI), not proof of compatibility. Keep “last attempt” separate from confirmed native startup.
-- [ ] Where practical, add a reliable native/activity startup-ready signal before recording successful launch; otherwise keep attempt-only language.
-- [ ] Test lawful game/mod layouts, malformed/missing metadata, absent assets, long paths, rescan, hide/remove/restore and startup failure; turn reproduced issues into regression tests.
+- [x] Audit the existing GameDiscovery.ScanResult / scanDetailed implementation from PR #18 without duplicating its depth, directory-limit or inaccessible-child guards.
+- [x] Classify invalid input, unavailable/missing roots, non-directory roots, unreadable roots and access-denied roots; expose cooperative cancellation and distinguish complete zero-candidate scans.
+- [x] Preserve both saved paths and the current rendered library after incomplete, cancelled or worker-failed scans. Every configured root must complete before the library snapshot can be replaced.
+- [x] Add an explicit Cancel scan action, reset progress/control state after completion, and report unavailable roots separately from inaccessible folders, depth limits and directory caps.
+- [x] Keep readiness explicitly at the “Ready to try” preflight level and history labelled as “Last attempt”; no successful native session is claimed without a runtime signal.
+- [x] Add JVM tests for empty-but-complete roots, unavailable roots, invalid input, cancellation, depth limits, worker failure and mixed multi-root results; wire a dedicated Stage 14 verifier into CI.
+- [ ] Runtime/device acceptance: verify discovery and launch behavior against lawful, complete game/mod layouts on Android, including hide/remove/restore, process restart, failed startup and the first stable native session. Record device/API, sanitized log and approved APK checksum; CI cannot substitute for this.
 
-**Acceptance:** incomplete scans are never represented as definitive emptiness, UI matches the available evidence, and readiness/launch history cannot falsely claim a successful game session.
+**Acceptance:** source/JVM checks pass; incomplete scans are never shown as definitive emptiness; missing storage, cancellation and complete-zero-candidate outcomes remain distinguishable; “ready” and “last attempt” do not overstate runtime success. Device acceptance remains external.
 
 ### Stage 15 — In-game input and gameplay controls
 
@@ -261,6 +263,13 @@ This is the actual final gate and deliberately has no stage number. It begins on
 - [ ] Release notes describe only observed capabilities. No critical blocker, false compatibility claim, unapproved artifact or missing required notice remains.
 
 **Do not mark Final Acceptance complete until user-visible evidence and required reviews actually exist. A CI-only pass is not enough.**
+
+### Stage 14 implementation log — 2026-10-24
+
+- Re-audited the canonical head 5030582b76048bed33844ef9223fbf558cae5bed. The scanner already surfaced traversal limits and some child access failures; root failure causes and user cancellation were not structured.
+- Fixed a snapshot-consistency bug: an incomplete scan called renderGameLibrary(), which could prune currently inaccessible entries from persisted paths while saying the prior snapshot was preserved. Incomplete, cancelled and failed scans now keep both the stored snapshot and existing screen intact.
+- Added explicit root status, cooperative cancellation, separate counts for invalidated roots, and regression coverage for complete-empty vs incomplete results. Stage 14 static checks and JVM suite are mandatory in canonical CI.
+- Device/native-runtime acceptance is still pending. This work does not bypass the independent source-provenance and redistribution artifact gate.
 
 ## 5. Active product defect register
 

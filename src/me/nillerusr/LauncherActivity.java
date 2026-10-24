@@ -52,6 +52,8 @@ public class LauncherActivity extends Activity {
 	private TextView librarySummary;
 	private boolean scanInProgress = false;
 	private ProgressBar scanProgress;
+	private Button scanCancelButton;
+	private volatile GameDiscovery.CancellationToken currentScanCancellation;
 	private ProgressBar launcherProgress;
 	private LinearLayout advancedPanel;
 	private Button advancedToggle;
@@ -253,6 +255,20 @@ public class LauncherActivity extends Activity {
 		actions.addView(scanCurrent, new LinearLayout.LayoutParams(0, -2, 1));
 		actions.addView(rescan, new LinearLayout.LayoutParams(0, -2, 1));
 		section.addView(actions, new LinearLayout.LayoutParams(-1, -2));
+		scanCancelButton = makeActionButton(R.string.srceng_library_scan_cancel);
+		scanCancelButton.setVisibility(View.GONE);
+		scanCancelButton.setEnabled(false);
+		scanCancelButton.setOnClickListener(new View.OnClickListener() {
+			@Override public void onClick(View view) {
+				GameDiscovery.CancellationToken token = currentScanCancellation;
+				if (token != null && scanInProgress) {
+					token.cancel();
+					scanCancelButton.setEnabled(false);
+					scanCancelButton.setText(R.string.srceng_library_scan_cancelling);
+				}
+			}
+		});
+		section.addView(scanCancelButton, new LinearLayout.LayoutParams(-1, -2));
 		libraryItems = new LinearLayout(this);
 		libraryItems.setOrientation(LinearLayout.VERTICAL);
 		section.addView(libraryItems, new LinearLayout.LayoutParams(-1, -2));
@@ -280,8 +296,15 @@ public class LauncherActivity extends Activity {
 		}
 		if (scanInProgress) return;
 		scanInProgress = true;
+		final GameDiscovery.CancellationToken cancellation = new GameDiscovery.CancellationToken();
+		currentScanCancellation = cancellation;
 		librarySummary.setText(R.string.srceng_library_scanning);
 		if (scanProgress != null) scanProgress.setVisibility(View.VISIBLE);
+		if (scanCancelButton != null) {
+			scanCancelButton.setText(R.string.srceng_library_scan_cancel);
+			scanCancelButton.setEnabled(true);
+			scanCancelButton.setVisibility(View.VISIBLE);
+		}
 		final Set<String> roots = preferenceSet(LIBRARY_ROOTS);
 		final Set<String> hidden = preferenceSet(LIBRARY_HIDDEN);
 		if (includeCurrentRoot) {
@@ -299,16 +322,22 @@ public class LauncherActivity extends Activity {
 			@Override public void run() {
 				final Set<String> discovered = new HashSet<String>();
 				final Set<String> validRoots = new HashSet<String>();
+				final List<GameDiscovery.ScanResult> scanResults = new ArrayList<GameDiscovery.ScanResult>();
 				final String[] scanFailure = new String[1];
 				final boolean[] scanIncomplete = new boolean[1];
-				// inaccessible roots/children, depth-limited roots, directory-limit hits
-				final int[] incompleteCounts = new int[3];
+				final boolean[] scanCancelled = new boolean[1];
+				final int[] incompleteCounts = new int[4];
 				try {
 					for (String root : roots) {
-						GameDiscovery.ScanResult result = GameDiscovery.scanDetailed(LauncherActivity.this, root);
+						if (cancellation.isCancelled()) { scanCancelled[0] = true; break; }
+						GameDiscovery.ScanResult result = GameDiscovery.scanDetailed(LauncherActivity.this, root, cancellation);
+						scanResults.add(result);
+						if (result.cancelled) { scanCancelled[0] = true; break; }
 						if (!result.rootAccessible) {
 							scanIncomplete[0] = true;
-							incompleteCounts[0] += Math.max(1, result.inaccessibleDirectories);
+							if (result.rootStatus == GameDiscovery.RootStatus.UNAVAILABLE
+									|| result.rootStatus == GameDiscovery.RootStatus.NOT_DIRECTORY) incompleteCounts[3]++;
+							else incompleteCounts[0] += Math.max(1, result.inaccessibleDirectories);
 							continue;
 						}
 						validRoots.add(root);
@@ -328,20 +357,29 @@ public class LauncherActivity extends Activity {
 				runOnUiThread(new Runnable() {
 					@Override public void run() {
 						scanInProgress = false;
+						if (currentScanCancellation == cancellation) currentScanCancellation = null;
 						if (scanProgress != null) scanProgress.setVisibility(View.GONE);
-						boolean completed = scanFailure[0] == null && !scanIncomplete[0];
-						// An incomplete traversal must not replace the last known-good library snapshot.
+						if (scanCancelButton != null) {
+							scanCancelButton.setVisibility(View.GONE);
+							scanCancelButton.setEnabled(false);
+							scanCancelButton.setText(R.string.srceng_library_scan_cancel);
+						}
+						boolean completed = GameDiscovery.canCommitSnapshot(scanResults, scanFailure[0] != null, scanCancelled[0]);
 						if (completed) {
 							mPref.edit().putStringSet(LIBRARY_ROOTS, new HashSet<String>(validRoots))
 									.putStringSet(LIBRARY_HIDDEN, new HashSet<String>(hidden)).apply();
 							GameDiscovery.savePaths(LauncherActivity.this, discovered);
+							renderGameLibrary();
 						}
-						renderGameLibrary();
 						if (scanFailure[0] != null) {
 							librarySummary.setText(getString(R.string.srceng_library_scan_failed, scanFailure[0]));
+						} else if (scanCancelled[0]) {
+							librarySummary.setText(R.string.srceng_library_scan_cancelled);
+						} else if (scanResults.isEmpty()) {
+							librarySummary.setText(R.string.srceng_library_scan_no_roots);
 						} else if (scanIncomplete[0]) {
 							librarySummary.setText(getString(R.string.srceng_library_scan_incomplete,
-									incompleteCounts[0], incompleteCounts[1], incompleteCounts[2]));
+									incompleteCounts[0], incompleteCounts[1], incompleteCounts[2], incompleteCounts[3]));
 						} else if (discovered.isEmpty()) {
 							librarySummary.setText(R.string.srceng_library_no_candidates);
 						} else {

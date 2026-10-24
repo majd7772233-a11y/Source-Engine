@@ -13,3 +13,4 @@ printf '"%s"\n' "$ROOT_DIR/src/me/nillerusr/LauncherLogic.java" "$ROOT_DIR/src/m
 javac -encoding UTF-8 -Xlint:all -d "$TEST_BUILD_DIR/classes" @"$SOURCES_FILE"
 java -cp "$TEST_BUILD_DIR/classes" me.nillerusr.Stage11TestSuite
 java -cp "$TEST_BUILD_DIR/classes" me.nillerusr.Stage13StorageAccessTestSuite
+java -cp "$TEST_BUILD_DIR/classes" me.nillerusr.Stage14GameDiscoveryTestSuite

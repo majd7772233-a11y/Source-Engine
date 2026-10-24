@@ -170,10 +170,11 @@ checks = {
     "bounded game discovery reports incomplete traversal": all(token in discovery for token in
         ("class ScanResult", "scanDetailed(Context context, String rootPath)",
          "depthLimitReached", "directoryLimitReached", "inaccessibleDirectories", "isComplete()")),
-    "launcher never commits a partial discovery snapshot": "GameDiscovery.scanDetailed(LauncherActivity.this, root)" in launcher
-        and "boolean completed = scanFailure[0] == null && !scanIncomplete[0]" in launcher
+    "launcher never commits or redraws an incomplete discovery snapshot": "GameDiscovery.scanDetailed(LauncherActivity.this, root, cancellation)" in launcher
+        and "GameDiscovery.canCommitSnapshot(" in launcher
         and "if (completed)" in launcher
-        and "srceng_library_scan_incomplete" in launcher,
+        and "srceng_library_scan_incomplete" in launcher
+        and "srceng_library_scan_cancelled" in launcher,
     "launch history is explicitly labelled as an attempt": "Last attempt: %1$s" in default_string_values.get("srceng_library_last", "")
         and "آخر محاولة تشغيل" in arabic_string_values.get("srceng_library_last", ""),
     "picker uses shared visual system": "LiquidGlassTheme.styleDirectoryEntry(item)" in read("src/me/nillerusr/DirchActivity.java")

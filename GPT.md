@@ -347,6 +347,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Extended `scripts/verify-stage12.sh` with static wiring checks and behavior tests for the blocked, incomplete, and complete synthetic review-record cases. PR CI must pass before these changes are considered integrated. Existing user-device/storage/gameplay/accessibility/performance and signed artifact install/upgrade acceptance remain pending.
 
 
+### 2026-10-24 — Stage 14 game discovery and launch-state work
+
+- Began Stage 14 from canonical android-fixes at 5030582b76048bed33844ef9223fbf558cae5bed.
+- Re-audit found the scan completion callback redrew the library even after incomplete scans. renderGameLibrary() could prune paths whose media/provider was temporarily inaccessible; the UI and persisted snapshot therefore did not actually remain intact. The completion path now redraws and stores only after every configured root finishes successfully.
+- Added explicit root-status categories, a cooperative Cancel scan control, a complete-empty vs. missing/unavailable distinction, localized progress/results and Stage 14 CI/JVM coverage.
+- Keep last attempt wording; activity launch is not proof of stable native gameplay. Physical device/provider checks and the independent release provenance gate remain open.
+
 ### 2026-10-22 — Resume point: canonical Stage 12 acceptance and audio policy
 
 - Confirmed PR #19 merged at `cbb4dfedc255c48100abc648e9a04805dc6a9213`; canonical workflow [39832326942](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39832326942) passed Stage 12 (30 assertions), JVM regression tests (80 assertions), static/workflow validation, native build and APK integrity verification.
