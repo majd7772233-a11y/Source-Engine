@@ -3,10 +3,13 @@ package me.nillerusr;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -110,11 +113,57 @@ public final class LiquidGlassTheme {
         base.setCornerRadius(radius);
         base.setStroke(Math.max(1, (int) density), edge);
         // Translucent specular sheen; deliberately no mandatory RenderEffect/blur API.
-        GradientDrawable sheen = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[] { 0x24FFFFFF, 0x0AFFFFFF, 0x00FFFFFF });
-        sheen.setCornerRadius(radius);
-        sheen.setStroke(Math.max(1, (int) density), 0x18FFFFFF);
+        Drawable sheen = new SpecularSheenDrawable(radius);
         return new LayerDrawable(new Drawable[] { base, sheen });
+    }
+
+    /**
+     * Draws a soft top reflection and radial color bleed inside a rounded surface.
+     * This is API-17 compatible and does not require platform blur effects.
+     */
+    private static final class SpecularSheenDrawable extends Drawable {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Path clip = new Path();
+        private final float radius;
+
+        SpecularSheenDrawable(float radius) { this.radius = radius; }
+
+        @Override public void draw(Canvas canvas) {
+            RectF bounds = new RectF(getBounds());
+            if (bounds.width() <= 0 || bounds.height() <= 0) return;
+            clip.reset();
+            clip.addRoundRect(bounds, radius, radius, Path.Direction.CW);
+            int save = canvas.save();
+            canvas.clipPath(clip);
+
+            paint.setStyle(Paint.Style.FILL);
+            paint.setShader(new LinearGradient(bounds.left, bounds.top, bounds.left, bounds.bottom,
+                    new int[] { 0x28FFFFFF, 0x0BFFFFFF, 0x00FFFFFF },
+                    new float[] { 0.0f, 0.36f, 1.0f }, Shader.TileMode.CLAMP));
+            canvas.drawRoundRect(bounds, radius, radius, paint);
+
+            float glowRadius = Math.max(bounds.width(), bounds.height()) * 0.72f;
+            paint.setShader(new RadialGradient(bounds.left + bounds.width() * 0.16f,
+                    bounds.top + bounds.height() * 0.08f, glowRadius,
+                    new int[] { 0x1FFFFFFF, 0x0A62D9D0, 0x0062D9D0 },
+                    new float[] { 0.0f, 0.48f, 1.0f }, Shader.TileMode.CLAMP));
+            canvas.drawRoundRect(bounds, radius, radius, paint);
+            paint.setShader(null);
+
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(1.0f);
+            paint.setColor(0x26FFFFFF);
+            RectF edge = new RectF(bounds.left + 0.5f, bounds.top + 0.5f,
+                    bounds.right - 0.5f, bounds.bottom - 0.5f);
+            float edgeRadius = Math.max(0.0f, radius - 0.5f);
+            canvas.drawRoundRect(edge, edgeRadius, edgeRadius, paint);
+            paint.setStyle(Paint.Style.FILL);
+            canvas.restoreToCount(save);
+        }
+
+        @Override public void setAlpha(int alpha) { paint.setAlpha(alpha); invalidateSelf(); }
+        @Override public void setColorFilter(android.graphics.ColorFilter filter) { paint.setColorFilter(filter); invalidateSelf(); }
+        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
     }
 
     /** Marks section titles as headings for TalkBack on API 28+, guarded for older devices. */
