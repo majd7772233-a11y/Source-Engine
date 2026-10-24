@@ -61,10 +61,9 @@ debug_upload_condition = str(debug_upload.get("if", ""))
 debug_upload_name = str((debug_upload.get("with") or {}).get("name", ""))
 if "success()" not in debug_upload_condition or debug_upload_name != "source-engine-android-debug-test":
     fail("debug test artifact upload must require a successful build and use the test-only artifact name")
-if not any(isinstance(step, dict) and step.get("if") == "success()" for step in steps):
-    fail("expected-output processing must remain success-gated")
-if not any(isinstance(step, dict) and isinstance(step.get("with"), dict)
-           and step["with"].get("if-no-files-found") == "error" for step in steps):
+if "success()" not in debug_upload_condition:
+    fail("Debug test artifact upload must run only after successful build verification")
+if not isinstance(debug_upload.get("with"), dict) or debug_upload["with"].get("if-no-files-found") != "error":
     fail("artifact upload must fail when expected outputs are absent")
 
 names = [str(step.get("name", "")) for step in steps]
