@@ -218,6 +218,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 - [x] Add a canonical CI verifier for complete default/Arabic string-key coverage and format-placeholder parity (156 string keys in each locale at this commit); improve the first-game Arabic call to action and the dynamic scan-result wording.
 - [x] Enable Android RTL layout mirroring and replace the directory-picker activity's hard-coded English label with a localized resource.
 - [x] Fix compatibility-diagnostics formatting: report separators now create actual new lines rather than displaying literal backslash-n sequences.
+- [x] Extend the workflow meta-validator to require all stage verifier scripts from 0 through 16, so a newly added quality gate cannot be omitted unnoticed.
 - [ ] Validate TalkBack labels/status announcements, keyboard/controller focus, touch targets, font scaling, contrast, cancel/back behavior and portrait/landscape layouts on devices.
 - [ ] Compare real rendering with the Liquid Glass goal (depth, highlights, translucent layers, controlled blur/refraction-like treatment and motion). Gradients alone are not proof of a full glass effect.
 - [ ] Provide older-API/low-end fallbacks and verify motion-off behavior, readability, smoothness and thermal cost.

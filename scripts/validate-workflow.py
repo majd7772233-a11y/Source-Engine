@@ -38,7 +38,7 @@ if not isinstance(steps, list):
     fail("build job steps must be a list")
 all_step_text = "\n".join(str(step) for step in steps)
 runs = "\n".join(str(step.get("run", "")) for step in steps if isinstance(step, dict))
-for stage in list(range(0, 12)) + [12]:
+for stage in range(0, 17):
     command = "scripts/verify-stage" + str(stage) + ".sh"
     if command not in runs:
         fail("CI does not invoke " + command)
