@@ -1,3 +1,5 @@
+> **Scheduling rule (2026-10-24):** Per the user's explicit request, do not run or request this physical-device test piecemeal while numbered implementation stages 13–17 are still underway. Use this checklist for one consolidated review after implementation stages and required provenance/build work are ready, during Stage 18 immediately before the unnumbered Final Acceptance gate. Until then, keep results as Not run/Deferred; never mark them Pass.
+
 # Source Engine Android — Physical-Device Smoke-Test Checklist
 
 This checklist is separate from CI. A successful JVM test or APK build is not evidence that Android storage providers, the renderer, audio, a controller, or a real game works.
