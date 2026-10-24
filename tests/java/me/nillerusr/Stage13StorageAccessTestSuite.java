@@ -3,7 +3,7 @@ import android.content.ContentResolver;import android.content.Intent;import andr
 import java.io.File;import java.io.FileOutputStream;import java.io.OutputStreamWriter;import java.io.Writer;import testsupport.TestContext;
 public final class Stage13StorageAccessTestSuite {
  private static int assertions;private static File tempRoot,primaryRoot;
- public static void main(String[] a)throws Exception{tempRoot=File.createTempFile("srceng-stage13","root");if(!tempRoot.delete()||!tempRoot.mkdirs())throw new IllegalStateException("temp root");primaryRoot=new File(tempRoot,"primary");if(!primaryRoot.mkdirs())throw new IllegalStateException("primary root");Environment.setExternalStorageDirectory(primaryRoot);Environment.setExternalStorageState(primaryRoot,Environment.MEDIA_MOUNTED);Build.VERSION.SDK_INT=30;try{pickerFlags();selectionState();replacementReleasesOldGrant();grantFlags();unsupportedProviderDiagnostics();successUnicodeAndDiagnostics();gameRootRejected();traversalRejected();persistFailure();revokedGrant();unmounted();readOnly();persistedReadOnly();staleAndPartialState();System.out.println("Stage 13 storage tests passed: "+assertions+" assertions.");}finally{remove(tempRoot);}}
+ public static void main(String[] a)throws Exception{tempRoot=File.createTempFile("srceng-stage13","root");if(!tempRoot.delete()||!tempRoot.mkdirs())throw new IllegalStateException("temp root");primaryRoot=new File(tempRoot,"primary");if(!primaryRoot.mkdirs())throw new IllegalStateException("primary root");Environment.setExternalStorageDirectory(primaryRoot);Environment.setExternalStorageState(primaryRoot,Environment.MEDIA_MOUNTED);Build.VERSION.SDK_INT=30;try{pickerFlags();selectionState();replacementReleasesOldGrant();failedReplacementPreservesSelection();clearSelectionScopesGrantCleanup();grantFlags();unsupportedProviderDiagnostics();successUnicodeAndDiagnostics();gameRootRejected();traversalRejected();persistFailure();revokedGrant();unmounted();readOnly();persistedReadOnly();staleAndPartialState();System.out.println("Stage 13 storage tests passed: "+assertions+" assertions.");}finally{remove(tempRoot);}}
  private static void pickerFlags(){Intent i=StorageAccess.createTreePickerIntent();check(Intent.ACTION_OPEN_DOCUMENT_TREE.equals(i.getAction()),"SAF picker");int f=i.getFlags();check(has(f,1),"read requested");check(has(f,2),"write requested");check(has(f,64),"persistable requested");check(has(f,128),"prefix requested");}
  private static void selectionState(){TestContext c=context();check(!StorageAccess.hasStoredTreeSelection(c),"empty selection state is absent");c.preferences().edit().putString(StorageAccess.TREE_URI_KEY,"content://example/tree").apply();check(StorageAccess.hasStoredTreeSelection(c),"URI-only corrupt state still triggers validation");c.preferences().edit().remove(StorageAccess.TREE_URI_KEY).putString(StorageAccess.TREE_PATH_KEY,"/stale/path").apply();check(StorageAccess.hasStoredTreeSelection(c),"path-only corrupt state still triggers validation");c.preferences().edit().remove(StorageAccess.TREE_PATH_KEY).apply();check(!StorageAccess.hasStoredTreeSelection(c),"fully cleared selection state is absent");}
  private static void replacementReleasesOldGrant()throws Exception{
@@ -31,7 +31,37 @@ public final class Stage13StorageAccessTestSuite {
  private static void readOnly()throws Exception{mkdir("Games-ro");TestContext c=context();Uri u=tree("primary:Games-ro");check(StorageAccess.selectTree(c,u,3).isSuccess(),"initial grant before read-only");Environment.setExternalStorageState(primaryRoot,Environment.MEDIA_MOUNTED_READ_ONLY);eq(StorageAccess.ERROR_NOT_WRITABLE,StorageAccess.validateSelectedTree(c).error,"read-only media diagnosed");eq(null,c.preferences().getString(StorageAccess.TREE_URI_KEY,null),"read-only tree cleared");Environment.setExternalStorageState(primaryRoot,Environment.MEDIA_MOUNTED);}
  private static void persistedReadOnly()throws Exception{File d=mkdir("Games-ro-grant");TestContext c=context();Uri u=tree("primary:Games-ro-grant");c.getContentResolver().addPersistedPermission(u,true,false);c.preferences().edit().putString(StorageAccess.TREE_URI_KEY,u.toString()).putString(StorageAccess.TREE_PATH_KEY,d.getCanonicalPath()).apply();eq(StorageAccess.ERROR_WRITE_PERMISSION_MISSING,StorageAccess.validateSelectedTree(c).error,"read-only persisted grant rejected");eq(null,c.preferences().getString(StorageAccess.TREE_URI_KEY,null),"bad grant cleared");}
  private static void staleAndPartialState()throws Exception{mkdir("Games-stale");TestContext c=context();Uri u=tree("primary:Games-stale");check(StorageAccess.selectTree(c,u,3).isSuccess(),"initial selection before stale path test");c.preferences().edit().putString(StorageAccess.TREE_PATH_KEY,new File(primaryRoot,"Games-stale-sibling").getAbsolutePath()).apply();eq(StorageAccess.ERROR_INVALID_SELECTION,StorageAccess.validateSelectedTree(c).error,"changed path rejected");eq(null,c.preferences().getString(StorageAccess.TREE_URI_KEY,null),"mismatched state cleared");c.preferences().edit().putString(StorageAccess.TREE_PATH_KEY,"/stale/only").apply();eq(StorageAccess.ERROR_INVALID_SELECTION,StorageAccess.validateSelectedTree(c).error,"partial state rejected");eq(null,c.preferences().getString(StorageAccess.TREE_PATH_KEY,null),"partial state cleared");}
- private static TestContext context(){return new TestContext(new File(tempRoot,"native").getAbsolutePath());}
+ private static void failedReplacementPreservesSelection()throws Exception{
+   File activeDirectory=mkdir("Games-active-preserve");File rejectedDirectory=mkdir("Games-invalid-preserve");write(new File(rejectedDirectory,"gameinfo.txt"),"metadata");
+   TestContext c=context();Uri active=tree("primary:Games-active-preserve");Uri candidate=tree("primary:Games-invalid-preserve");
+   check(StorageAccess.selectTree(c,active,3).isSuccess(),"initial active selection");
+   eq(StorageAccess.ERROR_WRITE_PERMISSION_MISSING,StorageAccess.selectTree(c,candidate,1).error,"replacement without write grant rejected");
+   eq(StorageAccess.ERROR_GAME_DIRECTORY_SELECTED,StorageAccess.selectTree(c,tree("primary:Games-invalid-preserve"),3).error,"game-root replacement rejected");
+   Uri unsupported=Uri.parse("content://com.example.cloud.documents/tree/cloud%3Auser");
+   eq(StorageAccess.ERROR_UNSUPPORTED_PROVIDER,StorageAccess.selectTree(c,unsupported,3).error,"unsupported-provider replacement rejected");
+   eq(active.toString(),c.preferences().getString(StorageAccess.TREE_URI_KEY,null),"all failed replacements retain active URI");
+   eq(activeDirectory.getCanonicalPath(),c.preferences().getString(StorageAccess.TREE_PATH_KEY,null),"all failed replacements retain active path");
+   eq(3,persisted(c,active),"all failed replacements retain active read/write grant");
+   eq(0,persisted(c,candidate),"rejected game folder never acquires a persisted grant");
+   eq(0,persisted(c,unsupported),"unsupported provider never acquires a persisted grant");
+  }
+  private static void clearSelectionScopesGrantCleanup()throws Exception{
+   mkdir("Games-clear-active");mkdir("Games-clear-orphan");TestContext c=context();
+   Uri active=tree("primary:Games-clear-active");Uri orphan=tree("primary:Games-clear-orphan");
+   Uri otherProvider=Uri.parse("content://com.example.cloud.documents/tree/cloud%3Auser");
+   check(StorageAccess.selectTree(c,active,3).isSuccess(),"active grant before clear");
+   c.getContentResolver().addPersistedPermission(orphan,true,true);
+   c.getContentResolver().addPersistedPermission(otherProvider,true,true);
+   eq(3,persisted(c,active),"active grant initially persisted");eq(3,persisted(c,orphan),"orphan storage grant initially persisted");
+   StorageAccess.clearSelection(c);
+   eq(null,c.preferences().getString(StorageAccess.TREE_URI_KEY,null),"clear removes selected URI");
+   eq(null,c.preferences().getString(StorageAccess.TREE_PATH_KEY,null),"clear removes selected path");
+   eq(0,persisted(c,active),"clear releases active storage grant");
+   eq(0,persisted(c,orphan),"clear prunes orphan storage tree grants");
+   eq(3,persisted(c,otherProvider),"clear leaves unrelated provider grants untouched");
+   eq(1,c.getContentResolver().getPersistedUriPermissions().size(),"only unrelated provider grant remains");
+  }
+private static TestContext context(){return new TestContext(new File(tempRoot,"native").getAbsolutePath());}
  private static Uri tree(String id){try{return Uri.parse("content://com.android.externalstorage.documents/tree/"+java.net.URLEncoder.encode(id,"UTF-8").replace("+","%20"));}catch(Exception e){throw new AssertionError(e);}}
  private static int persisted(TestContext c,Uri u){int f=0;for(android.content.UriPermission p:c.getContentResolver().getPersistedUriPermissions())if(u.equals(p.getUri()))f|=(p.isReadPermission()?1:0)|(p.isWritePermission()?2:0);return f;}
  private static boolean has(int f,int b){return(f&b)!=0;}private static File mkdir(String p)throws Exception{File d=new File(primaryRoot,p);if(!d.exists()&&!d.mkdirs())throw new IllegalStateException("mkdir "+p);return d;}
