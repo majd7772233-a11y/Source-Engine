@@ -75,10 +75,12 @@ assert r'report.append("\n\n")' in diagnostics, "section breaks are missing from
 assert "LiquidGlassTheme.markHeading(title)" in launcher, "library title is not marked as an accessibility heading"
 assert "LiquidGlassTheme.markHeading(name)" in launcher, "game card titles are not marked as accessibility headings"
 assert "announceForAccessibility" in launcher, "dynamic scan/advanced state announcements are missing"
+assert "onBackPressed()" in launcher and "advancedPanel.setVisibility(View.GONE)" in launcher, "Back cannot dismiss advanced settings"
 assert "srceng_library_card_accessibility" in launcher, "game cards lack a meaningful TalkBack summary"
 glass = (root / "src/me/nillerusr/LiquidGlassTheme.java").read_text(encoding="utf-8")
 assert "setMinWidth(Math.max(button.getMinimumWidth(), dp(button, 48)))" in glass, "glass-styled actions lack a minimum touch width"
 assert "new LayerDrawable(new Drawable[] { base, sheen })" in glass, "layered glass sheen is missing"
+assert "class SpecularSheenDrawable" in glass and "new RadialGradient" in glass and "new LinearGradient" in glass, "soft glass reflections and color bleed are missing"
 assert "Build.VERSION.SDK_INT >= 28" in glass and "view.setAccessibilityHeading(true)" in glass, "accessibility heading API is not guarded"
 assert "liquid_motion" in launcher and "motionToggle" in launcher, "motion-off preference is not wired"
 
