@@ -251,3 +251,12 @@ A further source review found that successful folder changes replaced the saved 
 ### 2026-10-23 — Stage 13 legacy API compatibility review
 
 The storage-tree grant cleanup helper was moved into the existing API-19 nested compatibility class after review found a direct android.content.UriPermission reference in the outer class, which declares API 17 as the minimum. The Stage 13 verifier now guards against such references outside Api19. This is a source-compatibility safeguard; actual API 17/18 class-loading and document-provider behavior remain to be tested on suitable runtime targets.
+
+
+## Stage 15 — Input-state recovery and gameplay control verification (2026-10-24)
+
+Reinspection of TouchControlsOverlay found that input ownership was coupled to the Android View and therefore not directly exercised by JVM tests. Added TouchInputState as a platform-independent key-ownership layer; it reference-counts concurrent button/joystick ownership and emits key-up only after the last owner releases. The Stage 15 JVM suite covers two pointers sharing one key, ownership overlapping with movement, pointer-ID reuse, and idempotent release-all cleanup.
+
+The overlay now releases active touch keys/fire before showing its modal settings menu and on loss of window focus, pause/stop, configuration/viewport size change, detachment, and ACTION_CANCEL. Edit-mode drags are single-pointer-owned. A Stage 15 static verifier checks these call paths, validates the existing SDL physical keyboard/mouse/controller routes, and is wired into canonical CI.
+
+**Scope and limitations:** this is source-level hardening plus host-JVM regression evidence, not a gameplay test. The digital pad emits WASD, jump emits Space, use emits E, reload emits R, and fire emits mouse button 1. It is not analogue joystick input, and bindings may not match every game/mod. Real-game simultaneous input, touch cancellation, profile persistence after process death, hardware keyboard/mouse/controller hot-plug, renderer/lifecycle, and per-device compatibility remain unverified until the physical-device checklist is run.
