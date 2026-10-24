@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 storage reliability and Stage 14 discovery/launch-state work have source-level changes, but their physical-device/runtime acceptance remains open. Stage 15 input-control source implementation is complete and has passed the latest canonical CI; device/game acceptance is deliberately deferred until all numbered implementation stages are finished. Stage 16 localization/RTL/static work is verified, but the genuine Liquid Glass visual system and source-level accessibility gaps still need implementation, so Stage 16 is not complete yet. Physical-device testing for Stages 13–16 is deferred to the consolidated pre-final test window after Stage 19. Stages 17–19 follow Stage 16. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Stage 16 work starts from canonical head 576a193834266967b52a75e6d2c7de354a377f05. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
+> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 storage reliability and Stage 14 discovery/launch-state work have source-level changes, but their physical-device/runtime acceptance remains open. Stage 15 input-control source implementation is complete and has passed the latest canonical CI; device/game acceptance is deliberately deferred until all numbered implementation stages are finished. Stage 16 source-level Liquid Glass/accessibility/localization implementation is complete on the candidate commit; physical rendering, TalkBack and performance acceptance is deferred to Stage 18. Physical-device testing for Stages 13–16 is deferred to the consolidated pre-final test window after Stage 19. Stages 17–19 follow Stage 16. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Stage 16 work starts from canonical head 576a193834266967b52a75e6d2c7de354a377f05. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
 
 ## 1. Product goal
 
@@ -212,18 +212,19 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Implementation acceptance:** source/static checks and JVM regressions pass in canonical CI (latest checked run: [39847170781](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39847170781)). Stage 15 source implementation is complete. Device/game acceptance is intentionally outstanding and moved to Stage 18; do not generalize compatibility before that evidence exists.
 
-### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (IN PROGRESS — NOT COMPLETE)
+### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (SOURCE IMPLEMENTATION COMPLETE; DEVICE ACCEPTANCE DEFERRED TO STAGE 18)
 
-- [ ] Complete source-level UI/UX and accessibility audit across first run, picker, empty library, scan progress/failure, game details, advanced settings, launch failure, About and dialogs. Physical review is deferred to Stage 18.
-- [x] Add a canonical CI verifier for complete default/Arabic string-key coverage and format-placeholder parity (156 string keys in each locale at this commit); improve the first-game Arabic call to action and the dynamic scan-result wording.
-- [x] Enable Android RTL layout mirroring and replace the directory-picker activity's hard-coded English label with a localized resource.
-- [x] Fix compatibility-diagnostics formatting: report separators now create actual new lines rather than displaying literal backslash-n sequences.
-- [x] Extend the workflow meta-validator to require all stage verifier scripts from 0 through 16, so a newly added quality gate cannot be omitted unnoticed.
-- [ ] Implement source-level accessibility semantics: meaningful TalkBack labels/state announcements, keyboard/controller focus, touch targets, font scaling, contrast, and cancel/back behavior. Physical validation is deferred to Stage 18.
-- [ ] Implement and source-review the genuine Liquid Glass design system (layered translucent materials, depth, highlights/reflections, controlled blur/refraction-like treatment and motion). Gradients alone are not proof of a full glass effect. Physical rendering review is deferred to Stage 18.
-- [ ] Implement explicit older-API/low-end fallbacks and a motion-off path in source. Verify readability, smoothness and thermal cost during the Stage 18 device window.
+- [x] Audit the source-level first-run, picker, empty-library, scan progress/failure, game-card/details, advanced-settings, launch-error, About and dialog paths. Keep real-device visual/TalkBack review in Stage 18.
+- [x] Keep the CI verifier enforcing complete default/Arabic string-key coverage and format-placeholder parity; preserve the corrected Arabic first-game call to action and scan-result wording.
+- [x] Enable Android RTL layout mirroring and localize the directory-picker activity label.
+- [x] Fix compatibility-diagnostics formatting so report separators render as actual line breaks.
+- [x] Keep workflow meta-validation requiring all Stage 0–16 verifier scripts.
+- [x] Add meaningful localized TalkBack summaries to game cards, semantic heading markers guarded for API 28+, live scan-state announcements, advanced-panel open/close announcements and focus return/transfer, and accessible labels for dynamic scan actions.
+- [x] Enforce at least 48dp touch width/height for styled actions, preserve sp text sizing and selectable long details, and improve About-dialog readability without clamping user font scale.
+- [x] Strengthen the Liquid Glass surface with layered translucent base/sheen, rounded specular edge, existing colored ambient light, pressed/focused/disabled button states, and a persisted motion-off path. No mandatory RenderEffect/blur API is used, so older Android versions retain the layered fallback.
+- [x] Verify the source implementation with scripts/verify-stage16.sh, including localized accessibility strings, heading API guard, announcements, touch-target constraints and layered surfaces.
 
-**Acceptance:** source-level visual/accessibility implementation and automated checks are complete. Physical screenshots, TalkBack/focus checks, rendering quality and performance measurements are deferred to Stage 18 by user request; Stage 16 must not be marked complete until its remaining source-level Liquid Glass/accessibility work is actually implemented.
+**Acceptance:** source-level visual/accessibility implementation and automated checks are complete. Physical screenshots, TalkBack/focus checks, RTL/font-scale layout, rendering quality and performance/thermal measurements remain consolidated in Stage 18; Stage 16 does not claim device acceptance.
 
 ### Stage 17 — Feature truth, settings behavior and optional online/update capabilities
 
