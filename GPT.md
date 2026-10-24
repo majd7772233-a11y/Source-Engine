@@ -432,4 +432,13 @@ Use this section for new observations that do not yet fit another heading. Date 
 
 - Stage 16 follow-up: advanced-settings Back now collapses the panel and restores focus before normal activity Back behavior. The glass overlay now draws a soft linear highlight, radial color bleed and a rounded specular edge within the surface; these are API-17-compatible and do not require RenderEffect. The verifier explicitly guards both behaviors.
 
-- Acceptance correction: no canonical Actions run result is available for the current source head yet. Keep Stage 16 open until the Stage 16 verifier and full workflow pass on this exact head; do not infer CI success from source inspection or earlier commits.
+- Acceptance correction superseded by canonical run [40125463160](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125463160) on commit `c5c556a6b4072690885d2dffe25de547af07da54`: the Stage 16 verifier and full workflow passed on that source head. Physical TalkBack, RTL/font-scale, visual, motion and thermal checks remain in Stage 18; CI does not establish device acceptance.
+
+
+### 2026-10-24 — Stage 13 storage-selection durability CI result
+
+- Canonical Android workflow [40125463160](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125463160) passed on `c5c556a6b4072690885d2dffe25de547af07da54`.
+- All Stage 0–16 source verifiers passed. Host-JVM regression tests passed 80 assertions; Stage 13 storage-specific tests passed 101 assertions, including both injected preference-commit failure paths; Stage 14 passed 32 assertions and Stage 15 touch-input-state tests passed 18 assertions. Workflow validation passed.
+- The CI verification build succeeded. APK verification passed for `com.magd.source.engine`, `armeabi-v7a`, 35 ELF libraries, 56,598,623 bytes, SHA-256 `ff64726e5ffbd3008911d12be3c6070711bfb204aaf4a69225125d5d029dc7e4`.
+- The license/source-provenance gate explicitly returned `RELEASE BLOCKED`; no APK artifact was uploaded and signing/release steps were skipped. This remains fail-closed by design.
+- Physical Android picker/provider testing remains not run and deferred to the consolidated Stage 18 acceptance window. Stage 13 is therefore not complete yet.
