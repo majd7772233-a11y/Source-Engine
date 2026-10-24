@@ -420,3 +420,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Commit 979f9fc adds the Stage 15 static verifier to canonical CI and expands the physical-device acceptance checklist.
 - Fixed mapping remains WASD/Space/E/R/mouse button 1. No analogue movement or universal remapping is claimed.
 - Stage 15 remains open until an approved APK is available through the independent rights gate and an actual compatible game is tested on physical device(s). Do not bypass the source-provenance/redistribution gate.
+
+
+### 2026-10-24 — Stage 16 source implementation completed; device checks consolidated in Stage 18
+
+- Stage 16 adds localized game-card TalkBack summaries, API-guarded semantic headings, scan status announcements, advanced-panel focus transfer/return and open/close announcements, and 48dp minimum dimensions for dynamically styled action buttons.
+- LiquidGlassTheme composes translucent base and sheen layers with rounded specular edges and keeps the existing ambient color lighting, focused/pressed/disabled states, and persisted motion-off setting. It intentionally avoids requiring RenderEffect/blur, preserving the legacy API fallback; actual rendering quality and performance remain device-acceptance items.
+- About content is more readable and game-card accessibility labels include status, explanation and folder. String-key and placeholder parity remain CI enforced in English/Arabic.
+- Stage 16 is implementation-complete only after its Stage 16 verifier and canonical CI pass. Physical TalkBack, RTL/font-scale, visual, motion and thermal checks remain in Stage 18; no device acceptance is implied.
