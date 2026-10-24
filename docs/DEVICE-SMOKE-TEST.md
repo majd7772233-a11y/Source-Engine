@@ -62,6 +62,12 @@ This checklist is separate from CI. A successful JVM test or APK build is not ev
 - [ ] Enter gameplay, move, fire, jump, use, reload, and test simultaneous movement + fire touches.
 - [ ] Drag/reposition/resize controls, change opacity/sensitivity/preset, hide/show and reset; confirm values persist per game.
 - [ ] Tap outside overlays and test hardware keyboard/mouse, controller connect/disconnect, and volume keys where hardware is available.
+- [ ] Hold movement and fire simultaneously, then independently release each pointer; repeat jump/use/reload while moving. No key or mouse button may stay held after all matching pointers are released.
+- [ ] While movement/fire is held, open the overlay gear menu, invoke system UI, lock/unlock, lose/restore window focus, background/restore, and rotate/resize where supported. Confirm every interruption releases overlay keys and mouse buttons.
+- [ ] Enter control-position edit mode and drag one control while touching elsewhere with a second finger. The second pointer must not hijack the first drag; verify all controls remain inside safe screen bounds.
+- [ ] Switch between two game profiles, change preset/size/opacity/sensitivity/visibility/positions, force-stop and relaunch, then return to the first game. Verify settings persist for the correct game without leaking across profiles.
+- [ ] Validate physical keyboard keys, mouse motion/buttons/wheel, and supported controller buttons/axes. Connect/disconnect/reconnect the controller during gameplay and record the exact device/game; do not generalize a single successful combination.
+- [ ] Confirm the movement pad is digital WASD simulation, not analogue input; note any mod-specific binding mismatch or unsupported input.
 - [ ] Background the game, lock/unlock the device, rotate if supported, return to the app, and exit normally; confirm no stuck input, frozen camera, stale progress, or broken repeated launch.
 - [ ] Verify speaker/headphone/Bluetooth audio where available and check pause/resume.
 - [ ] On Android 10+ where supported, test external gameplay screen recording after explicit system consent; record whether eligible game audio is captured and whether stopping/revoking capture ends the session. Record the recorder/API/device. Source Engine itself does not start recording.
