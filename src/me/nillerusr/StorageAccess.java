@@ -34,6 +34,7 @@ public final class StorageAccess {
     public static final int ERROR_INVALID_SELECTION = 12;
     public static final int ERROR_WRITE_PERMISSION_MISSING = 13;
     public static final int ERROR_GRANT_REVOKED = 14;
+    public static final int ERROR_SELECTION_SAVE_FAILED = 15;
 
     public static final class SelectionResult {
         public final int error;
@@ -97,8 +98,9 @@ public final class StorageAccess {
         if (context == null || uri == null) return new SelectionResult(ERROR_INVALID_SELECTION, null);
         if (Build.VERSION.SDK_INT < 21) return new SelectionResult(ERROR_UNSUPPORTED_ANDROID, null);
 
-        String priorUri = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getString(TREE_URI_KEY, null);
+        SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String priorUri = preferences.getString(TREE_URI_KEY, null);
+        String priorPath = preferences.getString(TREE_PATH_KEY, null);
         boolean reselectingCurrentTree = isSameUri(priorUri, uri);
 
         int grants = resultFlags & (Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -136,11 +138,23 @@ public final class StorageAccess {
             return new SelectionResult(accessError, mapped.path);
         }
 
-        SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        preferences.edit().putString(TREE_URI_KEY, uri.toString())
-                .putString(TREE_PATH_KEY, mapped.path).apply();
-        // Replace the grant only after this new selection has fully passed validation and
-        // its URI/path pair has been stored. Failed attempts must keep the old selection usable.
+        // Commit the selection synchronously before pruning any old grant. apply() can be
+        // lost to process death in the exact window where the old permission is being released.
+        boolean saved = preferences.edit().putString(TREE_URI_KEY, uri.toString())
+                .putString(TREE_PATH_KEY, mapped.path).commit();
+        if (!saved) {
+            // SharedPreferences may already have updated its in-memory map when commit() reports
+            // a disk-write failure. Restore the previous pair and keep all grants: after process
+            // restart, either URI might be the one recovered from disk.
+            SharedPreferences.Editor rollback = preferences.edit();
+            if (priorUri == null) rollback.remove(TREE_URI_KEY);
+            else rollback.putString(TREE_URI_KEY, priorUri);
+            if (priorPath == null) rollback.remove(TREE_PATH_KEY);
+            else rollback.putString(TREE_PATH_KEY, priorPath);
+            rollback.commit();
+            return new SelectionResult(ERROR_SELECTION_SAVE_FAILED, null);
+        }
+        // The old grant is now superseded by a synchronously committed URI/path pair.
         Api19.releaseSupersededTreeGrants(context, uri);
         return new SelectionResult(ERROR_NONE, mapped.path);
     }
@@ -265,6 +279,7 @@ public final class StorageAccess {
             case ERROR_INVALID_SELECTION: return "INVALID_SELECTION";
             case ERROR_WRITE_PERMISSION_MISSING: return "WRITE_PERMISSION_MISSING";
             case ERROR_GRANT_REVOKED: return "GRANT_REVOKED";
+            case ERROR_SELECTION_SAVE_FAILED: return "SELECTION_SAVE_FAILED";
             default: return "UNKNOWN";
         }
     }
@@ -273,6 +288,10 @@ public final class StorageAccess {
         if (context == null) return;
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String value = preferences.getString(TREE_URI_KEY, null);
+        // Remove the durable reference first. If saving the removal fails, retain the grants so
+        // a selection recovered after process restart cannot be left without its permission.
+        boolean cleared = preferences.edit().remove(TREE_URI_KEY).remove(TREE_PATH_KEY).commit();
+        if (!cleared) return;
         if (value != null && Build.VERSION.SDK_INT >= 19) {
             try {
                 Uri uri = Uri.parse(value);
@@ -281,7 +300,6 @@ public final class StorageAccess {
             } catch (RuntimeException ignored) { }
         }
         if (Build.VERSION.SDK_INT >= 19) Api19.releaseSupersededTreeGrants(context, null);
-        preferences.edit().remove(TREE_URI_KEY).remove(TREE_PATH_KEY).apply();
     }
 
     private static boolean containsGameInfo(File directory) {

@@ -8,6 +8,9 @@ import java.util.Set;
 
 public final class InMemorySharedPreferences implements SharedPreferences {
     private final Map<String, Object> values = new HashMap<String, Object>();
+    private boolean failNextCommit;
+
+    public synchronized void setFailNextCommit(boolean value) { failNextCommit = value; }
 
     @Override public synchronized String getString(String key, String fallback) {
         Object value = values.get(key);
@@ -53,6 +56,9 @@ public final class InMemorySharedPreferences implements SharedPreferences {
         @SuppressWarnings("unchecked")
         @Override public boolean commit() {
             synchronized (InMemorySharedPreferences.this) {
+                // Android can mutate its in-memory map even when the backing-file commit fails.
+                boolean succeeded = !failNextCommit;
+                failNextCommit = false;
                 if (clear) values.clear();
                 for (String key : removed) values.remove(key);
                 for (Map.Entry<String, Object> entry : pending.entrySet()) {
@@ -60,8 +66,8 @@ public final class InMemorySharedPreferences implements SharedPreferences {
                     if (value instanceof Set) value = new HashSet<String>((Set<String>) value);
                     values.put(entry.getKey(), value);
                 }
+                return succeeded;
             }
-            return true;
         }
         @Override public void apply() { commit(); }
     }

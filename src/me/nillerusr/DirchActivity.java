@@ -125,6 +125,8 @@ public class DirchActivity extends Activity implements View.OnClickListener {
                 return R.string.srceng_storage_revoked;
             case StorageAccess.ERROR_GRANT_PERSIST_FAILED:
                 return R.string.srceng_storage_grant_failed;
+            case StorageAccess.ERROR_SELECTION_SAVE_FAILED:
+                return R.string.srceng_storage_selection_save_failed;
             case StorageAccess.ERROR_NOT_READABLE:
                 return R.string.srceng_storage_not_readable;
             case StorageAccess.ERROR_NOT_WRITABLE:

@@ -744,6 +744,7 @@ public class LauncherActivity extends Activity {
 			case StorageAccess.ERROR_WRITE_PERMISSION_MISSING: return R.string.srceng_storage_no_write_grant;
 			case StorageAccess.ERROR_READ_PERMISSION_MISSING: return R.string.srceng_storage_no_read_grant;
 			case StorageAccess.ERROR_GRANT_PERSIST_FAILED: return R.string.srceng_storage_grant_failed;
+			case StorageAccess.ERROR_SELECTION_SAVE_FAILED: return R.string.srceng_storage_selection_save_failed;
 			case StorageAccess.ERROR_GRANT_REVOKED: return R.string.srceng_storage_revoked;
 			case StorageAccess.ERROR_VOLUME_UNAVAILABLE: return R.string.srceng_storage_volume_unavailable;
 			case StorageAccess.ERROR_NOT_WRITABLE: return R.string.srceng_storage_not_writable;
