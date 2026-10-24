@@ -428,3 +428,6 @@ Use this section for new observations that do not yet fit another heading. Date 
 - LiquidGlassTheme composes translucent base and sheen layers with rounded specular edges and keeps the existing ambient color lighting, focused/pressed/disabled states, and persisted motion-off setting. It intentionally avoids requiring RenderEffect/blur, preserving the legacy API fallback; actual rendering quality and performance remain device-acceptance items.
 - About content is more readable and game-card accessibility labels include status, explanation and folder. String-key and placeholder parity remain CI enforced in English/Arabic.
 - Stage 16 is implementation-complete only after its Stage 16 verifier and canonical CI pass. Physical TalkBack, RTL/font-scale, visual, motion and thermal checks remain in Stage 18; no device acceptance is implied.
+
+
+- Stage 16 follow-up: advanced-settings Back now collapses the panel and restores focus before normal activity Back behavior. The glass overlay now draws a soft linear highlight, radial color bleed and a rounded specular edge within the surface; these are API-17-compatible and do not require RenderEffect. The verifier explicitly guards both behaviors.
