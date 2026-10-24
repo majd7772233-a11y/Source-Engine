@@ -11,6 +11,7 @@ public final class TouchInputStateTestSuite {
         testJoystickAndButtonShareAKey();
         testPointerReuseReleasesPreviousKey();
         testCancelReleasesEveryHeldKeyExactlyOnce();
+        testRepeatedJoystickStateIsIdempotent();
         System.out.println("Stage 15 touch-input state tests passed: " + assertions + " assertions.");
     }
     private static void testTwoPointersSharingAKey() {
@@ -55,6 +56,18 @@ public final class TouchInputStateTestSuite {
         int count=recorder.events.size(); state.releaseAll();
         equal(count, recorder.events.size(), "repeated cancel does not emit duplicate key-ups");
     }
+
+    private static void testRepeatedJoystickStateIsIdempotent() {
+        Recorder recorder = new Recorder();
+        TouchInputState state = new TouchInputState(recorder);
+        state.setJoystickKey(68, true);
+        state.setJoystickKey(68, true);
+        equal(Arrays.asList("down:68"), recorder.events, "repeated direction state does not duplicate key-down");
+        state.setJoystickKey(68, false);
+        state.setJoystickKey(68, false);
+        equal(Arrays.asList("down:68", "up:68"), recorder.events, "repeated direction release does not duplicate key-up");
+    }
+
     private static final class Recorder implements TouchInputState.Sink {
         final List<String> events = new ArrayList<String>();
         @Override public void keyDown(int keyCode) { events.add("down:" + keyCode); }
