@@ -380,7 +380,8 @@ public final class StorageAccess {
     /** API 21+ document-provider and mounted-volume path resolution. */
     private static final class Api21 {
         static String volumeState(Uri uri) {
-            if (uri == null || !"com.android.externalstorage.documents".equals(uri.getAuthority())) return "unknown";
+            if (uri == null || !"content".equalsIgnoreCase(uri.getScheme())
+                    || !"com.android.externalstorage.documents".equals(uri.getAuthority())) return "unknown";
             try {
                 String id = android.provider.DocumentsContract.getTreeDocumentId(uri);
                 if (id == null) return "unknown";
@@ -409,6 +410,9 @@ public final class StorageAccess {
 
         static PathResult resolvePath(Context context, Uri uri) {
             if (context == null || uri == null) return new PathResult(ERROR_INVALID_SELECTION, null);
+            if (!"content".equalsIgnoreCase(uri.getScheme())) {
+                return new PathResult(ERROR_INVALID_SELECTION, null);
+            }
             if (!"com.android.externalstorage.documents".equals(uri.getAuthority())) {
                 return new PathResult(ERROR_UNSUPPORTED_PROVIDER, null);
             }
