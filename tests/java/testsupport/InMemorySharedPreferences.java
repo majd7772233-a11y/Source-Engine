@@ -14,7 +14,10 @@ public final class InMemorySharedPreferences implements SharedPreferences {
 
     @Override public synchronized String getString(String key, String fallback) {
         Object value = values.get(key);
-        return value instanceof String ? (String) value : fallback;
+        if (value == null) return fallback;
+        if (value instanceof String) return (String) value;
+        // Android SharedPreferences#getString throws for a key stored with another value type.
+        throw new ClassCastException("Preference is not a String: " + key);
     }
     @Override public synchronized int getInt(String key, int fallback) {
         Object value = values.get(key);

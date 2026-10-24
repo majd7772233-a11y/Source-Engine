@@ -401,3 +401,11 @@ Update this ledger at the end of every numbered implementation milestone with co
 - Fixed a concrete user-facing formatting defect in compatibility diagnostics: Java was appending the literal characters \n instead of line breaks, making the device report harder to read.
 - Added a Stage 16 CI verifier for locale-key/format-placeholder parity and the new source-level regressions; wired it into the canonical workflow. Corrected Arabic empty-library CTA copy and dynamic scan-count wording.
 - Device screenshots, TalkBack/keyboard focus, font scaling, contrast, low-motion/old-API appearance and thermal behavior are still pending. This is a partial implementation milestone, not Stage 16 completion.
+
+
+### Stage 13 follow-up — corrupted preference value types (2026-10-24)
+
+- Re-audit found one unhandled corruption shape: Android's `SharedPreferences.getString()` throws `ClassCastException` when either storage-selection key is present with a non-string value. The old predicate read values instead of checking key presence, so a corrupt record could crash before it was cleared or be mistaken for no stored selection.
+- Added defensive reads and made validation use `contains()` to detect even wrong-typed/partial URI-path records. These records now fail closed, clear the selected state, and release stale external-storage tree grants only after the preference cleanup commits.
+- Updated the host preferences fake to reproduce Android's type-mismatch behavior and added regressions for both keys corrupt and a valid URI paired with a wrong-typed path. The Stage 13 static verifier now requires this coverage.
+- This improves corrupt-state handling but does **not** close Stage 13: the original provider error still needs the consolidated physical-device acceptance run, and SAF picker behavior cannot be simulated by this host-JVM test.

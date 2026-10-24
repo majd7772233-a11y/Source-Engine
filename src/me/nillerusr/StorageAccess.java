@@ -62,6 +62,16 @@ public final class StorageAccess {
 
     private StorageAccess() { }
 
+    /** Read a preference defensively: Android throws when a stored value has the wrong type. */
+    private static String getStoredString(SharedPreferences preferences, String key) {
+        if (preferences == null) return null;
+        try {
+            return preferences.getString(key, null);
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
+
     private static boolean isSameUri(String storedUri, Uri selectedUri) {
         if (storedUri == null || selectedUri == null) return false;
         try {
@@ -99,8 +109,8 @@ public final class StorageAccess {
         if (Build.VERSION.SDK_INT < 21) return new SelectionResult(ERROR_UNSUPPORTED_ANDROID, null);
 
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String priorUri = preferences.getString(TREE_URI_KEY, null);
-        String priorPath = preferences.getString(TREE_PATH_KEY, null);
+        String priorUri = getStoredString(preferences, TREE_URI_KEY);
+        String priorPath = getStoredString(preferences, TREE_PATH_KEY);
         boolean reselectingCurrentTree = isSameUri(priorUri, uri);
 
         int grants = resultFlags & (Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -178,8 +188,9 @@ public final class StorageAccess {
     public static boolean hasStoredTreeSelection(Context context) {
         if (context == null) return false;
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        return preferences.getString(TREE_URI_KEY, null) != null
-                || preferences.getString(TREE_PATH_KEY, null) != null;
+        // contains() also sees a key whose value is of the wrong type; that record must
+        // enter validation/cleanup rather than silently bypassing the stored-grant check.
+        return preferences.contains(TREE_URI_KEY) || preferences.contains(TREE_PATH_KEY);
     }
 
     /** Revalidate grants, volume state and canonical path before every native launch. */
@@ -187,10 +198,12 @@ public final class StorageAccess {
         if (context == null) return new SelectionResult(ERROR_INVALID_SELECTION, null);
         if (Build.VERSION.SDK_INT < 21) return new SelectionResult(ERROR_UNSUPPORTED_ANDROID, null);
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String uriValue = preferences.getString(TREE_URI_KEY, null);
-        String pathValue = preferences.getString(TREE_PATH_KEY, null);
-        if (uriValue == null && pathValue == null) return new SelectionResult(ERROR_INVALID_SELECTION, null);
-        if (uriValue == null || pathValue == null) {
+        boolean hasUriKey = preferences.contains(TREE_URI_KEY);
+        boolean hasPathKey = preferences.contains(TREE_PATH_KEY);
+        String uriValue = getStoredString(preferences, TREE_URI_KEY);
+        String pathValue = getStoredString(preferences, TREE_PATH_KEY);
+        if (!hasUriKey && !hasPathKey) return new SelectionResult(ERROR_INVALID_SELECTION, null);
+        if (!hasUriKey || !hasPathKey || uriValue == null || pathValue == null) {
             clearSelection(context);
             return new SelectionResult(ERROR_INVALID_SELECTION, null);
         }
@@ -287,7 +300,7 @@ public final class StorageAccess {
     public static void clearSelection(Context context) {
         if (context == null) return;
         SharedPreferences preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String value = preferences.getString(TREE_URI_KEY, null);
+        String value = getStoredString(preferences, TREE_URI_KEY);
         // Remove the durable reference first. If saving the removal fails, retain the grants so
         // a selection recovered after process restart cannot be left without its permission.
         boolean cleared = preferences.edit().remove(TREE_URI_KEY).remove(TREE_PATH_KEY).commit();

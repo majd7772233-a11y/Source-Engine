@@ -38,7 +38,10 @@ checks={
  "JVM suite rejects non-content external-storage URI schemes":"invalidUriSchemeRejected()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text() and "non-content URI rejected before local-path mapping" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
  "failed replacements retain previous selection and grant":"failedReplacementPreservesSelection()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text() and "all failed replacements retain active URI" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
  "selection cleanup prunes only external-storage tree grants":"clearSelectionScopesGrantCleanup()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text() and "clear leaves unrelated provider grants untouched" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
- "new missing-write message is localized in English and Arabic":all("srceng_storage_no_write_grant" in v for v in strings.values())}
+ "new missing-write message is localized in English and Arabic":all("srceng_storage_no_write_grant" in v for v in strings.values()),
+ "wrong-typed preference values are read defensively and treated as stored corrupt state": "getStoredString(SharedPreferences preferences, String key)" in s and "catch (ClassCastException e)" in s and "preferences.contains(TREE_URI_KEY) || preferences.contains(TREE_PATH_KEY)" in s,
+ "Stage 13 regression covers corrupt and partially corrupt preference records": "corruptTypedSelectionIsCleared()" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text() and "wrong-typed selection rejected without crashing" in (r/"tests/java/me/nillerusr/Stage13StorageAccessTestSuite.java").read_text(),
+ "test preferences emulate Android wrong-type getString behavior": "throw new ClassCastException" in (r/"tests/java/testsupport/InMemorySharedPreferences.java").read_text()}
 bad=[k for k,v in checks.items() if not v]
 if bad:raise SystemExit("Stage 13 static checks failed: "+", ".join(bad))
 print("Stage 13 static checks passed: "+str(len(checks))+" assertions.")

@@ -442,3 +442,11 @@ Use this section for new observations that do not yet fit another heading. Date 
 - The CI verification build succeeded. APK verification passed for `com.magd.source.engine`, `armeabi-v7a`, 35 ELF libraries, 56,598,623 bytes, SHA-256 `ff64726e5ffbd3008911d12be3c6070711bfb204aaf4a69225125d5d029dc7e4`.
 - The license/source-provenance gate explicitly returned `RELEASE BLOCKED`; no APK artifact was uploaded and signing/release steps were skipped. This remains fail-closed by design.
 - Physical Android picker/provider testing remains not run and deferred to the consolidated Stage 18 acceptance window. Stage 13 is therefore not complete yet.
+
+
+### Stage 13 resumed — typed preference corruption guard (2026-10-24)
+
+- Canonical branch was rechecked before editing; Stage 13 storage code already covered persistable read/write grants, external-storage-only path mapping, mount/access checks, traversal rejection, scoped cleanup and failed preference commits.
+- Added a fail-closed guard for corrupt SharedPreferences entries. Android `getString()` may throw ClassCastException when a preference key holds another type; storage URI/path reads now handle that case and key-presence checks ensure the damaged record still enters validation instead of bypassing it.
+- New JVM regressions simulate Android's actual wrong-type getter behavior and verify corrupt URI+path records and URI+wrong-type-path records are cleared and their stale external-storage tree grants released.
+- Stage 13 remains open for the physical-device SAF/provider and removable-volume matrix; these source/JVM checks are not real-device acceptance.

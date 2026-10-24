@@ -17,3 +17,9 @@ All notable user-visible changes are recorded here. Versioned releases are produ
 - source-engine-android-debug is a debug build for development and diagnostics.
 - source-engine-android-release-* is generated only through the explicit release path, built with the Ant release target, aligned, signed using GitHub Actions secrets, and verified after signing.
 - Signed artifacts include a SHA-256 report and certificate/signature verification report. A successful CI build does not prove real-device or game compatibility.
+
+
+## Stage 13 — Storage reliability
+
+- Hardened recovery from corrupt folder-selection preferences, including Android's wrong-type `SharedPreferences.getString()` exception case.
+- Added regression coverage for fully and partially corrupted selection records and stale-grant cleanup. Physical-device provider verification remains pending.

@@ -3,9 +3,28 @@ import android.content.ContentResolver;import android.content.Intent;import andr
 import java.io.File;import java.io.FileOutputStream;import java.io.OutputStreamWriter;import java.io.Writer;import testsupport.TestContext;
 public final class Stage13StorageAccessTestSuite {
  private static int assertions;private static File tempRoot,primaryRoot;
- public static void main(String[] a)throws Exception{tempRoot=File.createTempFile("srceng-stage13","root");if(!tempRoot.delete()||!tempRoot.mkdirs())throw new IllegalStateException("temp root");primaryRoot=new File(tempRoot,"primary");if(!primaryRoot.mkdirs())throw new IllegalStateException("primary root");Environment.setExternalStorageDirectory(primaryRoot);Environment.setExternalStorageState(primaryRoot,Environment.MEDIA_MOUNTED);Build.VERSION.SDK_INT=30;try{pickerFlags();selectionState();replacementReleasesOldGrant();failedReplacementPreservesSelection();selectionSaveFailurePreservesGrants();clearSelectionScopesGrantCleanup();clearCommitFailureKeepsGrants();grantFlags();invalidUriSchemeRejected();unsupportedProviderDiagnostics();successUnicodeAndDiagnostics();gameRootRejected();traversalRejected();persistFailure();revokedGrant();unmounted();readOnly();persistedReadOnly();staleAndPartialState();System.out.println("Stage 13 storage tests passed: "+assertions+" assertions.");}finally{remove(tempRoot);}}
+ public static void main(String[] a)throws Exception{tempRoot=File.createTempFile("srceng-stage13","root");if(!tempRoot.delete()||!tempRoot.mkdirs())throw new IllegalStateException("temp root");primaryRoot=new File(tempRoot,"primary");if(!primaryRoot.mkdirs())throw new IllegalStateException("primary root");Environment.setExternalStorageDirectory(primaryRoot);Environment.setExternalStorageState(primaryRoot,Environment.MEDIA_MOUNTED);Build.VERSION.SDK_INT=30;try{pickerFlags();selectionState();corruptTypedSelectionIsCleared();replacementReleasesOldGrant();failedReplacementPreservesSelection();selectionSaveFailurePreservesGrants();clearSelectionScopesGrantCleanup();clearCommitFailureKeepsGrants();grantFlags();invalidUriSchemeRejected();unsupportedProviderDiagnostics();successUnicodeAndDiagnostics();gameRootRejected();traversalRejected();persistFailure();revokedGrant();unmounted();readOnly();persistedReadOnly();staleAndPartialState();System.out.println("Stage 13 storage tests passed: "+assertions+" assertions.");}finally{remove(tempRoot);}}
  private static void pickerFlags(){Intent i=StorageAccess.createTreePickerIntent();check(Intent.ACTION_OPEN_DOCUMENT_TREE.equals(i.getAction()),"SAF picker");int f=i.getFlags();check(has(f,1),"read requested");check(has(f,2),"write requested");check(has(f,64),"persistable requested");check(has(f,128),"prefix requested");}
  private static void selectionState(){TestContext c=context();check(!StorageAccess.hasStoredTreeSelection(c),"empty selection state is absent");c.preferences().edit().putString(StorageAccess.TREE_URI_KEY,"content://example/tree").apply();check(StorageAccess.hasStoredTreeSelection(c),"URI-only corrupt state still triggers validation");c.preferences().edit().remove(StorageAccess.TREE_URI_KEY).putString(StorageAccess.TREE_PATH_KEY,"/stale/path").apply();check(StorageAccess.hasStoredTreeSelection(c),"path-only corrupt state still triggers validation");c.preferences().edit().remove(StorageAccess.TREE_PATH_KEY).apply();check(!StorageAccess.hasStoredTreeSelection(c),"fully cleared selection state is absent");}
+ private static void corruptTypedSelectionIsCleared()throws Exception{
+  mkdir("Games-corrupt-selection");
+  TestContext c=context();Uri stale=tree("primary:Games-corrupt-selection");
+  c.getContentResolver().addPersistedPermission(stale,true,true);
+  c.preferences().edit().putInt(StorageAccess.TREE_URI_KEY,17).putLong(StorageAccess.TREE_PATH_KEY,21L).commit();
+  check(StorageAccess.hasStoredTreeSelection(c),"wrong-typed URI/path keys still trigger storage validation");
+  eq(StorageAccess.ERROR_INVALID_SELECTION,StorageAccess.validateSelectedTree(c).error,"wrong-typed selection rejected without crashing");
+  check(!c.preferences().contains(StorageAccess.TREE_URI_KEY)&&!c.preferences().contains(StorageAccess.TREE_PATH_KEY),"wrong-typed selection state cleared");
+  eq(0,persisted(c,stale),"orphaned tree grant released after corrupt state cleanup");
+
+  mkdir("Games-corrupt-path");
+  TestContext partial=context();Uri active=tree("primary:Games-corrupt-path");
+  partial.getContentResolver().addPersistedPermission(active,true,true);
+  partial.preferences().edit().putString(StorageAccess.TREE_URI_KEY,active.toString()).putInt(StorageAccess.TREE_PATH_KEY,42).commit();
+  check(StorageAccess.hasStoredTreeSelection(partial),"URI plus wrong-typed path still triggers validation");
+  eq(StorageAccess.ERROR_INVALID_SELECTION,StorageAccess.validateSelectedTree(partial).error,"wrong-typed path rejected");
+  check(!partial.preferences().contains(StorageAccess.TREE_URI_KEY)&&!partial.preferences().contains(StorageAccess.TREE_PATH_KEY),"partial corrupt selection cleared");
+  eq(0,persisted(partial,active),"partial corrupt selection grant released");
+ }
  private static void replacementReleasesOldGrant()throws Exception{
   mkdir("Games-old-grant");mkdir("Games-new-grant");mkdir("Games-orphan-grant");TestContext c=context();Uri oldUri=tree("primary:Games-old-grant");Uri newUri=tree("primary:Games-new-grant");Uri orphanUri=tree("primary:Games-orphan-grant");
   check(StorageAccess.selectTree(c,oldUri,3).isSuccess(),"initial folder grant");c.getContentResolver().addPersistedPermission(orphanUri,true,true);eq(2,c.getContentResolver().getPersistedUriPermissions().size(),"active and orphaned tree grants present");
