@@ -219,9 +219,9 @@ The numbered sequence below remains as historical implementation milestones; thi
 - [x] Enable Android RTL layout mirroring and localize the directory-picker activity label.
 - [x] Fix compatibility-diagnostics formatting so report separators render as actual line breaks.
 - [x] Keep workflow meta-validation requiring all Stage 0–16 verifier scripts.
-- [x] Add meaningful localized TalkBack summaries to game cards, semantic heading markers guarded for API 28+, live scan-state announcements, advanced-panel open/close announcements and focus return/transfer, and accessible labels for dynamic scan actions.
+- [x] Add meaningful localized TalkBack summaries to game cards, semantic heading markers guarded for API 28+, live scan-state announcements, advanced-panel open/close announcements and focus return/transfer, accessible labels for dynamic scan actions, and Back handling that collapses advanced settings before leaving the screen.
 - [x] Enforce at least 48dp touch width/height for styled actions, preserve sp text sizing and selectable long details, and improve About-dialog readability without clamping user font scale.
-- [x] Strengthen the Liquid Glass surface with layered translucent base/sheen, rounded specular edge, existing colored ambient light, pressed/focused/disabled button states, and a persisted motion-off path. No mandatory RenderEffect/blur API is used, so older Android versions retain the layered fallback.
+- [x] Strengthen the Liquid Glass surface with layered translucent base/sheen, soft linear and radial specular reflections, rounded edge treatment, existing colored ambient lighting, pressed/focused/disabled button states, and a persisted motion-off path. No mandatory RenderEffect/blur API is used, so older Android versions retain the layered fallback.
 - [x] Verify the source implementation with scripts/verify-stage16.sh, including localized accessibility strings, heading API guard, announcements, touch-target constraints and layered surfaces.
 
 **Acceptance:** source-level visual/accessibility implementation and automated checks are complete. Physical screenshots, TalkBack/focus checks, RTL/font-scale layout, rendering quality and performance/thermal measurements remain consolidated in Stage 18; Stage 16 does not claim device acceptance.
