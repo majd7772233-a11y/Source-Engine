@@ -19,7 +19,7 @@ checks = {
     "motion preference persists": 'putBoolean("liquid_motion", checked)' in launcher,
     "static fallback avoids Android 12-only blur": "RenderEffect" not in theme and "animate ?" in theme,
     "button pressed/focused/disabled states": "state_pressed" in theme and "state_focused" in theme and "state_enabled" in theme,
-    "glass material includes translucent gradients and edge strokes": "setStroke(1, edge)" in theme and "GradientDrawable.Orientation.TL_BR" in theme,
+    "glass material includes translucent gradients and density-aware edge strokes": "base.setStroke(Math.max(1, (int) density), edge)" in theme and "GradientDrawable.Orientation.TL_BR" in theme,
     "launcher screen uses shared theme": "LiquidGlassTheme.apply(this" in launcher,
     "game cards use consistent material": 'card.setTag("liquid_glass_card")' in launcher and "styleLibraryCard(view, motionEnabled)" in theme,
     "dialogs use shared glass surfaces": "styleGlassDialog(builder.show())" in launcher and "LiquidGlassTheme.panel(0xEE152737" in launcher,
