@@ -14,13 +14,32 @@ runner=(root/"scripts/test-java.sh").read_text(encoding="utf-8")
 workflow=(root/".github/workflows/build.yml").read_text(encoding="utf-8")
 def strings(path): return {n.get("name"):"".join(n.itertext()) for n in ET.parse(root/path).getroot() if n.tag=="string"}
 en=strings("res/values/strings.xml"); ar=strings("res/values-ar/strings.xml")
+def snapshot_block_is_safe(source):
+    start = source.find("boolean completed = GameDiscovery.canCommitSnapshot(")
+    if start < 0:
+        return False
+    gate = source.find("if (completed) {", start)
+    if gate < 0:
+        return False
+    depth = 1
+    pos = gate + len("if (completed) {")
+    while pos < len(source) and depth:
+        if source[pos] == "{":
+            depth += 1
+        elif source[pos] == "}":
+            depth -= 1
+        pos += 1
+    if depth != 0:
+        return False
+    block = source[gate:pos]
+    return "GameDiscovery.savePaths(LauncherActivity.this, discovered);" in block and "renderGameLibrary();" in block
 checks={
  "root failure classification":all(x in discovery for x in ("enum RootStatus","INVALID_INPUT","UNAVAILABLE","NOT_DIRECTORY","UNREADABLE","ACCESS_DENIED")),
  "cooperative scanner cancellation":all(x in discovery for x in ("class CancellationToken","token.isCancelled()","boolean cancelled")),
  "only fully complete multi-root scans may replace a snapshot":all(x in discovery for x in ("canCommitSnapshot(List<ScanResult> results","results.isEmpty()","!result.isComplete()")),
  "zero candidates requires complete traversal":"return isComplete() && entries.isEmpty()" in discovery,
  "launcher wires cancel UI and scan token":all(x in launcher for x in ("currentScanCancellation","token.cancel()","scanCancelButton","scanResults")),
- "only complete branch redraws the existing library":"if (completed) {" in launcher and "renderGameLibrary();" in launcher and "GameDiscovery.canCommitSnapshot(" in launcher,
+ "library redraw and persistence are inside the all-roots-complete branch": snapshot_block_is_safe(launcher),
  "last history remains attempt-only":"Last attempt: %1$s" in en.get("srceng_library_last","") and "آخر محاولة تشغيل" in ar.get("srceng_library_last",""),
  "JVM suite covers missing roots, cancellation, depth and multi-root snapshots":all(x in tests for x in ("testCompleteEmptyIsNotFailure","testUnavailableRootIsDistinct","testCancelledScanCannotCommit","testDepthLimitedScanCannotCommit","testSnapshotRequiresEveryRootToComplete")),
  "JVM suite is invoked":"Stage14GameDiscoveryTestSuite" in runner,
