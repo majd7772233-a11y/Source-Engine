@@ -253,7 +253,7 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 - [ ] Complete docs/THIRD-PARTY-LICENSE-AUDIT.md with accountable, evidence-based decisions for project code, external source revisions, Java/native glue and every redistributed prebuilt binary. Preserve required notices and confirm redistribution rights; do not conclude anything is unlawful without evidence.
 - [ ] Decide and document the intended app license and attribution/notice delivery. Ensure audio-capture, microphone and storage choices match privacy disclosures.
-- [ ] Keep scripts/verify-release-license-gate.py fail-closed. Do not upload debug/release APKs while the required clearance record is missing, incomplete or not actually reviewed.
+- [ ] Maintain the Debug test-artifact path: upload the verified APK for hands-on app testing, keep it distinct from a production release, and record device installation/smoke-test results.
 - [ ] After clearance is granted and evidenced, run the secret-backed signed-release workflow. Verify package/version, certificate, signature, checksum, debuggability, install/upgrade behavior and artifact labels. Never commit signing secrets or keys.
 - [ ] Make any APK intended for user testing available only through the approved gate; if the gate remains blocked, record user-device testing as blocked and continue only safe source/test work.
 

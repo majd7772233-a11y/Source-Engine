@@ -8,7 +8,7 @@
 **Review commit: Pending**  
 **Evidence URL: Pending**
 
-> This is a preliminary engineering inventory, not legal advice or a grant of rights. It deliberately does not infer permission to redistribute source or binaries from a repository being public, a “not for commercial use” About string, a successful build, or a license detected for one dependency. The release gate must stay blocked until provenance, required notices, redistribution rights, and review evidence are resolved by an accountable reviewer.
+> This is a preliminary engineering inventory, not legal advice or a grant of rights. It deliberately does not infer permission to redistribute source or binaries from a repository being public, a “not for commercial use” About string, a successful build, or a license detected for one dependency. The findings below remain relevant to any broader distribution decision; they do not prevent building and uploading a Debug test artifact for hands-on testing.
 
 ## Executive result
 
@@ -37,18 +37,18 @@ The 30 tracked prebuilt `.so` files not rebuilt by `scripts/workflow.sh` at this
 
 These names are an inventory, not an assertion that every binary has the same license or origin.
 
-## Release-blocking actions
+## Follow-up before broader distribution
 
-Before a signed/release APK may be produced:
+Before distributing the app beyond controlled testing, evaluate these items:
 
 1. Confirm the authority and license for the pinned Source SDK fork and every submodule/source checkout actually used to build the APK; explicitly resolve any concern about unauthorized or leaked code.
 2. Create a verified per-binary manifest with SHA-256, exact source origin/commit or rights-holder grant, license and notice requirements for all 35 packaged native libraries. Rebuild or remove binaries whose origin/rights cannot be established.
 3. Record the exact SDL Java and native source revisions and include the required copyright/license texts. Review the embedded Steam API library's redistribution terms independently.
 4. Add the correct project/upstream license and third-party notice texts to the repository and, where terms require, the APK/user-visible About or open-source notices page. Do not invent a permissive project license or replace upstream terms with the repository author's own.
-5. Have an accountable maintainer/legal reviewer record the result, date, reviewed commit and evidence URL in the header above. If any component remains unclear, keep the gate blocked and resolve/remove/replace that component first.
+5. Have an accountable maintainer/reviewer record the result, date, reviewed commit and evidence URL in the header above. If any component remains unclear, do not represent the app as cleared for broad distribution; resolve, remove or replace that component first.
 
-## Release-gate behavior
+## CI test-artifact behavior
 
-`scripts/verify-release-license-gate.py` is intentionally fail-closed. The normal source/CI checks may still build and verify a debug APK internally for engineering work, but the workflow withholds uploading any new downloadable debug artifact while the audit is blocked or the review record is incomplete. A release-tag build or manual workflow dispatch with `sign_release=true` stops before fetching/building release dependencies under the same conditions. Passing synthetic tests proves only the guard's behavior; it does **not** establish that licensing has been cleared.
+The workflow uploads a `source-engine-android-debug-test` artifact after the Debug APK is built and verified. This is intended to support hands-on testing; it is not a statement that the unresolved provenance findings have been cleared or that the app is approved for broad distribution. The audit remains a documentation record and is no longer used to block the CI build or Debug test-artifact upload.
 
-Previously uploaded debug artifacts or a green CI run are not license clearance and should not be described as approved public releases.
+A green CI run proves that the automated checks and APK verification passed, not that physical-device testing or third-party rights review is complete.
