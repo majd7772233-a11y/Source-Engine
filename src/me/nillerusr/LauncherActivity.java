@@ -205,7 +205,15 @@ public class LauncherActivity extends Activity {
 	private static final String LIBRARY_HIDDEN = "library_hidden_paths";
 
 	private int dp(int value) { return (int) (value * getResources().getDisplayMetrics().density + 0.5f); }
-	private Button makeActionButton(int textResource) { Button b = new Button(this); b.setText(textResource); b.setMinHeight(dp(48)); b.setFocusable(true); return b; }
+	private Button makeActionButton(int textResource) {
+		Button button = new Button(this);
+		button.setText(textResource);
+		button.setContentDescription(getText(textResource));
+		button.setMinHeight(dp(48));
+		button.setMinWidth(dp(48));
+		button.setFocusable(true);
+		return button;
+	}
 
 	private void setupGameLibrary(LinearLayout body) {
 		LinearLayout section = new LinearLayout(this);
@@ -221,6 +229,7 @@ public class LauncherActivity extends Activity {
 		title.setTextColor(0xFFFFFFFF);
 		title.setTextSize(25);
 		title.setTypeface(null, Typeface.BOLD);
+		LiquidGlassTheme.markHeading(title);
 		section.addView(title, new LinearLayout.LayoutParams(-1, -2));
 		TextView intro = new TextView(this);
 		intro.setText(R.string.srceng_library_intro);
@@ -234,6 +243,7 @@ public class LauncherActivity extends Activity {
 		librarySummary.setTextSize(13);
 		librarySummary.setPadding(0, dp(4), 0, dp(8));
 		if (Build.VERSION.SDK_INT >= 19) librarySummary.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+		librarySummary.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
 		section.addView(librarySummary, new LinearLayout.LayoutParams(-1, -2));
 		scanProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
 		scanProgress.setIndeterminate(true);
@@ -242,13 +252,13 @@ public class LauncherActivity extends Activity {
 		section.addView(scanProgress, new LinearLayout.LayoutParams(-1, dp(3)));
 		LinearLayout actions = new LinearLayout(this);
 		actions.setOrientation(LinearLayout.HORIZONTAL);
-		Button scanCurrent = new Button(this);
-		scanCurrent.setText(R.string.srceng_library_scan_current);
+		Button scanCurrent = makeActionButton(R.string.srceng_library_scan_current);
+		scanCurrent.setContentDescription(getString(R.string.srceng_library_scan_current));
 		scanCurrent.setOnClickListener(new View.OnClickListener() {
 			@Override public void onClick(View view) { scanLibrary(true, true); }
 		});
-		Button rescan = new Button(this);
-		rescan.setText(R.string.srceng_library_rescan);
+		Button rescan = makeActionButton(R.string.srceng_library_rescan);
+		rescan.setContentDescription(getString(R.string.srceng_library_rescan));
 		rescan.setOnClickListener(new View.OnClickListener() {
 			@Override public void onClick(View view) { scanLibrary(false, false); }
 		});
@@ -299,7 +309,11 @@ public class LauncherActivity extends Activity {
 		final GameDiscovery.CancellationToken cancellation = new GameDiscovery.CancellationToken();
 		currentScanCancellation = cancellation;
 		librarySummary.setText(R.string.srceng_library_scanning);
-		if (scanProgress != null) scanProgress.setVisibility(View.VISIBLE);
+		librarySummary.announceForAccessibility(getString(R.string.srceng_library_scanning));
+		if (scanProgress != null) {
+			scanProgress.setVisibility(View.VISIBLE);
+			scanProgress.setContentDescription(getString(R.string.srceng_library_scanning));
+		}
 		if (scanCancelButton != null) {
 			scanCancelButton.setText(R.string.srceng_library_scan_cancel);
 			scanCancelButton.setEnabled(true);
@@ -385,6 +399,7 @@ public class LauncherActivity extends Activity {
 						} else {
 							librarySummary.setText(getString(R.string.srceng_library_scan_done, discovered.size()));
 						}
+						librarySummary.announceForAccessibility(librarySummary.getText());
 					}
 				});
 			}
@@ -436,7 +451,8 @@ public class LauncherActivity extends Activity {
 			card.setBackground(cardBg);
 			card.setFocusable(true);
 			card.setClickable(true);
-			card.setContentDescription(getString(R.string.srceng_library_open_details, entry.displayName));
+			card.setContentDescription(getString(R.string.srceng_library_card_accessibility,
+					entry.displayName, entry.status, entry.detail, entry.path));
 			card.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { showGameDetails(entry); } });
 			LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(-1, -2);
 			cardParams.topMargin = 7;
@@ -448,6 +464,7 @@ public class LauncherActivity extends Activity {
 			name.setMaxLines(2);
 			name.setEllipsize(android.text.TextUtils.TruncateAt.END);
 			name.setTypeface(null, android.graphics.Typeface.BOLD);
+			LiquidGlassTheme.markHeading(name);
 			card.addView(name, new LinearLayout.LayoutParams(-1, -2));
 			TextView status = new TextView(this);
 			status.setText(entry.status + " — " + entry.detail);
@@ -621,7 +638,26 @@ public class LauncherActivity extends Activity {
 			advancedPanel.addView(onlineStatusButton, new LinearLayout.LayoutParams(-1, -2));
 			advancedPanel.setVisibility(View.GONE);
 		}
-		if (advancedToggle != null) advancedToggle.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { if (advancedPanel == null) return; boolean show = advancedPanel.getVisibility() != View.VISIBLE; advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE); advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced); } });
+		if (advancedToggle != null) {
+			advancedToggle.setFocusable(true);
+			advancedToggle.setContentDescription(getString(R.string.srceng_library_advanced));
+			advancedToggle.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View view) {
+					if (advancedPanel == null) return;
+					boolean show = advancedPanel.getVisibility() != View.VISIBLE;
+					advancedPanel.setVisibility(show ? View.VISIBLE : View.GONE);
+					advancedToggle.setText(show ? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced);
+					advancedToggle.setContentDescription(getString(show
+							? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced));
+					advancedToggle.announceForAccessibility(getString(show
+							? R.string.srceng_library_advanced_hide : R.string.srceng_library_advanced));
+					if (show) {
+						View firstSetting = advancedPanel.getChildAt(0);
+						if (firstSetting != null) firstSetting.requestFocus();
+					} else advancedToggle.requestFocus();
+				}
+			});
+		}
 
 
 
@@ -652,6 +688,10 @@ public class LauncherActivity extends Activity {
 				scroll.setPadding(5,5,5,5);
 				TextView text = new TextView(LauncherActivity.this);
 				text.setText(R.string.srceng_launcher_about_text);
+				text.setTextColor(0xFFF2F7FC);
+				text.setTextSize(16);
+				text.setLineSpacing(dp(3), 1.0f);
+				text.setPadding(dp(12), dp(12), dp(12), dp(12));
 				text.setLinksClickable(true);
 				text.setTextIsSelectable(true);
 				Linkify.addLinks(text, Linkify.WEB_URLS|Linkify.EMAIL_ADDRESSES);
