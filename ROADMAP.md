@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 storage reliability and Stage 14 discovery/launch-state work have source-level changes, but their physical-device/runtime acceptance remains open. Stage 15 input-control implementation is present, but real-game acceptance and fresh canonical CI evidence are still required before closing it. The current implementation milestone is **Stage 16: Launcher experience, Liquid Glass, localization and accessibility**; Stages 17–19 follow it. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Stage 16 work starts from canonical head 576a193834266967b52a75e6d2c7de354a377f05. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
+> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 storage reliability and Stage 14 discovery/launch-state work have source-level changes, but their physical-device/runtime acceptance remains open. Stage 15 input-control source implementation is complete and has passed the latest canonical CI; device/game acceptance is deliberately deferred until all numbered implementation stages are finished. Stage 16 localization/RTL/static work is verified, but the genuine Liquid Glass visual system and source-level accessibility gaps still need implementation, so Stage 16 is not complete yet. Physical-device testing for Stages 13–16 is deferred to the consolidated pre-final test window after Stage 19. Stages 17–19 follow Stage 16. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Stage 16 work starts from canonical head 576a193834266967b52a75e6d2c7de354a377f05. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
 
 ## 1. Product goal
 
@@ -201,29 +201,29 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Acceptance:** source/JVM checks pass; incomplete scans are never shown as definitive emptiness; missing storage, cancellation and complete-zero-candidate outcomes remain distinguishable; “ready” and “last attempt” do not overstate runtime success. Device acceptance remains external.
 
-### Stage 15 — In-game input and gameplay controls (IMPLEMENTATION IN PROGRESS; DEVICE ACCEPTANCE PENDING)
+### Stage 15 — In-game input and gameplay controls (SOURCE IMPLEMENTATION COMPLETE; DEVICE ACCEPTANCE DEFERRED)
 
 - [x] Extract keyboard-key ownership/reference counting into a platform-independent state helper so overlapping touch/button/joystick sources emit one key-down and one final key-up; host-JVM regression tests cover shared-key presses, pointer reuse, and release/cancel cleanup.
 - [x] Harden interruption paths: opening the touch-settings menu, losing window focus, pause/stop, configuration/viewport resize, detached overlay and ACTION_CANCEL release held overlay keys/mouse buttons. A secondary pointer on empty space no longer rejects an active multitouch stream, and a second edit pointer cannot hijack the first pointer's drag.
 - [x] Keep per-game settings for preset, control positions, size, opacity, sensitivity and visibility; preserve fixed mapping disclosure in English/Arabic and the reset/recovery route. The movement pad remains keyboard-mapped WASD, not analogue.
 - [x] Add Stage 15 static verification and wire it into canonical CI alongside the new pure-Java regression suite.
-- [ ] Physical-device/game acceptance: simultaneous move/fire/action presses; pointer up/cancel; menu interruption; hide/show/edit/reset; resize/orientation; per-game profile persistence after process restart; physical keyboard/mouse; supported controller hot-plug and axis/button behavior. Record exact device, Android version, game/mod, APK SHA-256 and logs.
-- [ ] Verify supported hardware input in an actual compatible game. SDL keyboard/mouse/controller integration is preserved in source, but source/static/JVM checks do not prove device events reach every game/mod as expected.
+- [Deferred to Stage 18 / consolidated pre-final test window by user request] Physical-device/game acceptance: simultaneous move/fire/action presses; pointer up/cancel; menu interruption; hide/show/edit/reset; resize/orientation; per-game profile persistence after process restart; physical keyboard/mouse; supported controller hot-plug and axis/button behavior. Record exact device, Android version, game/mod, APK SHA-256 and logs.
+- [Deferred to Stage 18 / consolidated pre-final test window by user request] Verify supported hardware input in an actual compatible game. SDL keyboard/mouse/controller integration is preserved in source, but source/static/JVM checks do not prove device events reach every game/mod as expected.
 
-**Acceptance:** implementation checks and JVM regressions pass, plus documented gameplay outcomes for specific supported device/game combinations. Until physical-device evidence exists, Stage 15 remains open and product compatibility is not generalized.
+**Implementation acceptance:** source/static checks and JVM regressions pass in canonical CI (latest checked run: [39847170781](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/39847170781)). Stage 15 source implementation is complete. Device/game acceptance is intentionally outstanding and moved to Stage 18; do not generalize compatibility before that evidence exists.
 
-### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (IMPLEMENTATION IN PROGRESS; DEVICE ACCEPTANCE PENDING)
+### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (IN PROGRESS — NOT COMPLETE)
 
-- [ ] Review each screen/state on devices: first run, picker, empty library, scan progress/failure, game details, advanced settings, launch failure, About and dialogs.
+- [ ] Complete source-level UI/UX and accessibility audit across first run, picker, empty library, scan progress/failure, game details, advanced settings, launch failure, About and dialogs. Physical review is deferred to Stage 18.
 - [x] Add a canonical CI verifier for complete default/Arabic string-key coverage and format-placeholder parity (156 string keys in each locale at this commit); improve the first-game Arabic call to action and the dynamic scan-result wording.
 - [x] Enable Android RTL layout mirroring and replace the directory-picker activity's hard-coded English label with a localized resource.
 - [x] Fix compatibility-diagnostics formatting: report separators now create actual new lines rather than displaying literal backslash-n sequences.
 - [x] Extend the workflow meta-validator to require all stage verifier scripts from 0 through 16, so a newly added quality gate cannot be omitted unnoticed.
-- [ ] Validate TalkBack labels/status announcements, keyboard/controller focus, touch targets, font scaling, contrast, cancel/back behavior and portrait/landscape layouts on devices.
-- [ ] Compare real rendering with the Liquid Glass goal (depth, highlights, translucent layers, controlled blur/refraction-like treatment and motion). Gradients alone are not proof of a full glass effect.
-- [ ] Provide older-API/low-end fallbacks and verify motion-off behavior, readability, smoothness and thermal cost.
+- [ ] Implement source-level accessibility semantics: meaningful TalkBack labels/state announcements, keyboard/controller focus, touch targets, font scaling, contrast, and cancel/back behavior. Physical validation is deferred to Stage 18.
+- [ ] Implement and source-review the genuine Liquid Glass design system (layered translucent materials, depth, highlights/reflections, controlled blur/refraction-like treatment and motion). Gradients alone are not proof of a full glass effect. Physical rendering review is deferred to Stage 18.
+- [ ] Implement explicit older-API/low-end fallbacks and a motion-off path in source. Verify readability, smoothness and thermal cost during the Stage 18 device window.
 
-**Acceptance:** device screenshots/results cover real app screens, there are no critical accessibility regressions, and the visual system remains usable with fallbacks. Automated/source-level fixes do not satisfy physical-device acceptance.
+**Acceptance:** source-level visual/accessibility implementation and automated checks are complete. Physical screenshots, TalkBack/focus checks, rendering quality and performance measurements are deferred to Stage 18 by user request; Stage 16 must not be marked complete until its remaining source-level Liquid Glass/accessibility work is actually implemented.
 
 ### Stage 17 — Feature truth, settings behavior and optional online/update capabilities
 
@@ -235,13 +235,13 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Acceptance:** an audited UI-to-effect inventory; no dead or misleading controls; unavailable online/update features remain honestly disclosed; configuration failures are actionable.
 
-### Stage 18 — Compatibility, runtime stability, performance and regression evidence
+### Stage 18 — Compatibility, runtime stability, performance and consolidated device acceptance (AFTER ALL IMPLEMENTATION STAGES)
 
 - [ ] Maintain a concrete API/ABI/GPU/device matrix beginning at manifest minimum API 17 and the verified ARMv7/armeabi-v7a package. Do not imply support for untested combinations.
-- [ ] Complete relevant sections of docs/DEVICE-SMOKE-TEST.md: install/upgrade, process restart, permissions, SAF, discovery, game startup, pause/resume, input, audio, rendering, exit and crash recovery.
+- [ ] After Stages 13–17 source implementation and Stage 19 rights/build work are ready for a testable candidate, perform the user's requested consolidated physical-device review using docs/DEVICE-SMOKE-TEST.md: install/upgrade, process restart, permissions, SAF, discovery, game startup, pause/resume, input, audio, rendering, accessibility, exit and crash recovery. Do not ask the user to test earlier stages individually.
 - [ ] Record repeatable startup times, frame pacing, memory, heat/throttling and power observations on representative devices; optimize only evidence-based bottlenecks.
 - [ ] Convert confirmed defects from stages 13–18 into regression tests where feasible. Keep JVM/static checks, APK identity/ABI/dependency verification, YAML/action validation, ShellCheck/actionlint and pinned dependencies in CI.
-- [ ] Aim for two representative devices where available. If device/game access is limited, record the limitation as Blocked rather than inventing a pass.
+- [ ] Aim for two representative devices where available. If device/game access is limited, record the limitation as Blocked rather than inventing a pass. This is the planned end-of-implementation test window immediately before the unnumbered Final Acceptance gate.
 
 **Acceptance:** device records and logs accompany runtime compatibility claims; CI covers automatable regressions; untested combinations remain explicitly unverified.
 
