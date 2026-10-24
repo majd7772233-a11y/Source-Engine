@@ -149,6 +149,7 @@
     <string name="srceng_storage_no_write_grant">Android did not grant write access to this folder. Reopen the folder picker and select a writable local folder; the engine must be able to write configuration and cache data.</string>
     <string name="srceng_storage_no_read_grant">Android did not grant read access to this folder. Reopen the picker and confirm the folder selection.</string>
     <string name="srceng_storage_grant_failed">Android could not retain access to this folder. Reopen the picker and choose a normal local-storage folder.</string>
+    <string name="srceng_storage_selection_save_failed">The folder access was validated, but Android could not save the selection reliably. The previous selection was kept; reopen the folder picker and try again.</string>
     <string name="srceng_storage_not_readable">The folder exists, but Android does not let the native engine read it. Choose a readable folder under shared Internal storage or a mounted volume.</string>
     <string name="srceng_storage_not_writable">The folder is readable but not writable. The engine may need to write configuration and cache data, so choose a writable local folder or writable SD/USB volume.</string>
     <string name="srceng_storage_game_folder_selected">You selected the game folder itself (it contains gameinfo.txt). Choose its parent folder instead, so the granted folder scope contains the game directory.</string>
