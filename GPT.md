@@ -422,7 +422,7 @@ Use this section for new observations that do not yet fit another heading. Date 
 - Stage 15 remains open until an approved APK is available through the independent rights gate and an actual compatible game is tested on physical device(s). Do not bypass the source-provenance/redistribution gate.
 
 
-### 2026-10-24 — Stage 16 source implementation completed; device checks consolidated in Stage 18
+### 2026-10-24 — Stage 16 source implementation in place; CI verification pending, device checks consolidated in Stage 18
 
 - Stage 16 adds localized game-card TalkBack summaries, API-guarded semantic headings, scan status announcements, advanced-panel focus transfer/return and open/close announcements, and 48dp minimum dimensions for dynamically styled action buttons.
 - LiquidGlassTheme composes translucent base and sheen layers with rounded specular edges and keeps the existing ambient color lighting, focused/pressed/disabled states, and persisted motion-off setting. It intentionally avoids requiring RenderEffect/blur, preserving the legacy API fallback; actual rendering quality and performance remain device-acceptance items.
@@ -431,3 +431,5 @@ Use this section for new observations that do not yet fit another heading. Date 
 
 
 - Stage 16 follow-up: advanced-settings Back now collapses the panel and restores focus before normal activity Back behavior. The glass overlay now draws a soft linear highlight, radial color bleed and a rounded specular edge within the surface; these are API-17-compatible and do not require RenderEffect. The verifier explicitly guards both behaviors.
+
+- Acceptance correction: no canonical Actions run result is available for the current source head yet. Keep Stage 16 open until the Stage 16 verifier and full workflow pass on this exact head; do not infer CI success from source inspection or earlier commits.
