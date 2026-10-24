@@ -17,7 +17,7 @@ checks = {
     "animation can be disabled": "liquid_motion" in launcher and "new AmbientBackdrop(motionEnabled)" in theme,
     "motion setting is localized": "srceng_liquid_motion" in launcher and "srceng_liquid_motion" in resources,
     "motion preference persists": 'putBoolean("liquid_motion", checked)' in launcher,
-    "static fallback avoids Android 12-only blur": "RenderEffect" not in theme and "animate ?" in theme,
+    "static fallback avoids Android 12-only blur": "import android.graphics.RenderEffect;" not in theme and "RenderEffect.create" not in theme and "animate ?" in theme,
     "button pressed/focused/disabled states": "state_pressed" in theme and "state_focused" in theme and "state_enabled" in theme,
     "glass material includes translucent gradients and density-aware edge strokes": "base.setStroke(Math.max(1, (int) density), edge)" in theme and "GradientDrawable.Orientation.TL_BR" in theme,
     "launcher screen uses shared theme": "LiquidGlassTheme.apply(this" in launcher,
