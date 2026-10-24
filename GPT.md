@@ -38,6 +38,13 @@ The user explicitly wants a **real Liquid Glass** aesthetic, not ordinary glassm
 - A debug keystore is tracked in the default branch. Never use it as a release signing secret/key; review whether it can be safely removed and add ignore rules for local artifacts.
 - Initial audit did not demonstrate a successful clean build or device launch. Never infer that CI passed from the presence of a YAML file.
 
+## Stage sequencing clarification (2026-10-24)
+
+- Stage 12 is the permanent defect/feedback lane, not the final stage. The actual final acceptance gate is unnumbered.
+- Finish numbered implementation stages sequentially. Do not ask the user to perform piecemeal Android device tests during Stages 13–17. Consolidate physical-device/game testing into Stage 18 after implementation and the required build/provenance work are ready, immediately before unnumbered Final Acceptance.
+- Stage 15 source implementation may be called implementation-complete based on the verified source/JVM/CI evidence, but hardware/game acceptance remains deferred and must not be claimed.
+- Stage 16 is not complete while genuine Liquid Glass implementation or source-level accessibility/fallback work remains. Do not relabel a deferred device check as completed implementation.
+
 ## 4. Required working rules
 
 1. **Execute directly.** The user strongly dislikes unnecessary discussion, repeated confirmations, and delaying execution. When asked to implement a stage, inspect the current repository and carry out the entire stage before reporting back.
