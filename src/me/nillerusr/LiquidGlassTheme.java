@@ -10,7 +10,9 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.widget.TextView;
 import android.os.Build;
 import android.os.SystemClock;
 import android.view.View;
@@ -80,6 +82,8 @@ public final class LiquidGlassTheme {
             button.setTextColor(TEXT);
             button.setTypeface(button.getTypeface(), android.graphics.Typeface.BOLD);
             button.setMinHeight(Math.max(button.getMinimumHeight(), dp(button, 48)));
+            button.setMinWidth(Math.max(button.getMinimumWidth(), dp(button, 48)));
+            button.setFocusable(true);
             if (Build.VERSION.SDK_INT >= 21) button.setElevation(dp(button, 2));
         } else if (view instanceof EditText) {
             EditText edit = (EditText) view;
@@ -98,12 +102,28 @@ public final class LiquidGlassTheme {
         }
     }
 
-    public static GradientDrawable panel(int fill, int edge, int radiusDp) {
-        GradientDrawable d = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
+    public static Drawable panel(int fill, int edge, int radiusDp) {
+        float density = android.content.res.Resources.getSystem().getDisplayMetrics().density;
+        float radius = radiusDp * density;
+        GradientDrawable base = new GradientDrawable(GradientDrawable.Orientation.TL_BR,
                 new int[] { blend(fill, 0x183E8290), fill, blend(fill, 0xD008111B) });
-        d.setCornerRadius(radiusDp * android.content.res.Resources.getSystem().getDisplayMetrics().density);
-        d.setStroke(1, edge);
-        return d;
+        base.setCornerRadius(radius);
+        base.setStroke(Math.max(1, (int) density), edge);
+        // Translucent specular sheen; deliberately no mandatory RenderEffect/blur API.
+        GradientDrawable sheen = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[] { 0x24FFFFFF, 0x0AFFFFFF, 0x00FFFFFF });
+        sheen.setCornerRadius(radius);
+        sheen.setStroke(Math.max(1, (int) density), 0x18FFFFFF);
+        return new LayerDrawable(new Drawable[] { base, sheen });
+    }
+
+    /** Marks section titles as headings for TalkBack on API 28+, guarded for older devices. */
+    public static void markHeading(TextView view) {
+        if (view != null && Build.VERSION.SDK_INT >= 28) Api28.markHeading(view);
+    }
+
+    private static final class Api28 {
+        private static void markHeading(TextView view) { view.setAccessibilityHeading(true); }
     }
 
     /** Applies the launcher's surface language to a dynamically-created picker row. */
