@@ -27,6 +27,7 @@
     <string name="srceng_library_details_title">تفاصيل اللعبة</string>
     <string name="srceng_library_details_action">التفاصيل</string>
     <string name="srceng_library_open_details">فتح تفاصيل %1$s</string>
+    <string name="srceng_library_card_accessibility">اللعبة: %1$s. الحالة: %2$s. %3$s. المجلد: %4$s. افتح العنصر لعرض تفاصيل اللعبة.</string>
     <string name="srceng_library_path">المسار: %1$s</string>
     <string name="srceng_library_last_never">آخر محاولة تشغيل: لم تحدث بعد</string>
     <string name="srceng_library_last">آخر محاولة تشغيل: %1$s</string>
@@ -134,7 +135,7 @@
     <string name="srceng_storage_unavailable">المجلد المحدد غير موجود أو غير قابل للقراءة، أو أن وحدة التخزين القابلة للإزالة غير متصلة. أعد توصيل وحدة التخزين أو اختر المجلد مرة أخرى.</string>
     <string name="srceng_storage_revoked">لم تعد صلاحية الوصول المحفوظة صالحة. ربما فُصلت وحدة التخزين أو ألغى Android إذن المجلد. اختر المجلد مجددًا.</string>
     <string name="srceng_storage_selection_cancelled">أُلغِي اختيار المجلد.</string>
-    <string name="srceng_liquid_motion">تحريك الإضاءة الزجاجية المحيطة (يستهلك طاقة أكثر)</string>
+    <string name="srceng_liquid_motion">تحريك الإضاءة الزجاجية وانتقالات البطاقات (يستهلك طاقة أكثر)</string>
     <string name="srceng_storage_unsupported_android">اختيار المجلدات غير مدعوم بهذه الطريقة على إصدار Android هذا. استخدم متصفح التخزين المشترك القديم إن كان متاحًا.</string>
     <string name="srceng_storage_invalid_document_id">أعاد Android معرّف مجلد لا يمكن ربطه بأمان بوحدة التخزين المحددة. اختر مجلدًا عاديًا من التخزين الداخلي أو بطاقة SD موصولة.</string>
     <string name="srceng_storage_volume_unavailable">وحدة التخزين المحددة غير موصولة أو لا يمكن الوصول إليها حاليًا. أعد توصيل SD/USB ثم اختر المجلد مجددًا.</string>
