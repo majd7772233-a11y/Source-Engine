@@ -7,6 +7,7 @@ python3 - "$ROOT_DIR" <<'PY'
 import pathlib, sys, xml.etree.ElementTree as ET
 root = pathlib.Path(sys.argv[1])
 overlay = (root / "src/org/libsdl/app/TouchControlsOverlay.java").read_text(encoding="utf-8")
+input = (root / "src/org/libsdl/app/TouchInputState.java").read_text(encoding="utf-8")
 activity = (root / "src/org/libsdl/app/SDLActivity.java").read_text(encoding="utf-8")
 workflow = (root / ".github/workflows/build.yml").read_text(encoding="utf-8")
 en = ET.parse(root / "res/values/strings.xml").getroot()
@@ -16,9 +17,9 @@ ar_names = {n.attrib.get("name") for n in ar}
 checks = {
     "dedicated in-game touch overlay": "final class TouchControlsOverlay extends View" in overlay,
     "keyboard-mapped movement directions": all("KeyEvent.KEYCODE_" + k in overlay for k in ("W", "A", "S", "D")),
-    "action keys are wired to SDL native input": "SDLActivity.onNativeKeyDown(key)" in overlay and "SDLActivity.onNativeKeyUp(key)" in overlay,
+    "action keys are wired to SDL native input": "new TouchInputState.Sink()" in overlay and "SDLActivity.onNativeKeyDown(keyCode)" in overlay and "SDLActivity.onNativeKeyUp(keyCode)" in overlay,
     "fire button uses mouse down/up rather than a wrong keyboard key": "SDLActivity.onNativeMouse(1, MotionEvent.ACTION_DOWN" in overlay and "SDLActivity.onNativeMouse(1, MotionEvent.ACTION_UP" in overlay,
-    "multi-pointer buttons tracked independently": "pointerKeys" in overlay and "ACTION_POINTER_DOWN" in overlay and "ACTION_POINTER_UP" in overlay,
+    "multi-pointer buttons tracked independently": "pointerKeys" in input and "pressButton(int pointerId, int keyCode)" in input and "releaseButton(int pointerId)" in input and "ACTION_POINTER_DOWN" in overlay and "ACTION_POINTER_UP" in overlay,
     "cancel/pause releases held keys": "ACTION_CANCEL" in overlay and "releaseAll()" in activity and "mTouchControls.releaseAll()" in activity,
     "per-game profile storage": "getSharedPreferences(PREFS" in overlay and 'prefix + "preset"' in overlay and 'prefix + "x" + i' in overlay,
     "fixed keyboard/mouse mappings are disclosed in settings": "srceng_controls_mapping_note" in overlay and "setMessage(R.string.srceng_controls_mapping_note)" in overlay,
