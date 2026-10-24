@@ -16,10 +16,10 @@
     <string name="srceng_library_title">مكتبة الألعاب</string>
     <string name="srceng_library_scan_current">فحص المجلد الحالي</string>
     <string name="srceng_library_rescan">إعادة فحص المكتبة</string>
-    <string name="srceng_library_empty_title">لنضف لعبتك الأولى</string>
+    <string name="srceng_library_empty_title">أضف لعبتك الأولى</string>
     <string name="srceng_library_empty">اختر مجلدًا يحتوي على ملفات لعبة Source ثم اضغط فحص المجلد الحالي. يجب أن توفر ملفات اللعبة التي تملك حق استخدامها.</string>
     <string name="srceng_library_scan_invalid">مجلد الفحص المحدد غير موجود أو لا يمكن قراءته.</string>
-    <string name="srceng_library_scan_done">اكتمل الفحص. عُثر على %1$d مجلدات مرشحة.</string>
+    <string name="srceng_library_scan_done">اكتمل الفحص. عدد المجلدات المرشحة: %1$d.</string>
     <string name="srceng_library_no_candidates">لم يُعثر على ألعاب. يلزم وجود gameinfo.txt أو ملفات معروفة من ألعاب Source.</string>
     <string name="srceng_library_use">اختيار</string>
     <string name="srceng_library_play">تشغيل</string>

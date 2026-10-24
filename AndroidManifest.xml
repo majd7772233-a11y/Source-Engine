@@ -12,14 +12,14 @@
     <uses-feature android:glEsVersion="0x00020000"/>
     <uses-sdk android:minSdkVersion="17" android:targetSdkVersion="24" />
     <!-- Intentional opt-in for eligible gameplay playback-audio capture by external recorders chosen by the user; this launcher does not start recording itself. -->
-    <application android:icon="@drawable/ic_launcher" android:label="@string/srceng_app_name" android:allowAudioPlaybackCapture="true" android:requestLegacyExternalStorage="true">
+    <application android:icon="@drawable/ic_launcher" android:label="@string/srceng_app_name" android:supportsRtl="true" android:allowAudioPlaybackCapture="true" android:requestLegacyExternalStorage="true">
         <activity android:label="@string/srceng_app_name" android:name="me.nillerusr.LauncherActivity" android:exported="true" android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:label="Directory" android:name="me.nillerusr.DirchActivity" android:exported="false" android:windowSoftInputMode="adjustResize|stateHidden">
+        <activity android:label="@string/srceng_app_name" android:name="me.nillerusr.DirchActivity" android:exported="false" android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.DIRCH"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -1,6 +1,6 @@
 # Source Engine for Android — Roadmap
 
-> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 (storage reliability) and Stage 14 (game discovery/launch-state correctness) have active implementation records, while physical-device/runtime acceptance remains open. The current implementation milestone is **Stage 15: In-game input and gameplay controls**; Stages 16–19 remain subsequent implementation milestones. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Canonical head entering Stage 15 was dc0589b3c9ab52582776c0e45da31e7c9c223c7c. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
+> **Roadmap status (2026-10-24):** Stage 12 is the permanent QA/feedback/defect-correction lane, not the final stage. Stage 13 storage reliability and Stage 14 discovery/launch-state work have source-level changes, but their physical-device/runtime acceptance remains open. Stage 15 input-control implementation is present, but real-game acceptance and fresh canonical CI evidence are still required before closing it. The current implementation milestone is **Stage 16: Launcher experience, Liquid Glass, localization and accessibility**; Stages 17–19 follow it. The actual **Final Acceptance** gate is unnumbered and requires implementation, user/device acceptance, rights review, and controlled-release criteria. Stage 16 work starts from canonical head 576a193834266967b52a75e6d2c7de354a377f05. Downloadable APK artifacts remain withheld by the source-provenance/redistribution gate. Do not infer device acceptance or release readiness from static/JVM/build success.
 
 ## 1. Product goal
 
@@ -212,15 +212,17 @@ The numbered sequence below remains as historical implementation milestones; thi
 
 **Acceptance:** implementation checks and JVM regressions pass, plus documented gameplay outcomes for specific supported device/game combinations. Until physical-device evidence exists, Stage 15 remains open and product compatibility is not generalized.
 
-### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility
+### Stage 16 — Launcher experience, Liquid Glass, localization and accessibility (IMPLEMENTATION IN PROGRESS; DEVICE ACCEPTANCE PENDING)
 
 - [ ] Review each screen/state on devices: first run, picker, empty library, scan progress/failure, game details, advanced settings, launch failure, About and dialogs.
-- [ ] Keep Arabic/default string and format-placeholder parity enforced by CI (currently 151 keys per locale); focus remaining locale work on RTL rendering, technical wording, dynamic messages and visual truncation rather than recreating already-added translations.
-- [ ] Validate TalkBack labels/status announcements, keyboard/controller focus, touch targets, font scaling, contrast, cancel/back behavior and portrait/landscape layouts.
+- [x] Add a canonical CI verifier for complete default/Arabic string-key coverage and format-placeholder parity (156 string keys in each locale at this commit); improve the first-game Arabic call to action and the dynamic scan-result wording.
+- [x] Enable Android RTL layout mirroring and replace the directory-picker activity's hard-coded English label with a localized resource.
+- [x] Fix compatibility-diagnostics formatting: report separators now create actual new lines rather than displaying literal backslash-n sequences.
+- [ ] Validate TalkBack labels/status announcements, keyboard/controller focus, touch targets, font scaling, contrast, cancel/back behavior and portrait/landscape layouts on devices.
 - [ ] Compare real rendering with the Liquid Glass goal (depth, highlights, translucent layers, controlled blur/refraction-like treatment and motion). Gradients alone are not proof of a full glass effect.
 - [ ] Provide older-API/low-end fallbacks and verify motion-off behavior, readability, smoothness and thermal cost.
 
-**Acceptance:** device screenshots/results cover real app screens, there are no critical accessibility regressions, and the visual system remains usable with fallbacks.
+**Acceptance:** device screenshots/results cover real app screens, there are no critical accessibility regressions, and the visual system remains usable with fallbacks. Automated/source-level fixes do not satisfy physical-device acceptance.
 
 ### Stage 17 — Feature truth, settings behavior and optional online/update capabilities
 
@@ -385,3 +387,12 @@ Update this ledger at the end of every numbered implementation milestone with co
 - A post-implementation compatibility review caught that the tree-grant-pruning helper directly referenced android.content.UriPermission in the outer StorageAccess class, despite the existing design isolating API-19 URI-permission calls in a nested helper for the declared API-17 minimum.
 - Moved the persisted-permission enumeration into Api19; the outer class now calls that method only behind the API-level guard. Added a static assertion that fails if UriPermission leaks back into the outer class.
 - Full-device API 17/18 class-loading and storage behavior still require an actual legacy device or emulator; the source guard is not treated as a runtime test.
+
+
+### Stage 16 implementation log — 2026-10-24
+
+- Started Stage 16 from canonical branch head 576a193834266967b52a75e6d2c7de354a377f05 after confirming Stage 15 code work exists but physical-game acceptance is still open.
+- Enabled Android RTL mirroring at the application level and replaced the directory chooser's hard-coded English activity label with the localized application name.
+- Fixed a concrete user-facing formatting defect in compatibility diagnostics: Java was appending the literal characters \n instead of line breaks, making the device report harder to read.
+- Added a Stage 16 CI verifier for locale-key/format-placeholder parity and the new source-level regressions; wired it into the canonical workflow. Corrected Arabic empty-library CTA copy and dynamic scan-count wording.
+- Device screenshots, TalkBack/keyboard focus, font scaling, contrast, low-motion/old-API appearance and thermal behavior are still pending. This is a partial implementation milestone, not Stage 16 completion.

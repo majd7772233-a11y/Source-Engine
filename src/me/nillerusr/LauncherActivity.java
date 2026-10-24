@@ -836,28 +836,28 @@ public class LauncherActivity extends Activity {
 			}
 		}
 		report.append(getString(R.string.srceng_compatibility_device, Build.MANUFACTURER, Build.MODEL));
-		report.append("\\n").append(getString(R.string.srceng_compatibility_android, Build.VERSION.RELEASE, Build.VERSION.SDK_INT));
-		report.append("\\n").append(getString(R.string.srceng_compatibility_abi, abi));
-		report.append("\\n").append(getString(R.string.srceng_compatibility_display, metrics.widthPixels, metrics.heightPixels, metrics.densityDpi));
+		report.append("\n").append(getString(R.string.srceng_compatibility_android, Build.VERSION.RELEASE, Build.VERSION.SDK_INT));
+		report.append("\n").append(getString(R.string.srceng_compatibility_abi, abi));
+		report.append("\n").append(getString(R.string.srceng_compatibility_display, metrics.widthPixels, metrics.heightPixels, metrics.densityDpi));
 		if (wm != null && wm.getDefaultDisplay() != null)
-			report.append("\\n").append(getString(R.string.srceng_compatibility_refresh, wm.getDefaultDisplay().getRefreshRate()));
+			report.append("\n").append(getString(R.string.srceng_compatibility_refresh, wm.getDefaultDisplay().getRefreshRate()));
 		if (glesVersion == 0) {
-			report.append("\\n").append(getString(R.string.srceng_compatibility_gles_unknown));
+			report.append("\n").append(getString(R.string.srceng_compatibility_gles_unknown));
 		} else {
-			report.append("\\n").append(getString(R.string.srceng_compatibility_gles, (glesVersion >> 16) & 0xffff, glesVersion & 0xffff));
+			report.append("\n").append(getString(R.string.srceng_compatibility_gles, (glesVersion >> 16) & 0xffff, glesVersion & 0xffff));
 		}
-		report.append("\\n").append(getString(R.string.srceng_compatibility_memory, memory.availMem / (1024L * 1024L), memory.lowMemory ? getString(R.string.srceng_compatibility_memory_low) : getString(R.string.srceng_compatibility_memory_ok)));
+		report.append("\n").append(getString(R.string.srceng_compatibility_memory, memory.availMem / (1024L * 1024L), memory.lowMemory ? getString(R.string.srceng_compatibility_memory_low) : getString(R.string.srceng_compatibility_memory_ok)));
 		if (Build.VERSION.SDK_INT >= 23) {
 			int outputs = Api23.getAudioOutputCount(this);
-			report.append("\\n").append(getString(R.string.srceng_compatibility_audio_outputs, outputs));
+			report.append("\n").append(getString(R.string.srceng_compatibility_audio_outputs, outputs));
 		} else {
-			report.append("\\n").append(getString(R.string.srceng_compatibility_audio_unknown));
+			report.append("\n").append(getString(R.string.srceng_compatibility_audio_unknown));
 		}
 		if (missing.length() > 0)
-			report.append("\\n\\n").append(getString(R.string.srceng_compatibility_native_missing, missing.toString()));
+			report.append("\n\n").append(getString(R.string.srceng_compatibility_native_missing, missing.toString()));
 		else
-			report.append("\\n\\n").append(getString(R.string.srceng_compatibility_native_ok));
-		report.append("\\n\\n").append(getString(R.string.srceng_compatibility_limits));
+			report.append("\n\n").append(getString(R.string.srceng_compatibility_native_ok));
+		report.append("\n\n").append(getString(R.string.srceng_compatibility_limits));
 		styleGlassDialog(new AlertDialog.Builder(this)
 				.setTitle(R.string.srceng_compatibility_title)
 				.setMessage(report.toString())

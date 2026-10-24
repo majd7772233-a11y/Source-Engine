@@ -55,6 +55,16 @@ This checklist is separate from CI. A successful JVM test or APK build is not ev
 - [ ] Verify invalid/too-long arguments and invalid game-directory names fail with an actionable message, without a crash or phantom launch progress.
 - [ ] Verify scan/rescan progress always clears after success, cancellation, and a recoverable error.
 
+## Stage 16 — visual, RTL and accessibility acceptance
+
+- [ ] Set the Android app/device language to Arabic; verify the whole launcher (including the directory chooser, dialogs, scan status, game cards and advanced settings) follows RTL order and text remains readable. Repeat in English/LTR.
+- [ ] Check first-run/empty-library wording, scan count and error messages using small and large values; confirm text does not clip or overlap at narrow widths.
+- [ ] Enable TalkBack and traverse all controls in a useful order. Confirm each button/state has a meaningful label, the selected game/status is understandable, scan/launch progress is announced politely, and opening/closing dialogs does not lose focus.
+- [ ] Use large system font/display scaling and portrait/landscape layouts; confirm actions remain reachable by scrolling and no important control is hidden behind the header/footer/keyboard.
+- [ ] Navigate with a physical keyboard and a supported controller where available. Verify focus visibility, logical traversal, activation and cancel/back behavior without relying on touch.
+- [ ] Toggle ambient glass motion on/off. Compare contrast, text clarity, focus/pressed/disabled states, animation smoothness and heat/power on a representative older/low-end device; record device, Android/API, screenshots, duration and observed issues.
+- [ ] Check the compatibility-diagnostics report; each device/property appears on its own line, not with visible literal \n characters.
+
 ## Real game launch and lifecycle
 
 - [ ] Launch only a legally owned, compatible test installation; note exact game/mod version and content layout.
