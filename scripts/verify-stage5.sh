@@ -8,6 +8,7 @@ import pathlib, re, sys
 import xml.etree.ElementTree as ET
 root = pathlib.Path(sys.argv[1])
 launcher = (root / "src/me/nillerusr/LauncherActivity.java").read_text(encoding="utf-8")
+discovery = (root / "src/me/nillerusr/GameDiscovery.java").read_text(encoding="utf-8")
 layout = ET.parse(root / "res/layout/activity_launcher.xml").getroot()
 strings_root = ET.parse(root / "res/values/strings.xml").getroot()
 workflow = (root / ".github/workflows/build.yml").read_text(encoding="utf-8")
@@ -23,12 +24,18 @@ checks = {
     "not-ready entries cannot launch": "play.setEnabled(entry.launchable)" in launcher and "selectedEntry == null || !selectedEntry.launchable" in launcher,
     "launch progress feedback": "srceng_library_launching" in launcher and "launcherProgress.setVisibility(View.VISIBLE)" in launcher,
     "scan progress feedback": "srceng_library_scanning" in launcher and "scanProgress.setVisibility(View.VISIBLE)" in launcher and "scanProgress.setVisibility(View.GONE)" in launcher,
-    "incomplete scans never commit a partial library snapshot": bool(re.search(
-        r"boolean completed = scanFailure\[0\] == null && !scanIncomplete\[0\];.*?if \(completed\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);\s*\}",
-        launcher, re.S)) and "srceng_library_scan_incomplete" in launcher,
-    "touch targets meet 48dp baseline": "b.setMinHeight(dp(48))" in launcher and 'android:minHeight="48dp"' in (root / "res/layout/activity_launcher.xml").read_text(encoding="utf-8"),
+    "incomplete scans never commit a partial library snapshot": (
+        "boolean completed = GameDiscovery.canCommitSnapshot(scanResults, scanFailure[0] != null, scanCancelled[0]);" in launcher
+        and bool(re.search(
+            r"boolean completed = GameDiscovery\.canCommitSnapshot\(scanResults, scanFailure\[0\] != null, scanCancelled\[0\]\);.*?if \(completed\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);\s*\}",
+            launcher, re.S))
+        and "if (runtimeFailure || cancelled || results == null || results.isEmpty()) return false;" in discovery
+        and "for (ScanResult result : results) if (result == null || !result.isComplete()) return false;" in discovery
+        and "srceng_library_scan_incomplete" in launcher
+    ),
+    "touch targets meet 48dp baseline": "button.setMinHeight(dp(48))" in launcher and 'android:minHeight="48dp"' in (root / "res/layout/activity_launcher.xml").read_text(encoding="utf-8"),
     "long names and paths do not overflow": "name.setMaxLines(2)" in launcher and "path.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE)" in launcher,
-    "card has accessibility description": "setContentDescription(getString(R.string.srceng_library_open_details" in launcher,
+    "card has accessibility description": "setContentDescription(getString(R.string.srceng_library_card_accessibility" in launcher,
     "polite scan status for accessibility": "setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE)" in launcher,
     "picker result still triggers a scan": "scanLibrary(true, true);" in launcher,
     "game launch args and env still forwarded": 'putExtra("argv", cmdArgs.getText().toString().trim())' in launcher and 'putExtra("env", EnvEdit.getText().toString())' in launcher,
@@ -42,7 +49,7 @@ required = [
     "srceng_library_header_subtitle", "srceng_library_intro", "srceng_library_empty_title",
     "srceng_library_advanced", "srceng_library_advanced_hide", "srceng_library_details_title",
     "srceng_library_details_action", "srceng_library_open_details", "srceng_library_launching",
-    "srceng_library_scan_failed", "srceng_library_details", "srceng_storage_choose_folder",
+    "srceng_library_scan_failed", "srceng_library_details", "srceng_library_card_accessibility", "srceng_storage_choose_folder",
 ]
 missing = [name for name in required if name not in resources]
 if missing:
