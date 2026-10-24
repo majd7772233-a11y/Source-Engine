@@ -27,7 +27,7 @@ checks = {
     "incomplete scans never commit a partial library snapshot": (
         "boolean completed = GameDiscovery.canCommitSnapshot(scanResults, scanFailure[0] != null, scanCancelled[0]);" in launcher
         and bool(re.search(
-            r"boolean completed = GameDiscovery\.canCommitSnapshot\(scanResults, scanFailure\[0\] != null, scanCancelled\[0\]\);.*?if \(completed\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);\s*\}",
+            r"boolean completed = GameDiscovery\.canCommitSnapshot\(scanResults, scanFailure\[0\] != null, scanCancelled\[0\]\);.*?if \(completed\) \{\s*mPref\.edit\(\)\.putStringSet\(LIBRARY_ROOTS, new HashSet<String>\(validRoots\)\).*?GameDiscovery\.savePaths\(LauncherActivity\.this, discovered\);.*?\}",
             launcher, re.S))
         and "if (runtimeFailure || cancelled || results == null || results.isEmpty()) return false;" in discovery
         and "for (ScanResult result : results) if (result == null || !result.isComplete()) return false;" in discovery
