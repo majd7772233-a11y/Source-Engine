@@ -71,6 +71,17 @@ assert r'report.append("\\n\\n")' not in diagnostics, (
 assert r'report.append("\n")' in diagnostics, "real line breaks are missing from the report"
 assert r'report.append("\n\n")' in diagnostics, "section breaks are missing from the report"
 
+# Accessibility and visual implementation must be source-verified, not inferred from locale parity.
+assert "LiquidGlassTheme.markHeading(title)" in launcher, "library title is not marked as an accessibility heading"
+assert "LiquidGlassTheme.markHeading(name)" in launcher, "game card titles are not marked as accessibility headings"
+assert "announceForAccessibility" in launcher, "dynamic scan/advanced state announcements are missing"
+assert "srceng_library_card_accessibility" in launcher, "game cards lack a meaningful TalkBack summary"
+glass = (root / "src/me/nillerusr/LiquidGlassTheme.java").read_text(encoding="utf-8")
+assert "setMinWidth(Math.max(button.getMinimumWidth(), dp(button, 48)))" in glass, "glass-styled actions lack a minimum touch width"
+assert "new LayerDrawable(new Drawable[] { base, sheen })" in glass, "layered glass sheen is missing"
+assert "Build.VERSION.SDK_INT >= 28" in glass and "view.setAccessibilityHeading(true)" in glass, "accessibility heading API is not guarded"
+assert "liquid_motion" in launcher and "motionToggle" in launcher, "motion-off preference is not wired"
+
 workflow = (root / ".github/workflows/build.yml").read_text(encoding="utf-8")
 assert "bash scripts/verify-stage16.sh" in workflow, "canonical CI does not run the Stage 16 verifier"
 for path in (
@@ -83,6 +94,7 @@ for path in (
 print(
     "Stage 16 static checks passed: RTL declaration, localized activity label, "
     f"{len(default)} default/Arabic string keys, placeholder parity, corrected Arabic copy, "
-    "and compatibility-report line breaks."
+    "compatibility-report line breaks, accessible headings and scan announcements, "
+    "48dp minimum action targets, localized game-card summaries, and layered glass surfaces."
 )
 PY
