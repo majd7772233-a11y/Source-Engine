@@ -33,7 +33,6 @@
     <string name="srceng_game_portal">Portal</string> <!--- Not available -->
 
     <string name="srceng_dir_choice_btn">Set current directory</string>
-    <string name="srceng_update">A newer deployment marker was found; no in-app update is available.</string>
     <string name="srceng_launcher_error_empty_path">The game folder path is empty. Select the folder containing your game files.</string>
     <string name="srceng_launcher_error_invalid_path">The selected game folder does not exist or cannot be read:\n%1$s\nSelect the folder containing your game files.</string>
     <string name="srceng_launcher_error_start_failed">The game activity could not be started:\n%1$s\nCheck Android logs if the problem persists.</string>
@@ -160,7 +159,7 @@
     <string name="srceng_library_scan_cancelled">Scan cancelled. Your previous library snapshot was kept.</string>
     <string name="srceng_library_scan_no_roots">No search folders are configured yet. Choose the current game folder and scan it first.</string>
     <string name="srceng_library_scan_incomplete">Scan incomplete: %1$d inaccessible folders, %2$d depth-limited roots, %3$d directory-limit stops, %4$d missing or unavailable roots. Your previous library snapshot was kept. Restore access or choose a narrower folder, then rescan.</string>
-    <string name="srceng_environment_invalid">Environment overrides contain an invalid or reserved entry. Use NAME=VALUE, one entry per line or semicolon, with at most 64 entries and 2048 characters per entry. Remove the invalid entry and retry.</string>
+    <string name="srceng_environment_invalid">Environment overrides contain an invalid, duplicate, or reserved entry. Use NAME=VALUE, one per line or separated by semicolons. Maximum: 64 entries and 2048 characters per entry. Do not override launcher-owned paths, Android runtime settings, or dynamic-linker variables.</string>
     <string name="srceng_environment_apply_failed">The native runtime could not apply environment variable %1$s. Remove it or use a supported value, then retry.</string>
     <string name="srceng_controls_mapping_note">These controls simulate keyboard/mouse input: movement = WASD, jump = Space, use = E, reload = R, fire = mouse button 1. They are not an analogue gamepad and may not match every game/mod.</string>
     <string name="srceng_storage_permission_required">Shared-storage permission was denied. The launcher may not be able to read local game files through native filesystem paths. You can grant the permission in Android App settings and return to the launcher.</string>

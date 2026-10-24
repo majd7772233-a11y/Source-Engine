@@ -59,7 +59,6 @@ public class LauncherActivity extends Activity {
 	private Button advancedToggle;
 	public SharedPreferences mPref;
 	public static final int sdk = Integer.valueOf(Build.VERSION.SDK).intValue();
-	static CheckBox useVolumeButtons, check_updates;
 
 	final static int REQUEST_PERMISSIONS = 42;
 	private static final int REQUEST_STORAGE_PICKER = 604;

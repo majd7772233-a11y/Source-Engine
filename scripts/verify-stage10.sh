@@ -23,8 +23,6 @@ workflow_script = source("scripts/workflow.sh")
 sdl = source("src/org/libsdl/app/SDLActivity.java")
 extract = source("src/me/nillerusr/ExtractAssets.java")
 valve = source("src/com/valvesoftware/ValveActivity2.java")
-updater = source("src/me/nillerusr/UpdateSystem.java")
-service = source("src/me/nillerusr/UpdateService.java")
 discovery = source("src/me/nillerusr/GameDiscovery.java")
 workflow = source(".github/workflows/build.yml")
 environment_method = valve[valve.index("private static String applyUserEnvironment"):valve.index("public static String initNatives")]
@@ -35,7 +33,6 @@ checks = {
     "launcher is explicitly exported as the entry point": components.get("me.nillerusr.LauncherActivity") is not None and components["me.nillerusr.LauncherActivity"].get(ns + "exported") == "true",
     "directory picker is not externally callable": components.get("me.nillerusr.DirchActivity") is not None and components["me.nillerusr.DirchActivity"].get(ns + "exported") == "false",
     "native SDL activity is not externally callable": components.get("org.libsdl.app.SDLActivity") is not None and components["org.libsdl.app.SDLActivity"].get(ns + "exported") == "false",
-    "legacy updater service is not externally callable": components.get("me.nillerusr.UpdateService") is not None and components["me.nillerusr.UpdateService"].get(ns + "exported") == "false",
     "launcher runtime permission method handles pre-23 and null/empty inputs": "Build.VERSION.SDK_INT < 23 || permissions == null || permissions.length == 0" in launcher,
     "launcher permission denial resets button and progress UI": "launcherProgress.setVisibility(View.GONE)" in launcher and "launchButton.setText(R.string.srceng_launcher_launch)" in launcher,
     "SDL runtime permission method guards API level and empty arrays": "Build.VERSION.SDK_INT < 23 || permissions == null || permissions.length == 0" in sdl,
@@ -51,18 +48,15 @@ checks = {
     "runtime asset output is flushed and synced before installation": "output.flush()" in extract and "output.getFD().sync()" in extract,
     "runtime asset cache validates saved byte count rather than trusting nonempty files": 'PAK_BYTES_KEY' in extract and "destination.length() == expectedBytes" in extract,
     "failed extraction cleans up incomplete temporary output": "!installed && temporary.exists() && !temporary.delete()" in extract,
-    "updater pins HTTPS deployment host and validates branch": "https://raw.githubusercontent.com/nillerusr/srceng-deploy/" in updater and "SAFE_BRANCH" in updater and "raw.githubusercontent.com" in updater,
-    "updater has finite network timeouts and bounded response": "setConnectTimeout(8000)" in updater and "setReadTimeout(8000)" in updater and "value.length() + line.length() > 128" in updater,
-    "updater rejects redirects and validates version as a commit hash": "setInstanceFollowRedirects(false)" in updater and "COMMIT_SHA.matcher(remote).matches()" in updater,
-    "legacy updater cannot launch an arbitrary URL or install an APK": "Legacy update notification ignored" in service and "Uri.parse" not in service and "startActivity" not in service,
     "storage permission denial offers a supported Android settings recovery": "showStoragePermissionHelp();" in launcher and "ACTION_APPLICATION_DETAILS_SETTINGS" in launcher and "srceng_storage_permission_required" in launcher,
     "permission recovery strings are present in both locales": all(name in {item.get("name") for item in ET.parse(root / "res/values/strings.xml").getroot()} and name in {item.get("name") for item in ET.parse(root / "res/values-ar/strings.xml").getroot()} for name in ("srceng_storage_permission_required", "srceng_storage_open_settings", "srceng_storage_settings_unavailable")),
     "launcher startup asks only for required shared-storage permission": 'applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );' in launcher and 'Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO' not in launcher,
     "SDL native initialization is not blocked by optional microphone access": 'applyPermissions( new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_PERMISSIONS );' in sdl and '&& checkSelfPermission(Manifest.permission.RECORD_AUDIO)' not in sdl,
     "optional SDL permission results are returned to native code": "nativePermissionResult(requestCode, granted)" in sdl,
-    "environment overrides are validated before any process mutation": environment_method.index("String[] values = new String[entries.length]") < environment_method.index("setRequiredEnvironment(names[i], values[i])"),
-    "invalid/reserved environment entries fail instead of being silently skipped": "srceng_environment_invalid" in environment_method and "Ignoring malformed environment override" not in environment_method and "Ignoring reserved environment override" not in environment_method,
     "environment validation errors have localized resources": 'R.string.srceng_environment_apply_failed' in valve and 'R.string.srceng_environment_invalid' in valve,
+    "disconnected updater remnants are absent": components.get("me.nillerusr.UpdateService") is None and not (root / "src/me/nillerusr/UpdateSystem.java").exists() and not (root / "src/me/nillerusr/UpdateService.java").exists(),
+    "environment overrides delegate to the pure validator": "EnvironmentOverrides.apply(rawEnvironment" in environment_method and "result.getError()" in environment_method,
+    "invalid, duplicate and reserved entries fail closed": "isReserved(name) || !seenNames.add(name)" in source("src/me/nillerusr/EnvironmentOverrides.java") and "invalidInputNeverMutatesEnvironment" in source("tests/java/me/nillerusr/EnvironmentOverridesTestSuite.java"),
     "ValveActivity2 imports canonical app resources": "import com.magd.source.engine.R;" in valve,
     "game discovery handles unreadable directory listings": "listFiles()" in discovery and "children == null" in discovery,
     "CI runs Stage 10 reliability/security assertions": "bash scripts/verify-stage10.sh" in workflow,

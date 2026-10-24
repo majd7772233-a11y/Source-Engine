@@ -11,8 +11,8 @@ import com.magd.source.engine.R;
 
 import java.io.File;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
+import me.nillerusr.EnvironmentOverrides;
 import me.nillerusr.ExtractAssets;
 import me.nillerusr.LauncherActivity;
 import me.nillerusr.LauncherLogic;
@@ -23,7 +23,6 @@ import me.nillerusr.LauncherLogic;
  */
 public final class ValveActivity2 {
     private static final String TAG = "SRCAPK";
-    private static final Pattern ENV_NAME = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
     private static Activity mSingleton;
     public static SharedPreferences mPref;
@@ -155,46 +154,17 @@ public final class ValveActivity2 {
      * earlier entries have already been applied.
      */
     private static String applyUserEnvironment(Context context, String rawEnvironment) {
-        if (rawEnvironment == null || rawEnvironment.trim().isEmpty()) return null;
-        if (rawEnvironment.length() > 8192 || rawEnvironment.indexOf('\0') >= 0) {
-            return context.getString(R.string.srceng_environment_invalid);
+        EnvironmentOverrides.Result result = EnvironmentOverrides.apply(rawEnvironment,
+                new EnvironmentOverrides.Setter() {
+                    @Override public boolean set(String name, String value) {
+                        return setRequiredEnvironment(name, value);
+                    }
+                });
+        if (result.getError() == EnvironmentOverrides.ERROR_NONE) return null;
+        if (result.getError() == EnvironmentOverrides.ERROR_APPLY_FAILED) {
+            return context.getString(R.string.srceng_environment_apply_failed, result.getFailedName());
         }
-
-        String[] entries = rawEnvironment.split("[\\r\\n;]+");
-        if (entries.length > 64) return context.getString(R.string.srceng_environment_invalid);
-
-        String[] names = new String[entries.length];
-        String[] values = new String[entries.length];
-        for (int i = 0; i < entries.length; i++) {
-            String item = entries[i];
-            if (item.length() > 2048) return context.getString(R.string.srceng_environment_invalid);
-            String entry = item.trim();
-            if (entry.isEmpty()) continue;
-
-            int separator = entry.indexOf('=');
-            if (separator <= 0) return context.getString(R.string.srceng_environment_invalid);
-            String name = entry.substring(0, separator).trim();
-            String value = entry.substring(separator + 1).trim();
-            if (!ENV_NAME.matcher(name).matches()) {
-                return context.getString(R.string.srceng_environment_invalid);
-            }
-
-            // Engine-critical paths are controlled by startup initialization.
-            if ("VALVE_GAME_PATH".equals(name) || "APP_DATA_PATH".equals(name)
-                    || "APP_LIB_PATH".equals(name) || "EXTRAS_VPK_PATH".equals(name)
-                    || "LANG".equals(name)) {
-                return context.getString(R.string.srceng_environment_invalid);
-            }
-            names[i] = name;
-            values[i] = value;
-        }
-
-        for (int i = 0; i < names.length; i++) {
-            if (names[i] != null && !setRequiredEnvironment(names[i], values[i])) {
-                return context.getString(R.string.srceng_environment_apply_failed, names[i]);
-            }
-        }
-        return null;
+        return context.getString(R.string.srceng_environment_invalid);
     }
 
     public static String initNatives(Context context, Intent intent) {

@@ -121,7 +121,6 @@
     <string name="srceng_game_hl2ep2">Half-Life 2: الحلقة الثانية</string>
     <string name="srceng_game_portal">Portal</string>
     <string name="srceng_dir_choice_btn">تعيين المجلد الحالي</string>
-    <string name="srceng_update">عُثر على مؤشر إصدار أحدث؛ لا يتوفر تحديث داخل التطبيق.</string>
     <string name="srceng_launcher_error_empty_path">مسار مجلد اللعبة فارغ. اختر المجلد الذي يحتوي على ملفات اللعبة.</string>
     <string name="srceng_launcher_error_invalid_path">مجلد اللعبة المحدد غير موجود أو لا يمكن قراءته:\n%1$s\nاختر المجلد الذي يحتوي على ملفات اللعبة.</string>
     <string name="srceng_launcher_error_start_failed">تعذّر بدء نشاط اللعبة:\n%1$s\nتحقق من سجل Android إذا استمرت المشكلة.</string>
@@ -155,7 +154,7 @@
     <string name="srceng_library_scan_cancelled">أُلغِي الفحص. احتُفظ بنسخة المكتبة السابقة.</string>
     <string name="srceng_library_scan_no_roots">لم تُضبط مجلدات للبحث بعد. اختر مجلد اللعبة الحالي وابدأ فحصه أولًا.</string>
     <string name="srceng_library_scan_incomplete">الفحص غير مكتمل: تعذّرت قراءة %1$d مجلدات، ووصل الفحص إلى حد العمق في %2$d جذور، وإلى حد عدد المجلدات في %3$d مواضع، وفُقد الوصول إلى %4$d جذور أو أصبحت غير متاحة. احتُفظ بنسخة المكتبة السابقة. أعد إتاحة التخزين أو اختر مجلدًا أضيق ثم أعد الفحص.</string>
-    <string name="srceng_environment_invalid">تحتوي إعدادات متغيرات البيئة على قيمة غير صالحة أو محجوزة. استخدم NAME=VALUE، عنصرًا في كل سطر أو افصل بينها بفاصلة منقوطة، وبحد أقصى 64 عنصرًا و2048 حرفًا لكل عنصر. احذف العنصر غير الصالح ثم أعد المحاولة.</string>
+    <string name="srceng_environment_invalid">تتضمن متغيرات البيئة عنصرًا غير صالح أو مكررًا أو محجوزًا. استخدم NAME=VALUE، عنصرًا في كل سطر أو افصل بينها بفواصل منقوطة. الحد الأقصى 64 عنصرًا و2048 حرفًا لكل عنصر. لا تغيّر مسارات المشغّل أو إعدادات أندرويد الداخلية أو متغيرات محمّل المكتبات.</string>
     <string name="srceng_environment_apply_failed">تعذّر على المحرك الأصلي تطبيق متغير البيئة %1$s. احذفه أو استخدم قيمة مدعومة ثم أعد المحاولة.</string>
     <string name="srceng_controls_mapping_note">تحاكي هذه الأدوات لوحة المفاتيح والفأرة: الحركة WASD، والقفز Space، والاستخدام E، وإعادة التلقيم R، والإطلاق بزر الفأرة الأول. هذه ليست عصا تحكم تناظرية، وقد لا تناسب كل لعبة أو تعديل.</string>
     <string name="srceng_storage_permission_required">رُفض إذن التخزين المشترك. قد لا يتمكن المشغّل من قراءة ملفات اللعبة المحلية عبر مسارات الملفات التي يستخدمها المحرك الأصلي. يمكنك منح الإذن من إعدادات التطبيق في Android ثم العودة إلى المشغّل.</string>
