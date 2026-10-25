@@ -415,11 +415,12 @@ Use this section for new observations that do not yet fit another heading. Date 
 ## 7. Stage 17 resume point — 2026-10-24
 
 - Canonical repository/branch: `majd7772233-a11y/Source-Engine`, `android-fixes`.
-- Verified branch head at the start of Stage 17: `d372d7b6a0e575f8557c743d3aaec0a950e673fd`. Canonical workflow [40125765154](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40125765154) succeeded through Stage 16 source verification, host-JVM tests, lint/workflow validation, native build and APK verification; the fail-closed provenance/redistribution gate withheld the APK artifact.
+- Stage 17 baseline was `d372d7b6a0e575f8557c743d3aaec0a950e673fd`. Latest branch head is `cb43c464b16c5fd840532b801d3a1d9b9e2f3648`; canonical workflow [40132689538](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40132689538) passed source/JVM/workflow validation, native build and APK verification. Debug test artifact [12575533251](https://github.com/majd7772233-a11y/Source-Engine/actions/runs/40132689538/artifacts/12575533251) was uploaded and expires 2026-11-07; it is not a signed/public release or rights clearance.
 - Stage 13 storage source/JVM implementation, Stage 14 scan source/JVM implementation, Stage 15 input-state source/JVM implementation and Stage 16 launcher/localization/accessibility source work have coverage. Physical provider, gameplay, TalkBack, rendering, audio and performance acceptance remains deferred to the consolidated Stage 18 window. Do not infer device acceptance from static/JVM/CI success.
-- **Current implementation stage: Stage 17 — feature truth, settings behavior and optional online/update capabilities.**
+- Stage 17 source implementation and canonical CI verification are complete. **Next milestone: Stage 18 — consolidated device/runtime acceptance**, after Stage 19's provenance/build prerequisites make the candidate appropriate to test. Stage 13's real provider/device behavior remains unverified; do not mark it fully accepted until the consolidated Stage 18 test records the result.
+- **Current milestone: Stage 18 is next, gated on Stage 19 prerequisites.**
 - Stage 17 changes separate environment parsing into pure Java with negative-path tests, remove unused version-marker/update-service remnants rather than implying a functioning updater, create a source-to-effect control inventory and add the Stage 17 static verifier to canonical CI.
-- Inspect CI for the implementation commit; fix failures before recording Stage 17 source verification as passed. Stage 19 rights/provenance review remains fail-closed. Do not bypass it to create a downloadable APK.
+- Latest CI is green for source/build verification, but Stage 19 rights/provenance review remains blocked. A debug test artifact exists for controlled testing only; do not treat it as clearance or a public release. Stage 18 device acceptance has not run.
 - Stage 12 stays the permanent feedback/defect-correction lane. **Final Acceptance is unnumbered**, after numbered implementation, user/device acceptance and required review.
 
 ### Historical Stage 16 source implementation and canonical CI verification
